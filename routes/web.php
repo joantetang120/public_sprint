@@ -1,0 +1,96 @@
+<?php
+
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SprintController;
+use App\Http\Controllers\UpdateController;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+
+// Public routes
+Route::get('/', function () {
+    return Inertia::render('PublicSprint/Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+    ]);
+});
+
+Route::get('/discover', [SprintController::class, 'discover'])->name('discover');
+
+// Serve update images
+Route::get('/storage/updates/{filename}', function ($filename) {
+    $path = storage_path('app/public/updates/' . $filename);
+    
+    \Log::info('Image request', [
+        'filename' => $filename,
+        'path' => $path,
+        'exists' => file_exists($path),
+        'storage_path' => storage_path('app/public/updates/'),
+    ]);
+    
+    if (!file_exists($path)) {
+        // Try to list what files exist
+        $files = glob(storage_path('app/public/updates/*'));
+        \Log::error('Image not found', [
+            'requested' => $filename,
+            'available_files' => $files,
+        ]);
+        abort(404, 'Image not found: ' . $filename);
+    }
+    
+    return response()->file($path);
+})->where('filename', '.*');
+
+// Authenticated routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Dashboard / Feed
+    Route::get('/dashboard', [UpdateController::class, 'index'])->name('dashboard');
+    
+    // Sprints - IMPORTANT: Specific routes BEFORE dynamic {sprint} route
+    Route::get('/sprints', [SprintController::class, 'index'])->name('sprints.index');
+    Route::get('/sprints/create', [SprintController::class, 'create'])->name('sprints.create');
+    Route::post('/sprints', [SprintController::class, 'store'])->name('sprints.store');
+    Route::post('/sprints/{sprint}/join', [SprintController::class, 'join'])->name('sprints.join');
+    Route::post('/sprints/{sprint}/leave', [SprintController::class, 'leave'])->name('sprints.leave');
+    Route::get('/sprints/{sprint}/leaderboard', [SprintController::class, 'leaderboard'])->name('sprints.leaderboard');
+    
+    // Updates
+    Route::get('/sprints/{sprint}/updates/create', [UpdateController::class, 'create'])->name('updates.create');
+    Route::post('/sprints/{sprint}/updates', [UpdateController::class, 'store'])->name('updates.store');
+    Route::put('/updates/{update}', [UpdateController::class, 'update'])->name('updates.update');
+    Route::delete('/updates/{update}', [UpdateController::class, 'destroy'])->name('updates.destroy');
+    Route::post('/updates/{update}/react', [UpdateController::class, 'toggleReaction'])->name('updates.react');
+    
+    // Comments
+    Route::post('/updates/{update}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+    
+    // Profile - Breeze routes
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/update-full', [ProfileController::class, 'updateFull'])->name('profile.update.full');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.avatar');
+    
+    // Follow/Unfollow
+    Route::post('/users/{user}/follow', [ProfileController::class, 'follow'])->name('users.follow');
+    Route::post('/users/{user}/unfollow', [ProfileController::class, 'unfollow'])->name('users.unfollow');
+    
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+});
+
+// Public profile view
+Route::get('/users/{user}', [ProfileController::class, 'show'])->name('users.show');
+
+// Public sprint view - MUST be after auth routes to avoid conflicts
+Route::get('/sprints/{sprint}', [SprintController::class, 'show'])->name('sprints.show');
+
+require __DIR__.'/auth.php';
