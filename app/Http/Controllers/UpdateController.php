@@ -37,9 +37,35 @@ class UpdateController extends Controller
                 ->count(),
         ];
 
+        // Get completed sprints with stats
+        $completedSprints = $user->sprints()
+            ->with(['participants' => function($query) {
+                $query->withPivot(['updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges', 'ai_summary']);
+            }])
+            ->where('status', 'completed')
+            ->latest('ends_at')
+            ->take(3)
+            ->get()
+            ->map(function ($sprint) use ($user) {
+                $completionStats = $sprint->getCompletionStats();
+                $userParticipation = $sprint->participants()
+                    ->where('user_id', $user->id)
+                    ->first();
+                
+                return [
+                    'sprint' => $sprint,
+                    'stats' => $completionStats,
+                    'user_rank' => $userParticipation->pivot->rank ?? null,
+                    'user_score' => $userParticipation->pivot->score ?? 0,
+                    'user_badges' => $userParticipation->pivot->badges ? json_decode($userParticipation->pivot->badges, true) : [],
+                    'ai_summary' => $userParticipation->pivot->ai_summary ?? null,
+                ];
+            });
+
         return Inertia::render('PublicSprint/Dashboard', [
             'updates' => $updates,
             'stats' => $stats,
+            'completedSprints' => $completedSprints,
         ]);
     }
 

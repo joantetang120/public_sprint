@@ -1,10 +1,15 @@
 import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Zap, TrendingUp, Users, Trophy, Plus, ArrowRight, Calendar, Target, MessageSquare, Sparkles } from 'lucide-react';
+import { Zap, TrendingUp, Users, Trophy, Plus, ArrowRight, Calendar, Target, MessageSquare, Sparkles, CheckCircle2, Award, Medal, Crown, Star, Flame, Heart } from 'lucide-react';
+import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
+import SprintProgressCard from '@/Components/SprintProgressCard';
+import AISprintSummary from '@/Components/AISprintSummary';
 
-export default function Dashboard({ auth, updates = [], stats = {} }) {
+export default function Dashboard({ auth, updates = [], stats = {}, completedSprints = [] }) {
+    const [selectedSprint, setSelectedSprint] = useState(null);
+
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour < 12) return 'Good morning';
@@ -132,11 +137,142 @@ export default function Dashboard({ auth, updates = [], stats = {} }) {
                             </motion.div>
                         </div>
 
+                        {/* Completion History Section */}
+                        {completedSprints && completedSprints.length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5 }}
+                                className="space-y-4"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-2xl font-bold text-gray-900">
+                                        🏆 Completion History
+                                    </h2>
+                                    <Link 
+                                        href={route('sprints.index')} 
+                                        className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center space-x-1"
+                                    >
+                                        <span>View all sprints</span>
+                                        <ArrowRight className="w-4 h-4" />
+                                    </Link>
+                                </div>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    {completedSprints.map((item, index) => {
+                                        const { sprint, stats, user_rank, user_score, user_badges } = item;
+                                        const badges = user_badges || [];
+                                        
+                                        return (
+                                            <Link
+                                                key={sprint.id}
+                                                href={route('sprints.show', sprint.id)}
+                                            >
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: 0.1 * index }}
+                                                    className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border-2 border-green-200 hover:border-green-400 hover:shadow-lg transition-all cursor-pointer group"
+                                                >
+                                                    {/* Header */}
+                                                    <div className="flex items-start justify-between mb-4">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center space-x-2 mb-2">
+                                                                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                                                <span className="text-xs font-semibold text-green-700 uppercase tracking-wide">Completed</span>
+                                                            </div>
+                                                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors line-clamp-2">
+                                                                {sprint.title}
+                                                            </h3>
+                                                        </div>
+                                                        {user_rank && user_rank <= 3 && (
+                                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                                                user_rank === 1 ? 'bg-yellow-400' :
+                                                                user_rank === 2 ? 'bg-gray-300' :
+                                                                'bg-orange-400'
+                                                            }`}>
+                                                                {user_rank === 1 && <Crown className="w-5 h-5 text-yellow-900" />}
+                                                                {user_rank === 2 && <Medal className="w-5 h-5 text-gray-700" />}
+                                                                {user_rank === 3 && <Award className="w-5 h-5 text-orange-900" />}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Your Performance */}
+                                                    <div className="bg-white/60 rounded-lg p-4 mb-4">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="text-sm font-semibold text-gray-700">Your Performance</span>
+                                                            {user_rank && (
+                                                                <span className="text-sm font-bold text-green-700">Rank #{user_rank}</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-2xl font-black text-green-600">{user_score}</span>
+                                                            <span className="text-sm text-gray-600">points</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Badges */}
+                                                    {badges.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2 mb-4">
+                                                            {badges.map((badge, i) => (
+                                                                <div key={i} className="flex items-center space-x-1 px-2 py-1 bg-white/80 rounded-full text-xs font-semibold">
+                                                                    {badge === 'top_contributor' && <><Star className="w-3 h-3 text-purple-600" /><span className="text-purple-700">Top</span></>}
+                                                                    {badge === 'daily_streak' && <><Flame className="w-3 h-3 text-orange-600" /><span className="text-orange-700">Streak</span></>}
+                                                                    {badge === 'most_helpful' && <><Heart className="w-3 h-3 text-blue-600" /><span className="text-blue-700">Helpful</span></>}
+                                                                    {badge === 'early_bird' && <><Zap className="w-3 h-3 text-yellow-600" /><span className="text-yellow-700">Early</span></>}
+                                                                    {badge === 'consistent_builder' && <><Target className="w-3 h-3 text-green-600" /><span className="text-green-700">Consistent</span></>}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Sprint Stats */}
+                                                    <div className="grid grid-cols-3 gap-2 text-center">
+                                                        <div className="bg-white/60 rounded-lg p-2">
+                                                            <div className="text-lg font-bold text-gray-900">{stats.total_updates}</div>
+                                                            <div className="text-xs text-gray-600">Updates</div>
+                                                        </div>
+                                                        <div className="bg-white/60 rounded-lg p-2">
+                                                            <div className="text-lg font-bold text-gray-900">{stats.active_participants}</div>
+                                                            <div className="text-xs text-gray-600">Builders</div>
+                                                        </div>
+                                                        <div className="bg-white/60 rounded-lg p-2">
+                                                            <div className="text-lg font-bold text-gray-900">{stats.completion_rate}%</div>
+                                                            <div className="text-xs text-gray-600">Rate</div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Action Buttons */}
+                                                    <div className="mt-4 flex items-center space-x-2">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                setSelectedSprint(item);
+                                                            }}
+                                                            className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-white text-green-700 rounded-lg font-semibold hover:bg-green-50 transition-colors text-sm border border-green-200"
+                                                        >
+                                                            <Trophy className="w-4 h-4" />
+                                                            <span>Progress Card</span>
+                                                        </button>
+                                                        <div className="flex items-center space-x-1 text-sm font-semibold text-green-700 group-hover:text-green-800">
+                                                            <span>View</span>
+                                                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </motion.div>
+                        )}
+
                         {/* Recent Activity Section */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
+                            transition={{ delay: 0.6 }}
                             className="bg-white rounded-xl border border-gray-200"
                         >
                             <div className="p-6 border-b border-gray-200">
@@ -282,6 +418,56 @@ export default function Dashboard({ auth, updates = [], stats = {} }) {
                     </div>
                 </div>
             </div>
+
+            {/* Progress Card Modal */}
+            {selectedSprint && (
+                <div 
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                    onClick={() => setSelectedSprint(null)}
+                >
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="bg-white rounded-2xl p-6 max-w-5xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900">Share Your Achievement</h2>
+                            <button
+                                onClick={() => setSelectedSprint(null)}
+                                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="space-y-6">
+                            {/* AI Summary Section */}
+                            <AISprintSummary 
+                                sprint={selectedSprint.sprint}
+                                aiSummary={selectedSprint.ai_summary}
+                            />
+
+                            {/* Progress Card Section */}
+                            <SprintProgressCard
+                                sprint={selectedSprint.sprint}
+                                userStats={{
+                                    user: auth.user,
+                                    updates_posted: selectedSprint.sprint.participants?.find(p => p.id === auth.user.id)?.pivot?.updates_posted || 0,
+                                    score: selectedSprint.user_score,
+                                    reactions_received: selectedSprint.sprint.participants?.find(p => p.id === auth.user.id)?.pivot?.reactions_received || 0,
+                                    rank: selectedSprint.user_rank,
+                                    badges: selectedSprint.user_badges,
+                                }}
+                                completionStats={selectedSprint.stats}
+                            />
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </PublicSprintLayout>
     );
 }

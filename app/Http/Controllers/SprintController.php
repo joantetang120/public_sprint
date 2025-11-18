@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Sprint;
 use App\Models\SprintTag;
+use App\Models\Update;
+use App\Services\BadgeService;
+use App\Services\AIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -148,17 +151,27 @@ class SprintController extends Controller
         // Check if user is creator
         $isCreator = auth()->check() && $sprint->isCreator(auth()->id());
 
-        // Get leaderboard
+        // Update rankings and badges
+        BadgeService::updateRankings($sprint);
+        BadgeService::calculateBadges($sprint);
+
+        // Get leaderboard with all data
         $leaderboard = $sprint->participants()
             ->orderByDesc('sprint_participants.score')
-            ->take(10)
             ->get();
+
+        // Get completion stats if sprint is completed
+        $completionStats = null;
+        if ($sprint->isCompleted()) {
+            $completionStats = $sprint->getCompletionStats();
+        }
 
         return Inertia::render('Sprint/Show', [
             'sprint' => $sprint,
             'isParticipant' => $isParticipant,
             'isCreator' => $isCreator,
             'leaderboard' => $leaderboard,
+            'completionStats' => $completionStats,
         ]);
     }
 
@@ -279,5 +292,45 @@ class SprintController extends Controller
             ->get();
 
         return response()->json($leaderboard);
+    }
+
+    public function generateSummary(Request $request, Sprint $sprint, AIService $aiService)
+    {
+        // Check if user is participant
+        if (!$sprint->participants()->where('user_id', auth()->id())->exists()) {
+            return back()->with('error', 'You must be a participant to generate a summary.');
+        }
+
+        // Check if sprint is completed
+        if ($sprint->computed_status !== 'completed') {
+            return back()->with('error', 'Summary can only be generated for completed sprints.');
+        }
+
+        // Validate style
+        $style = $request->input('style', 'professional');
+        if (!in_array($style, ['professional', 'casual', 'technical'])) {
+            $style = 'professional';
+        }
+
+        // Get user's participation data
+        $userParticipation = $sprint->participants()
+            ->where('user_id', auth()->id())
+            ->first();
+
+        $updates = Update::where('sprint_id', $sprint->id)
+            ->where('user_id', auth()->id())
+            ->where('is_draft', false)
+            ->get();
+
+        // Generate AI summary using OpenAI
+        $summary = $aiService->generateSprintSummary($sprint, $userParticipation, $updates, $style);
+
+        // Save summary to user's sprint participation
+        DB::table('sprint_participants')
+            ->where('sprint_id', $sprint->id)
+            ->where('user_id', auth()->id())
+            ->update(['ai_summary' => $summary]);
+
+        return back()->with('success', 'Summary generated successfully!');
     }
 }

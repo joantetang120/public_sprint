@@ -49,6 +49,10 @@ return [
         'url' => env('CLOUDINARY_URL'),
     ],
 
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+    ],
+
     'huggingface' => [
         'api_key' => env('HUGGINGFACE_API_KEY'),
     ],

@@ -3,13 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Zap, Calendar, Users, Target, TrendingUp, MessageSquare, 
     Heart, Share2, Flag, Clock, CheckCircle2, ArrowRight, Plus, 
-    Link as Link2, Trash2, Reply, MoreVertical, Sparkles, Rocket, X
+    Link as Link2, Trash2, Reply, MoreVertical, Sparkles, Rocket, X,
+    Trophy, Award, Medal, Crown, Star, Flame, Check, Copy
 } from 'lucide-react';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
+import JoinWithMeLink from '@/Components/JoinWithMeLink';
+import AISprintSummary from '@/Components/AISprintSummary';
 
-export default function Show({ auth, sprint, isParticipant, leaderboard }) {
+export default function Show({ auth, sprint, isParticipant, leaderboard, completionStats }) {
     const [activeTab, setActiveTab] = useState('updates');
     const [showLeaveModal, setShowLeaveModal] = useState(false);
     const [localReactions, setLocalReactions] = useState({});
@@ -18,6 +21,8 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
     const [replyingTo, setReplyingTo] = useState({});
     const [replyText, setReplyText] = useState({});
     const [selectedImage, setSelectedImage] = useState(null);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [linkCopied, setLinkCopied] = useState(false);
 
     const getDaysRemaining = () => {
         const end = new Date(sprint.ends_at);
@@ -35,6 +40,57 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(dateString).toLocaleDateString(undefined, options);
+    };
+
+    const getSprintUrl = () => {
+        // Get the current page URL which is already the sprint show page
+        return window.location.href;
+    };
+
+    const handleCopyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(getSprintUrl());
+            setLinkCopied(true);
+            setTimeout(() => setLinkCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy link:', err);
+        }
+    };
+
+    const handleShare = (platform) => {
+        const url = encodeURIComponent(getSprintUrl());
+        const title = encodeURIComponent(sprint.title);
+        const text = encodeURIComponent(`Check out this sprint: ${sprint.title}`);
+        
+        const shareUrls = {
+            twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+            facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+            linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+            whatsapp: `https://wa.me/?text=${text}%20${url}`,
+            telegram: `https://t.me/share/url?url=${url}&text=${text}`,
+        };
+        
+        if (shareUrls[platform]) {
+            window.open(shareUrls[platform], '_blank', 'width=600,height=400');
+        }
+    };
+
+    const handleNativeShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: sprint.title,
+                    text: `Check out this sprint: ${sprint.title}`,
+                    url: getSprintUrl(),
+                });
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Error sharing:', err);
+                }
+            }
+        } else {
+            setShowShareModal(true);
+        }
     };
 
     const getProgress = () => {
@@ -210,9 +266,16 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
                                                 <span className="text-sm text-gray-600 dark:text-gray-400">by {sprint.creator.name}</span>
                                             </div>
                                         </div>
-                                        <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                                            <MoreVertical className="w-5 h-5" />
-                                        </button>
+                                        <div className="flex items-center space-x-2">
+                                            <button 
+                                                onClick={() => setShowShareModal(true)}
+                                                className="flex items-center space-x-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700"
+                                                title="Share sprint"
+                                            >
+                                                <Share2 className="w-4 h-4" />
+                                                <span className="text-sm font-semibold hidden sm:inline">Share</span>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {/* Title & Description */}
@@ -275,7 +338,12 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
                                         {auth.user ? (
                                             isParticipant ? (
                                                 <div className="space-y-2">
-                                                    {isSprintActive() ? (
+                                                    {sprint.computed_status === 'completed' ? (
+                                                        <div className="w-full text-center px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg font-medium text-sm flex items-center justify-center space-x-2">
+                                                            <CheckCircle2 className="w-4 h-4" />
+                                                            <span>Sprint Completed</span>
+                                                        </div>
+                                                    ) : isSprintActive() ? (
                                                         <Link
                                                             href={getUpdateCreateRoute()}
                                                             className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm text-sm"
@@ -288,12 +356,19 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
                                                             Starts on {formatDate(sprint.starts_at)}
                                                         </div>
                                                     )}
-                                                    <button
-                                                        onClick={handleLeave}
-                                                        className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
-                                                    >
-                                                        Leave Sprint
-                                                    </button>
+                                                    {sprint.computed_status !== 'completed' && (
+                                                        <button
+                                                            onClick={handleLeave}
+                                                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
+                                                        >
+                                                            Leave Sprint
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ) : sprint.computed_status === 'completed' ? (
+                                                <div className="w-full text-center px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg font-medium text-sm flex items-center justify-center space-x-2">
+                                                    <CheckCircle2 className="w-4 h-4" />
+                                                    <span>Sprint Completed</span>
                                                 </div>
                                             ) : (
                                                 <button
@@ -313,6 +388,18 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
                                             </Link>
                                         )}
                                     </div>
+
+                                    {/* AI Summary for Completed Sprints */}
+                                    {auth.user && isParticipant && sprint.computed_status === 'completed' && (
+                                        <AISprintSummary 
+                                            sprint={sprint} 
+                                            userStats={{
+                                                updates_posted: leaderboard.find(p => p.id === auth.user.id)?.pivot?.updates_posted || 0,
+                                                score: leaderboard.find(p => p.id === auth.user.id)?.pivot?.score || 0,
+                                                rank: leaderboard.find(p => p.id === auth.user.id)?.pivot?.rank || null,
+                                            }}
+                                        />
+                                    )}
 
                                     {/* Quick Info */}
                                     <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 space-y-2">
@@ -339,6 +426,95 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
                             </div>
                         </motion.div>
 
+                        {/* Completion Summary Banner */}
+                        {completionStats && sprint.computed_status === 'completed' && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg"
+                            >
+                                <div className="flex items-center justify-center mb-4">
+                                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                                        <Trophy className="w-8 h-8 text-white" />
+                                    </div>
+                                </div>
+                                <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">Sprint Completed! 🎉</h2>
+                                <p className="text-green-100 text-center mb-6 max-w-2xl mx-auto">
+                                    Congratulations! This sprint has been successfully completed. Here's a summary of the achievements.
+                                </p>
+
+                                {/* Stats Grid */}
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
+                                        <div className="text-3xl font-black mb-1">{completionStats.total_updates}</div>
+                                        <div className="text-sm text-green-100">Total Updates</div>
+                                    </div>
+                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
+                                        <div className="text-3xl font-black mb-1">{completionStats.active_participants}</div>
+                                        <div className="text-sm text-green-100">Active Builders</div>
+                                    </div>
+                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
+                                        <div className="text-3xl font-black mb-1">{completionStats.total_reactions}</div>
+                                        <div className="text-sm text-green-100">Total Likes</div>
+                                    </div>
+                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
+                                        <div className="text-3xl font-black mb-1">{completionStats.completion_rate}%</div>
+                                        <div className="text-sm text-green-100">Completion Rate</div>
+                                    </div>
+                                </div>
+
+                                {/* Top Performers */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    {completionStats.top_contributor && (
+                                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                            <div className="flex items-center space-x-2 mb-2">
+                                                <Crown className="w-5 h-5 text-yellow-300" />
+                                                <span className="font-semibold text-sm">Top Contributor</span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <UserAvatar user={completionStats.top_contributor} size="sm" />
+                                                <div>
+                                                    <div className="font-bold text-sm">{completionStats.top_contributor.name}</div>
+                                                    <div className="text-xs text-green-100">{completionStats.top_contributor.pivot?.score || 0} points</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {completionStats.most_active && (
+                                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                            <div className="flex items-center space-x-2 mb-2">
+                                                <Zap className="w-5 h-5 text-yellow-300" />
+                                                <span className="font-semibold text-sm">Most Active</span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <UserAvatar user={completionStats.most_active} size="sm" />
+                                                <div>
+                                                    <div className="font-bold text-sm">{completionStats.most_active.name}</div>
+                                                    <div className="text-xs text-green-100">{completionStats.most_active.pivot?.updates_posted || 0} updates</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {completionStats.most_engaged && (
+                                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                            <div className="flex items-center space-x-2 mb-2">
+                                                <Heart className="w-5 h-5 text-pink-300" />
+                                                <span className="font-semibold text-sm">Most Engaged</span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <UserAvatar user={completionStats.most_engaged} size="sm" />
+                                                <div>
+                                                    <div className="font-bold text-sm">{completionStats.most_engaged.name}</div>
+                                                    <div className="text-xs text-green-100">{completionStats.most_engaged.pivot?.reactions_received || 0} likes</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
+
                         {/* Navigation Tabs */}
                         <div className="bg-white dark:bg-gray-900 rounded-xl p-1 border border-gray-200 dark:border-gray-800 shadow-sm">
                             <div className="flex space-x-1">
@@ -359,9 +535,9 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
                         </div>
 
                         {/* Main Content Area */}
-                        <div className="grid lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Updates Feed */}
-                            <div className="lg:col-span-2 space-y-4">
+                            <div className="lg:col-span-2 space-y-4 order-2 lg:order-1">
                                 {activeTab === 'updates' && (
                                     <>
                                         {sprint.updates && sprint.updates.length > 0 ? (
@@ -471,8 +647,8 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
                                                         <div className="mb-3">
                                                             <div className={`grid gap-2 ${
                                                                 update.images.length === 1 ? 'grid-cols-1' : 
-                                                                update.images.length === 2 ? 'grid-cols-2' : 
-                                                                'grid-cols-2'
+                                                                update.images.length === 2 ? 'grid-cols-1 sm:grid-cols-2' : 
+                                                                'grid-cols-1 sm:grid-cols-2'
                                                             }`}>
                                                                 {update.images.map((img, idx) => (
                                                                     <button 
@@ -497,7 +673,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
                                                     )}
 
                                                     {/* Actions */}
-                                                    <div className="flex items-center space-x-4 pt-3 border-t border-gray-100 dark:border-gray-800">
+                                                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-3 border-t border-gray-100 dark:border-gray-800">
                                                         {(() => {
                                                             const localReaction = localReactions[update.id];
                                                             const hasReacted = localReaction?.hasReacted ?? update.reactions?.some(r => r.user_id === auth.user?.id);
@@ -741,49 +917,197 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
 
                                 {/* Leaderboard Tab */}
                                 {activeTab === 'leaderboard' && (
-                                    <div className="space-y-2">
-                                        {leaderboard && leaderboard.map((user, i) => (
-                                            <motion.div
-                                                key={user.id}
-                                                initial={{ opacity: 0, x: -20 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: i * 0.05 }}
-                                                className="bg-white dark:bg-gray-900 rounded-xl p-3 border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow"
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center space-x-3">
-                                                        <div className={`w-6 h-6 rounded flex items-center justify-center font-bold text-xs ${
-                                                            i === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                                            i === 1 ? 'bg-gray-100 text-gray-700' :
-                                                            i === 2 ? 'bg-orange-100 text-orange-700' :
-                                                            'bg-gray-50 text-gray-600'
-                                                        }`}>
-                                                            {i + 1}
+                                    <div className="space-y-4">
+                                        {/* Top 3 Podium */}
+                                        {leaderboard && leaderboard.length > 0 && (
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                                                {/* 2nd Place */}
+                                                {leaderboard[1] && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 20 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: 0.1 }}
+                                                        className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 border-2 border-gray-300 dark:border-gray-700 text-center sm:mt-8"
+                                                    >
+                                                        <div className="relative">
+                                                            <UserAvatar user={leaderboard[1]} size="lg" />
+                                                            <div className="absolute -top-2 -right-2 w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900">
+                                                                <Medal className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                                            </div>
                                                         </div>
-                                                        <UserAvatar 
-                                                            user={user}
-                                                            size="sm"
-                                                        />
-                                                        <div>
-                                                            <Link href={`/users/${user.id}`} className="font-semibold text-gray-900 dark:text-white text-sm hover:text-green-600 dark:hover:text-green-400 transition-colors">
-                                                                {user.name}
-                                                            </Link>
-                                                            <div className="text-xs text-gray-600 dark:text-gray-400">{user.pivot?.updates_posted || 0} updates</div>
+                                                        <Link href={`/users/${leaderboard[1].id}`} className="font-bold text-sm text-gray-900 dark:text-white mt-2 block hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                            {leaderboard[1].name}
+                                                        </Link>
+                                                        <div className="text-2xl font-black text-gray-600 dark:text-gray-300 mt-1">{leaderboard[1].pivot?.score || 0}</div>
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400">points</div>
+                                                    </motion.div>
+                                                )}
+
+                                                {/* 1st Place */}
+                                                {leaderboard[0] && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 20 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: 0 }}
+                                                        className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30 rounded-xl p-4 border-2 border-yellow-400 dark:border-yellow-600 text-center"
+                                                    >
+                                                        <div className="relative">
+                                                            <UserAvatar user={leaderboard[0]} size="xl" />
+                                                            <div className="absolute -top-3 -right-2 w-10 h-10 bg-yellow-400 dark:bg-yellow-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900 shadow-lg">
+                                                                <Crown className="w-5 h-5 text-yellow-900" />
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="text-base font-bold text-green-600">{user.pivot?.score || 0}</div>
+                                                        <Link href={`/users/${leaderboard[0].id}`} className="font-bold text-base text-gray-900 dark:text-white mt-2 block hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                            {leaderboard[0].name}
+                                                        </Link>
+                                                        <div className="text-3xl font-black text-yellow-600 dark:text-yellow-400 mt-1">{leaderboard[0].pivot?.score || 0}</div>
                                                         <div className="text-xs text-gray-600 dark:text-gray-400">points</div>
-                                                    </div>
+                                                    </motion.div>
+                                                )}
+
+                                                {/* 3rd Place */}
+                                                {leaderboard[2] && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 20 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: 0.2 }}
+                                                        className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 rounded-xl p-4 border-2 border-orange-300 dark:border-orange-700 text-center sm:mt-8"
+                                                    >
+                                                        <div className="relative">
+                                                            <UserAvatar user={leaderboard[2]} size="lg" />
+                                                            <div className="absolute -top-2 -right-2 w-8 h-8 bg-orange-200 dark:bg-orange-700 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900">
+                                                                <Award className="w-4 h-4 text-orange-600 dark:text-orange-300" />
+                                                            </div>
+                                                        </div>
+                                                        <Link href={`/users/${leaderboard[2].id}`} className="font-bold text-sm text-gray-900 dark:text-white mt-2 block hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                            {leaderboard[2].name}
+                                                        </Link>
+                                                        <div className="text-2xl font-black text-orange-600 dark:text-orange-400 mt-1">{leaderboard[2].pivot?.score || 0}</div>
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400">points</div>
+                                                    </motion.div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Rest of Leaderboard */}
+                                        {leaderboard && leaderboard.length > 3 && (
+                                            <div className="space-y-2">
+                                                <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-3">Other Participants</h3>
+                                                {leaderboard.slice(3).map((user, i) => {
+                                                    const actualRank = i + 4;
+                                                    const badges = user.pivot?.badges ? JSON.parse(user.pivot.badges) : [];
+                                                    const completionRate = sprint.duration_days > 0 ? Math.round((user.pivot?.updates_posted || 0) / sprint.duration_days * 100) : 0;
+                                                    
+                                                    return (
+                                                        <motion.div
+                                                            key={user.id}
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            transition={{ delay: i * 0.05 }}
+                                                            className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow"
+                                                        >
+                                                            <div className="flex items-start justify-between">
+                                                                <div className="flex items-start space-x-3 flex-1">
+                                                                    <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-bold text-sm text-gray-700 dark:text-gray-300">
+                                                                        {actualRank}
+                                                                    </div>
+                                                                    <UserAvatar 
+                                                                        user={user}
+                                                                        size="md"
+                                                                    />
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <Link href={`/users/${user.id}`} className="font-semibold text-gray-900 dark:text-white text-sm hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                                                {user.name}
+                                                                            </Link>
+                                                                            {badges.length > 0 && (
+                                                                                <div className="flex items-center space-x-1">
+                                                                                    {badges.includes('top_contributor') && (
+                                                                                        <div className="w-5 h-5 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center" title="Top Contributor">
+                                                                                            <Star className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                                                                                        </div>
+                                                                                    )}
+                                                                                    {badges.includes('daily_streak') && (
+                                                                                        <div className="w-5 h-5 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center" title="Daily Streak">
+                                                                                            <Flame className="w-3 h-3 text-orange-600 dark:text-orange-400" />
+                                                                                        </div>
+                                                                                    )}
+                                                                                    {badges.includes('most_helpful') && (
+                                                                                        <div className="w-5 h-5 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center" title="Most Helpful">
+                                                                                            <Heart className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-2 text-xs">
+                                                                            <div>
+                                                                                <div className="text-gray-500 dark:text-gray-400">Updates</div>
+                                                                                <div className="font-semibold text-gray-900 dark:text-white">{user.pivot?.updates_posted || 0}</div>
+                                                                            </div>
+                                                                            <div>
+                                                                                <div className="text-gray-500 dark:text-gray-400">Likes</div>
+                                                                                <div className="font-semibold text-gray-900 dark:text-white">{user.pivot?.reactions_received || 0}</div>
+                                                                            </div>
+                                                                            <div>
+                                                                                <div className="text-gray-500 dark:text-gray-400">Comments</div>
+                                                                                <div className="font-semibold text-gray-900 dark:text-white">{user.pivot?.comments_made || 0}</div>
+                                                                            </div>
+                                                                        </div>
+                                                                        {completionRate > 0 && (
+                                                                            <div className="mt-2">
+                                                                                <div className="flex items-center justify-between text-xs mb-1">
+                                                                                    <span className="text-gray-500 dark:text-gray-400">Completion</span>
+                                                                                    <span className="font-semibold text-gray-900 dark:text-white">{completionRate}%</span>
+                                                                                </div>
+                                                                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                                                                                    <div 
+                                                                                        className="bg-green-500 h-1.5 rounded-full transition-all" 
+                                                                                        style={{ width: `${Math.min(completionRate, 100)}%` }}
+                                                                                    ></div>
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-right ml-4">
+                                                                    <div className="text-xl font-bold text-green-600 dark:text-green-400">{user.pivot?.score || 0}</div>
+                                                                    <div className="text-xs text-gray-500 dark:text-gray-400">points</div>
+                                                                </div>
+                                                            </div>
+                                                        </motion.div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+
+                                        {/* Points Breakdown */}
+                                        <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                                            <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-3 flex items-center space-x-2">
+                                                <Trophy className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                                <span>Points System</span>
+                                            </h3>
+                                            <div className="space-y-2 text-xs">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-gray-700 dark:text-gray-300">Post an update</span>
+                                                    <span className="font-semibold text-green-600 dark:text-green-400">+2 pts</span>
                                                 </div>
-                                            </motion.div>
-                                        ))}
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-gray-700 dark:text-gray-300">Receive a like</span>
+                                                    <span className="font-semibold text-green-600 dark:text-green-400">+1 pt</span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-gray-700 dark:text-gray-300">Make a comment</span>
+                                                    <span className="font-semibold text-green-600 dark:text-green-400">+0.5 pts</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>
 
                             {/* Sidebar */}
-                            <div className="space-y-4">
+                            <div className="space-y-4 order-1 lg:order-2">
                                 {/* Top Contributors */}
                                 {leaderboard && leaderboard.length > 0 && (
                                     <div className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800">
@@ -871,6 +1195,133 @@ export default function Show({ auth, sprint, isParticipant, leaderboard }) {
                     </motion.div>
                 </div>
             )}
+
+            {/* Share Modal */}
+            <AnimatePresence>
+                {showShareModal && (
+                    <motion.div 
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowShareModal(false)}
+                    >
+                        <motion.div 
+                            className="bg-white dark:bg-gray-900 rounded-2xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-800"
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Header */}
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
+                                        <Share2 className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Share Sprint</h3>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Spread the word!</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setShowShareModal(false)}
+                                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Copy Link Section */}
+                            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                                    Sprint Link
+                                </label>
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={getSprintUrl()} 
+                                        readOnly
+                                        className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    />
+                                    <button
+                                        onClick={handleCopyLink}
+                                        className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 whitespace-nowrap ${
+                                            linkCopied 
+                                                ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' 
+                                                : 'bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600 shadow-lg'
+                                        }`}
+                                    >
+                                        {linkCopied ? (
+                                            <>
+                                                <Check className="w-4 h-4" />
+                                                <span>Copied!</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Copy className="w-4 h-4" />
+                                                <span>Copy Link</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Social Share Buttons */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
+                                    Share on Social Media
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => handleShare('twitter')}
+                                        className="group flex items-center justify-center space-x-2 px-4 py-3.5 bg-[#1DA1F2] text-white rounded-xl font-semibold hover:bg-[#1a8cd8] transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+                                    >
+                                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                                        </svg>
+                                        <span className="text-sm">Twitter</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleShare('facebook')}
+                                        className="group flex items-center justify-center space-x-2 px-4 py-3.5 bg-[#1877F2] text-white rounded-xl font-semibold hover:bg-[#166fe5] transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+                                    >
+                                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                        </svg>
+                                        <span className="text-sm">Facebook</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleShare('linkedin')}
+                                        className="group flex items-center justify-center space-x-2 px-4 py-3.5 bg-[#0A66C2] text-white rounded-xl font-semibold hover:bg-[#095196] transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+                                    >
+                                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                        </svg>
+                                        <span className="text-sm">LinkedIn</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleShare('whatsapp')}
+                                        className="group flex items-center justify-center space-x-2 px-4 py-3.5 bg-[#25D366] text-white rounded-xl font-semibold hover:bg-[#20bd5a] transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+                                    >
+                                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                                        </svg>
+                                        <span className="text-sm">WhatsApp</span>
+                                    </button>
+                                </div>
+                                
+                                {/* Pro Tip */}
+                                <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                    <p className="text-xs text-gray-700 dark:text-gray-300">
+                                        💡 <strong>Tip:</strong> Share this sprint to invite others to join and build in public together!
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Image Preview Modal */}
             <AnimatePresence>
