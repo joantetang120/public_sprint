@@ -37,20 +37,19 @@ class UpdateController extends Controller
                 ->count(),
         ];
 
-        // Get completed sprints with stats
+        // Get completed sprints with stats (all of them for My Summaries section)
         $completedSprints = $user->sprints()
             ->with(['participants' => function($query) {
                 $query->withPivot(['updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges', 'ai_summary']);
             }])
             ->where('status', 'completed')
             ->latest('ends_at')
-            ->take(3)
             ->get()
             ->map(function ($sprint) use ($user) {
                 $completionStats = $sprint->getCompletionStats();
-                $userParticipation = $sprint->participants()
-                    ->where('user_id', $user->id)
-                    ->first();
+                
+                // Get user participation from the already loaded relationship
+                $userParticipation = $sprint->participants->firstWhere('id', $user->id);
                 
                 return [
                     'sprint' => $sprint,

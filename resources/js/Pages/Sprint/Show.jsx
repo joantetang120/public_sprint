@@ -329,6 +329,16 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                             ))}
                                         </div>
                                     )}
+
+                                    {/* AI Summary for Completed Sprints - Full Width */}
+                                    {auth.user && isParticipant && sprint.computed_status === 'completed' && (
+                                        <div className="mt-6">
+                                            <AISprintSummary 
+                                                sprint={sprint} 
+                                                aiSummary={leaderboard.find(p => p.id === auth.user.id)?.pivot?.ai_summary}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Action Sidebar */}
@@ -388,18 +398,6 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                             </Link>
                                         )}
                                     </div>
-
-                                    {/* AI Summary for Completed Sprints */}
-                                    {auth.user && isParticipant && sprint.computed_status === 'completed' && (
-                                        <AISprintSummary 
-                                            sprint={sprint} 
-                                            userStats={{
-                                                updates_posted: leaderboard.find(p => p.id === auth.user.id)?.pivot?.updates_posted || 0,
-                                                score: leaderboard.find(p => p.id === auth.user.id)?.pivot?.score || 0,
-                                                rank: leaderboard.find(p => p.id === auth.user.id)?.pivot?.rank || null,
-                                            }}
-                                        />
-                                    )}
 
                                     {/* Quick Info */}
                                     <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 space-y-2">

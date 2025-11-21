@@ -155,8 +155,9 @@ class SprintController extends Controller
         BadgeService::updateRankings($sprint);
         BadgeService::calculateBadges($sprint);
 
-        // Get leaderboard with all data
+        // Get leaderboard with all data including ai_summary
         $leaderboard = $sprint->participants()
+            ->withPivot(['updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges', 'ai_summary'])
             ->orderByDesc('sprint_participants.score')
             ->get();
 
@@ -322,15 +323,41 @@ class SprintController extends Controller
             ->where('is_draft', false)
             ->get();
 
-        // Generate AI summary using OpenAI
+        // Generate AI summary
         $summary = $aiService->generateSprintSummary($sprint, $userParticipation, $updates, $style);
 
-        // Save summary to user's sprint participation
-        DB::table('sprint_participants')
+        // Log for debugging
+        \Log::info('AI Summary Generated', [
+            'sprint_id' => $sprint->id,
+            'user_id' => auth()->id(),
+            'style' => $style,
+            'summary_length' => strlen($summary)
+        ]);
+
+        // Check if participation exists
+        $participation = DB::table('sprint_participants')
             ->where('sprint_id', $sprint->id)
             ->where('user_id', auth()->id())
-            ->update(['ai_summary' => $summary]);
+            ->first();
 
-        return back()->with('success', 'Summary generated successfully!');
+        \Log::info('Participation found', ['participation' => $participation]);
+
+        // Save summary to user's sprint participation - force update with timestamp
+        $updated = DB::table('sprint_participants')
+            ->where('sprint_id', $sprint->id)
+            ->where('user_id', auth()->id())
+            ->update([
+                'ai_summary' => $summary,
+                'updated_at' => now()
+            ]);
+
+        \Log::info('Summary saved', [
+            'rows_updated' => $updated,
+            'sprint_id' => $sprint->id,
+            'user_id' => auth()->id(),
+            'summary_preview' => substr($summary, 0, 100)
+        ]);
+
+        return redirect()->back()->with('success', 'Summary generated successfully!');
     }
 }

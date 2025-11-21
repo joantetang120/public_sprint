@@ -9,6 +9,17 @@ import AISprintSummary from '@/Components/AISprintSummary';
 
 export default function Dashboard({ auth, updates = [], stats = {}, completedSprints = [] }) {
     const [selectedSprint, setSelectedSprint] = useState(null);
+    const [activeTab, setActiveTab] = useState('overview'); // overview, summaries
+    
+    console.log('Dashboard completedSprints:', completedSprints);
+    
+    // Filter sprints with summaries
+    const sprintsWithSummaries = completedSprints.filter(item => {
+        console.log('Checking sprint:', item.sprint.title, 'ai_summary:', item.ai_summary);
+        return item.ai_summary && item.ai_summary.trim().length > 0;
+    });
+    
+    console.log('Sprints with summaries:', sprintsWithSummaries.length);
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -137,12 +148,48 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                             </motion.div>
                         </div>
 
-                        {/* Completion History Section */}
-                        {completedSprints && completedSprints.length > 0 && (
+                        {/* Tab Navigation */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className="bg-white rounded-xl border border-gray-200 p-2"
+                        >
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => setActiveTab('overview')}
+                                    className={`flex-1 px-6 py-3 rounded-lg font-bold transition-all ${
+                                        activeTab === 'overview'
+                                            ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
+                                            : 'text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    📊 Overview
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('summaries')}
+                                    className={`flex-1 px-6 py-3 rounded-lg font-bold transition-all relative ${
+                                        activeTab === 'summaries'
+                                            ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
+                                            : 'text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    ✨ My Summaries
+                                    {sprintsWithSummaries.length > 0 && (
+                                        <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white text-xs font-black rounded-full flex items-center justify-center">
+                                            {sprintsWithSummaries.length}
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
+                        </motion.div>
+
+                        {/* Overview Tab */}
+                        {activeTab === 'overview' && completedSprints && completedSprints.length > 0 && (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5 }}
+                                transition={{ delay: 0.1 }}
                                 className="space-y-4"
                             >
                                 <div className="flex items-center justify-between">
@@ -268,7 +315,119 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                             </motion.div>
                         )}
 
+                        {/* My Summaries Tab */}
+                        {activeTab === 'summaries' && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="space-y-6"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-2xl font-bold text-gray-900">
+                                        ✨ My AI Summaries
+                                    </h2>
+                                    <span className="text-sm text-gray-600">
+                                        {sprintsWithSummaries.length} {sprintsWithSummaries.length === 1 ? 'summary' : 'summaries'}
+                                    </span>
+                                </div>
+
+                                {sprintsWithSummaries.length > 0 ? (
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {sprintsWithSummaries.map((item, index) => {
+                                            const { sprint, user_rank, user_score, user_badges } = item;
+                                            const cleanSummary = item.ai_summary?.replace(/\n\n\[IMAGES:.*?\]/, '') || '';
+                                            const badges = user_badges || [];
+                                            
+                                            return (
+                                                <motion.div
+                                                    key={sprint.id}
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: 0.1 * index }}
+                                                    className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200 hover:border-purple-400 hover:shadow-xl transition-all"
+                                                >
+                                                    {/* Header */}
+                                                    <div className="flex items-start justify-between mb-4">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center space-x-2 mb-2">
+                                                                <Sparkles className="w-5 h-5 text-purple-600" />
+                                                                <span className="text-xs font-semibold text-purple-700 uppercase tracking-wide">AI Generated</span>
+                                                            </div>
+                                                            <h3 className="text-lg font-bold text-gray-900 line-clamp-2 mb-2">
+                                                                {sprint.title}
+                                                            </h3>
+                                                            <div className="flex items-center space-x-3 text-sm text-gray-600">
+                                                                <span className="flex items-center space-x-1">
+                                                                    <Trophy className="w-4 h-4 text-yellow-600" />
+                                                                    <span>Rank #{user_rank}</span>
+                                                                </span>
+                                                                <span>•</span>
+                                                                <span>{user_score} points</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Summary Preview */}
+                                                    <div className="bg-white/80 rounded-xl p-4 mb-4">
+                                                        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
+                                                            {cleanSummary}
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Badges */}
+                                                    {badges.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2 mb-4">
+                                                            {badges.slice(0, 3).map((badge, i) => (
+                                                                <div key={i} className="flex items-center space-x-1 px-2 py-1 bg-white/80 rounded-full text-xs font-semibold">
+                                                                    {badge === 'top_contributor' && <><Star className="w-3 h-3 text-purple-600" /><span className="text-purple-700">Top</span></>}
+                                                                    {badge === 'daily_streak' && <><Flame className="w-3 h-3 text-orange-600" /><span className="text-orange-700">Streak</span></>}
+                                                                    {badge === 'most_helpful' && <><Heart className="w-3 h-3 text-blue-600" /><span className="text-blue-700">Helpful</span></>}
+                                                                    {badge === 'early_bird' && <><Zap className="w-3 h-3 text-yellow-600" /><span className="text-yellow-700">Early</span></>}
+                                                                    {badge === 'consistent_builder' && <><Target className="w-3 h-3 text-green-600" /><span className="text-green-700">Consistent</span></>}
+                                                                </div>
+                                                            ))}
+                                                            {badges.length > 3 && (
+                                                                <span className="px-2 py-1 bg-white/80 rounded-full text-xs font-semibold text-gray-600">
+                                                                    +{badges.length - 3} more
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Action Button */}
+                                                    <button
+                                                        onClick={() => setSelectedSprint(item)}
+                                                        className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                                                    >
+                                                        <Sparkles className="w-5 h-5" />
+                                                        <span>View & Share Summary</span>
+                                                    </button>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-12 text-center border-2 border-purple-200">
+                                        <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+                                        <h3 className="text-xl font-bold text-gray-900 mb-2">No Summaries Yet</h3>
+                                        <p className="text-gray-600 mb-6">
+                                            Complete a sprint and generate an AI summary to see it here!
+                                        </p>
+                                        <Link
+                                            href={route('sprints.index')}
+                                            className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg"
+                                        >
+                                            <Plus className="w-5 h-5" />
+                                            <span>Discover Sprints</span>
+                                        </Link>
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+
                         {/* Recent Activity Section */}
+                        {activeTab === 'overview' && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -377,8 +536,10 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                 </div>
                             )}
                         </motion.div>
+                        )}
 
                         {/* Quick Actions */}
+                        {activeTab === 'overview' && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -415,6 +576,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                 </div>
                             </Link>
                         </motion.div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -445,11 +607,19 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                         </div>
 
                         <div className="space-y-6">
-                            {/* AI Summary Section */}
-                            <AISprintSummary 
-                                sprint={selectedSprint.sprint}
-                                aiSummary={selectedSprint.ai_summary}
-                            />
+                            {/* AI Summary Section - Only show if summary exists, otherwise show generator */}
+                            {selectedSprint.ai_summary ? (
+                                <AISprintSummary 
+                                    sprint={selectedSprint.sprint}
+                                    aiSummary={selectedSprint.ai_summary}
+                                    viewOnly={true}
+                                />
+                            ) : (
+                                <AISprintSummary 
+                                    sprint={selectedSprint.sprint}
+                                    aiSummary={selectedSprint.ai_summary}
+                                />
+                            )}
 
                             {/* Progress Card Section */}
                             <SprintProgressCard
