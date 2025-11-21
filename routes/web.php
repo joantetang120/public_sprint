@@ -55,6 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/sprints/{sprint}/join', [SprintController::class, 'join'])->name('sprints.join');
     Route::post('/sprints/{sprint}/leave', [SprintController::class, 'leave'])->name('sprints.leave');
     Route::get('/sprints/{sprint}/leaderboard', [SprintController::class, 'leaderboard'])->name('sprints.leaderboard');
+    Route::post('/sprints/{sprint}/generate-summary', [SprintController::class, 'generateSummary'])->name('sprints.generate-summary');
     
     // Updates
     Route::get('/sprints/{sprint}/updates/create', [UpdateController::class, 'create'])->name('updates.create');
