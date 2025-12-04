@@ -23,6 +23,7 @@ if [ "$DB_CONNECTION" = "pgsql" ]; then
     if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ] || [ -z "$DB_DATABASE" ]; then
         echo "ERROR: Database environment variables not set!"
         echo "Please configure PostgreSQL database in Railway"
+        echo "See RAILWAY_MYSQL_SETUP.md for instructions"
         exit 1
     fi
     
@@ -40,6 +41,40 @@ if [ "$DB_CONNECTION" = "pgsql" ]; then
     fi
     
     echo "✓ PostgreSQL is up and ready"
+    
+elif [ "$DB_CONNECTION" = "mysql" ]; then
+    echo "Waiting for MySQL..."
+    echo "Host: $DB_HOST:$DB_PORT"
+    echo "Database: $DB_DATABASE"
+    
+    # Check if database variables are set
+    if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ] || [ -z "$DB_DATABASE" ]; then
+        echo "ERROR: Database environment variables not set!"
+        echo "Please configure MySQL database in Railway"
+        echo "See RAILWAY_MYSQL_SETUP.md for instructions"
+        exit 1
+    fi
+    
+    # Wait for MySQL to be ready
+    RETRIES=30
+    until mysqladmin ping -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" --silent > /dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
+        echo "MySQL is unavailable - sleeping (retries left: $RETRIES)"
+        sleep 2
+        RETRIES=$((RETRIES-1))
+    done
+    
+    if [ $RETRIES -eq 0 ]; then
+        echo "ERROR: Could not connect to MySQL after 60 seconds"
+        exit 1
+    fi
+    
+    echo "✓ MySQL is up and ready"
+    
+elif [ "$DB_CONNECTION" = "sqlite" ]; then
+    echo "WARNING: Using SQLite database"
+    echo "This is NOT recommended for production!"
+    echo "Please configure PostgreSQL or MySQL in Railway"
+    echo "See RAILWAY_MYSQL_SETUP.md for instructions"
 fi
 
 # Create storage directories if they don't exist
@@ -55,15 +90,6 @@ chown -R www-data:www-data /var/www/html/storage
 chown -R www-data:www-data /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage
 chmod -R 775 /var/www/html/bootstrap/cache
-
-# Create SQLite database if using SQLite
-if [ "$DB_CONNECTION" = "sqlite" ]; then
-    echo "Setting up SQLite database..."
-    mkdir -p /var/www/html/database
-    touch /var/www/html/database/database.sqlite
-    chown -R www-data:www-data /var/www/html/database
-    chmod -R 775 /var/www/html/database
-fi
 
 # Clear any existing caches first
 echo "Clearing existing caches..."
