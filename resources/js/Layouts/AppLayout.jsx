@@ -53,16 +53,11 @@ export default function AppLayout({ children }) {
                     <div className="flex justify-between items-center h-16">
                         {/* Logo */}
                         <Link href="/" className="flex items-center space-x-2 group">
-                            <motion.div
-                                whileHover={{ rotate: 360 }}
-                                transition={{ duration: 0.5 }}
-                                className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center"
-                            >
-                                <Zap className="w-6 h-6 text-white" />
-                            </motion.div>
-                            <span className="text-2xl font-bold gradient-text hidden sm:block">
-                                PublicSprint
-                            </span>
+                            <img 
+                                src="/logo/log2.png" 
+                                alt="PublicSprint Logo" 
+                                className="h-24 w-auto"
+                            />
                         </Link>
 
                         {/* Desktop Navigation */}

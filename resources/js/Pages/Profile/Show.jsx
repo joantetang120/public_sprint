@@ -2,7 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     MapPin, Globe, Calendar, Zap, Trophy, Heart, Users, Target,
-    UserPlus, UserMinus, Edit, Mail, X
+    UserPlus, UserMinus, Edit, Mail, X, LogOut, AlertTriangle
 } from 'lucide-react';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
@@ -12,6 +12,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
     const [following, setFollowing] = useState(isFollowing);
     const [showFollowersModal, setShowFollowersModal] = useState(false);
     const [showFollowingModal, setShowFollowingModal] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [localFollowing, setLocalFollowing] = useState({});
 
     const handleFollow = () => {
@@ -69,12 +70,42 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
         return followingUsers.some(u => u.id === userId);
     };
 
+    const handleLogout = () => {
+        router.post(route('logout'), {}, {
+            onSuccess: () => {
+                setShowLogoutModal(false);
+            }
+        });
+    };
+
     const getAvatarUrl = () => {
         if (profile.avatar) {
             return `/storage/${profile.avatar}`;
         }
         return `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&size=200&background=random`;
     };
+
+    // Check if profile is private and user is not the owner
+    if (!profile.profile_public && !isOwnProfile) {
+        return (
+            <PublicSprintLayout>
+                <Head title={`${profile.name}'s Profile`} />
+                <div className="max-w-2xl mx-auto py-12 px-4">
+                    <div className="bg-white dark:bg-dark-900 rounded-2xl border-2 border-gray-200 dark:border-dark-700 p-12 text-center">
+                        <div className="w-20 h-20 bg-gray-100 dark:bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Users className="w-10 h-10 text-gray-400" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                            This Profile is Private
+                        </h2>
+                        <p className="text-gray-600 dark:text-gray-400">
+                            {profile.name} has set their profile to private.
+                        </p>
+                    </div>
+                </div>
+            </PublicSprintLayout>
+        );
+    }
 
     return (
         <PublicSprintLayout>
@@ -121,13 +152,22 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
 
                             <div className="flex space-x-3 mt-4 md:mt-0">
                                 {isOwnProfile ? (
-                                    <Link
-                                        href={route('profile.edit')}
-                                        className="px-6 py-3 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors flex items-center space-x-2"
-                                    >
-                                        <Edit className="w-5 h-5" />
-                                        <span>Edit Profile</span>
-                                    </Link>
+                                    <>
+                                        <Link
+                                            href={route('profile.edit')}
+                                            className="px-6 py-3 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors flex items-center space-x-2"
+                                        >
+                                            <Edit className="w-5 h-5" />
+                                            <span>Edit Profile</span>
+                                        </Link>
+                                        <button
+                                            onClick={() => setShowLogoutModal(true)}
+                                            className="px-6 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center space-x-2"
+                                        >
+                                            <LogOut className="w-5 h-5" />
+                                            <span>Logout</span>
+                                        </button>
+                                    </>
                                 ) : (
                                     <>
                                         <button
@@ -160,6 +200,12 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
 
                         {/* Meta Info */}
                         <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                            {profile.show_email && profile.email && (
+                                <div className="flex items-center space-x-1">
+                                    <Mail className="w-4 h-4" />
+                                    <span>{profile.email}</span>
+                                </div>
+                            )}
                             {profile.location && (
                                 <div className="flex items-center space-x-1">
                                     <MapPin className="w-4 h-4" />
@@ -204,6 +250,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                 </motion.div>
 
                 {/* Stats Grid */}
+                {(profile.show_stats || isOwnProfile) && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -273,6 +320,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                         </p>
                     </motion.div>
                 </div>
+                )}
 
                 {/* Recent Sprints */}
                 <motion.div
@@ -486,6 +534,52 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                         <p className="text-gray-500 dark:text-gray-400">Not following anyone yet</p>
                                     </div>
                                 )}
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+
+                {/* Logout Confirmation Modal */}
+                {showLogoutModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-white dark:bg-dark-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border-2 border-gray-200 dark:border-dark-700"
+                        >
+                            {/* Header */}
+                            <div className="bg-gradient-to-r from-red-500 to-red-600 p-6">
+                                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-full">
+                                    <AlertTriangle className="w-8 h-8 text-white" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-white text-center">
+                                    Confirm Logout
+                                </h3>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-6">
+                                <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
+                                    Are you sure you want to logout? You'll need to sign in again to access your account.
+                                </p>
+
+                                {/* Actions */}
+                                <div className="flex space-x-3">
+                                    <button
+                                        onClick={() => setShowLogoutModal(false)}
+                                        className="flex-1 px-6 py-3 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
+                                    >
+                                        <LogOut className="w-5 h-5" />
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
                     </div>

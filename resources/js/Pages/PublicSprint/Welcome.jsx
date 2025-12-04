@@ -73,15 +73,11 @@ export default function Welcome({ canLogin, canRegister }) {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between items-center h-16">
                             <Link href="/" className="flex items-center space-x-3 group">
-                                <div className="relative">
-                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-sm">
-                                        <Zap className="w-5 h-5 text-white" />
-                                    </div>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-xl font-bold text-gray-900 leading-none">PublicSprint</span>
-                                    <span className="text-xs text-green-600 font-medium mt-0.5">Build in public</span>
-                                </div>
+                                <img 
+                                    src="/logo/log2.png" 
+                                    alt="PublicSprint Logo" 
+                                    className="h-20 w-auto"
+                                />
                             </Link>
                             
                             <div className="hidden md:flex items-center space-x-8">
@@ -595,27 +591,20 @@ export default function Welcome({ canLogin, canRegister }) {
                             {/* Brand */}
                             <div className="md:col-span-2">
                                 <div className="flex items-center space-x-3 mb-4">
-                                    <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
-                                        <Zap className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div>
-                                        <span className="text-xl font-bold text-white block leading-none">PublicSprint</span>
-                                        <span className="text-sm text-green-400">Build in public, together</span>
-                                    </div>
+                                    <img 
+                                        src="/logo/logogreen-removebg-preview.png" 
+                                        alt="PublicSprint Logo" 
+                                        className="h-28 w-auto"
+                                    />
                                 </div>
                                 <p className="text-gray-400 leading-relaxed max-w-sm text-sm">
                                     The community platform for builders who are tired of abandoned projects. Join time-boxed sprints and ship your ideas together.
                                 </p>
                                 <div className="flex items-center space-x-3 mt-6">
-                                    <a href="#" className="w-8 h-8 rounded-full bg-gray-800 hover:bg-green-500 flex items-center justify-center transition-colors">
+                                    <a href="https://x.com/jerrytetan67?s=21" className="w-8 h-8 rounded-full bg-gray-800 hover:bg-green-500 flex items-center justify-center transition-colors">
                                         <span className="text-sm text-white">𝕏</span>
                                     </a>
-                                    <a href="#" className="w-8 h-8 rounded-full bg-gray-800 hover:bg-green-500 flex items-center justify-center transition-colors">
-                                        <span className="text-sm text-white">in</span>
-                                    </a>
-                                    <a href="#" className="w-8 h-8 rounded-full bg-gray-800 hover:bg-green-500 flex items-center justify-center transition-colors">
-                                        <span className="text-sm text-white">gh</span>
-                                    </a>
+                                    
                                 </div>
                             </div>
 
@@ -644,7 +633,7 @@ export default function Welcome({ canLogin, canRegister }) {
 
                         <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                             <p className="text-gray-400 text-sm">
-                                © 2024 PublicSprint. Built with ❤️ by builders, for builders.
+                                © 2024 PublicSprint.
                             </p>
                             <div className="flex items-center space-x-6 text-sm">
                                 <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">Privacy</a>
