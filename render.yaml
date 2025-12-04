@@ -104,24 +104,15 @@ services:
       - key: CACHE_PREFIX
         value: publicsprint
       
-      # Redis - Use Render Redis
+      # Redis - Optional (not using for now, using database instead)
       - key: REDIS_CLIENT
         value: phpredis
       - key: REDIS_HOST
-        fromService:
-          name: publicsprint-redis
-          type: redis
-          property: host
+        value: 127.0.0.1
       - key: REDIS_PASSWORD
-        fromService:
-          name: publicsprint-redis
-          type: redis
-          property: password
+        value: null
       - key: REDIS_PORT
-        fromService:
-          name: publicsprint-redis
-          type: redis
-          property: port
+        value: 6379
       
       # Mail - Configure with your mail service
       - key: MAIL_MAILER
@@ -238,20 +229,11 @@ services:
       - key: QUEUE_CONNECTION
         value: database
       - key: REDIS_HOST
-        fromService:
-          name: publicsprint-redis
-          type: redis
-          property: host
+        value: 127.0.0.1
       - key: REDIS_PASSWORD
-        fromService:
-          name: publicsprint-redis
-          type: redis
-          property: password
+        value: null
       - key: REDIS_PORT
-        fromService:
-          name: publicsprint-redis
-          type: redis
-          property: port
+        value: 6379
       - key: CLOUDINARY_CLOUD_NAME
         value: dlxzjeqbz
       - key: CLOUDINARY_API_KEY
