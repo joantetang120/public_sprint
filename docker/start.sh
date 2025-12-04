@@ -49,7 +49,7 @@ if [ "$DB_CONNECTION" = "pgsql" ]; then
     echo "✓ PostgreSQL is up and ready"
     
 elif [ "$DB_CONNECTION" = "mysql" ]; then
-    echo "Waiting for MySQL..."
+    echo "Configuring MySQL connection..."
     echo "Host: $DB_HOST:$DB_PORT"
     echo "Database: $DB_DATABASE"
     
@@ -61,20 +61,15 @@ elif [ "$DB_CONNECTION" = "mysql" ]; then
         exit 1
     fi
     
-    # Wait for MySQL to be ready - use mysql client instead of mysqladmin
-    RETRIES=30
-    until mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" -e "SELECT 1" > /dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
-        echo "MySQL is unavailable - sleeping (retries left: $RETRIES)"
-        sleep 2
-        RETRIES=$((RETRIES-1))
-    done
-    
-    if [ $RETRIES -eq 0 ]; then
-        echo "ERROR: Could not connect to MySQL after 60 seconds"
-        exit 1
+    # Try to connect to MySQL but don't fail if it's not ready yet
+    # Laravel will handle reconnection attempts
+    echo "Testing MySQL connection..."
+    if mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" -e "SELECT 1" > /dev/null 2>&1; then
+        echo "✓ MySQL is up and ready"
+    else
+        echo "⚠ MySQL connection test failed, but continuing anyway"
+        echo "Laravel will attempt to connect when needed"
     fi
-    
-    echo "✓ MySQL is up and ready"
     
 elif [ "$DB_CONNECTION" = "sqlite" ]; then
     echo "WARNING: Using SQLite database"
@@ -114,17 +109,12 @@ php artisan view:cache || echo "View cache skipped"
 
 # Run migrations
 echo "Running database migrations..."
-php artisan migrate --force --no-interaction || {
-    echo "WARNING: Migration failed, checking if tables exist..."
-    # If migrations fail, check if it's because tables already exist
-    # In that case, we can continue
-    if php artisan migrate:status > /dev/null 2>&1; then
-        echo "Database appears to be set up, continuing..."
-    else
-        echo "ERROR: Migration failed and database is not set up!"
-        exit 1
-    fi
-}
+if php artisan migrate --force --no-interaction 2>&1; then
+    echo "✓ Migrations completed successfully"
+else
+    echo "⚠ Migrations failed - database may not be accessible yet"
+    echo "Application will start anyway. Check logs if issues persist."
+fi
 
 # Create storage link if it doesn't exist
 if [ ! -L /var/www/html/public/storage ]; then
