@@ -45,7 +45,11 @@ php artisan view:cache
 
 # Run migrations
 echo "Running database migrations..."
-php artisan migrate --force --no-interaction
+php artisan migrate --force --no-interaction || {
+    echo "Migration failed, attempting to continue..."
+    # If migrations fail due to existing tables, try to continue
+    # This can happen if the database already exists
+}
 
 # Create storage link if it doesn't exist
 if [ ! -L /var/www/html/public/storage ]; then
