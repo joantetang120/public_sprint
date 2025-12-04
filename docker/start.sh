@@ -8,9 +8,15 @@ echo "Starting PublicSprint application..."
 echo "========================================="
 echo ""
 
+# Debug: Check if env vars are available
+echo "DEBUG: Checking environment variables..."
+env | grep -E "^(APP_|DB_|PUSHER_)" | head -5 || echo "No environment variables found!"
+echo ""
+
 # Print environment info
-echo "Environment: $APP_ENV"
-echo "Database: $DB_CONNECTION"
+echo "Environment: ${APP_ENV:-NOT_SET}"
+echo "Database: ${DB_CONNECTION:-NOT_SET}"
+echo "APP_KEY: ${APP_KEY:0:20}..." 
 echo ""
 
 # Wait for database to be ready
