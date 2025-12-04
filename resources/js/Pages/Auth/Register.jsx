@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Zap, Mail, Lock, User, ArrowRight, Eye, EyeOff, CheckCircle2, Users, Rocket, Star } from 'lucide-react';
 import { useState } from 'react';
 
-export default function Register() {
+export default function Register({ stats }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -19,6 +19,13 @@ export default function Register() {
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
+    };
+
+    const formatNumber = (num) => {
+        if (num >= 1000) {
+            return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        }
+        return num.toString();
     };
 
     return (
@@ -42,13 +49,11 @@ export default function Register() {
 
                     {/* Logo */}
                     <Link href="/" className="relative flex items-center space-x-3 group">
-                        <div className="w-12 h-12 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-sm">
-                            <Zap className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <span className="text-2xl font-bold text-white block leading-none">PublicSprint</span>
-                            <span className="text-sm text-white/90">Build in public</span>
-                        </div>
+                        <img 
+                            src="/logo/logoWhite-removebg-preview.png" 
+                            alt="PublicSprint Logo" 
+                            className="h-16 w-auto"
+                        />
                     </Link>
 
                     {/* Content */}
@@ -70,8 +75,8 @@ export default function Register() {
                             {/* Community Stats */}
                             <div className="grid grid-cols-3 gap-4 mb-8">
                                 {[
-                                    { value: '2,847', label: 'Active Builders', icon: Users },
-                                    { value: '890+', label: 'Projects Shipped', icon: Rocket },
+                                    { value: formatNumber(stats?.activeBuilders || 0), label: 'Active Builders', icon: Users },
+                                    { value: formatNumber(stats?.projectsShipped || 0), label: 'Projects Shipped', icon: Rocket },
                                     { value: '4.9★', label: 'Community Rating', icon: Star },
                                 ].map((stat, i) => (
                                     <motion.div
@@ -124,13 +129,11 @@ export default function Register() {
                     <div className="w-full max-w-md">
                         {/* Mobile Logo */}
                         <Link href="/" className="lg:hidden flex items-center space-x-3 mb-8 justify-center">
-                            <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center shadow-sm">
-                                <Zap className="w-5 h-5 text-white" />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-xl font-bold text-gray-900 leading-none">PublicSprint</span>
-                                <span className="text-xs text-green-600 font-medium">Build in public</span>
-                            </div>
+                            <img 
+                                src="/logo/logoWhite-removebg-preview.png" 
+                                alt="PublicSprint Logo" 
+                                className="h-16 w-auto"
+                            />
                         </Link>
 
                         <motion.div
