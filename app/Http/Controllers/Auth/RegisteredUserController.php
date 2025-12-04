@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Sprint;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +21,14 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        $stats = [
+            'activeBuilders' => \DB::table('sprint_participants')->distinct('user_id')->count('user_id'),
+            'projectsShipped' => Sprint::count(),
+        ];
+
+        return Inertia::render('Auth/Register', [
+            'stats' => $stats,
+        ]);
     }
 
     /**

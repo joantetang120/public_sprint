@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
+use App\Models\Sprint;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,9 +20,15 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): Response
     {
+        $stats = [
+            'activeBuilders' => \DB::table('sprint_participants')->distinct('user_id')->count('user_id'),
+            'projectsShipped' => Sprint::count(),
+        ];
+
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
+            'stats' => $stats,
         ]);
     }
 
