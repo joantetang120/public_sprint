@@ -61,9 +61,9 @@ elif [ "$DB_CONNECTION" = "mysql" ]; then
         exit 1
     fi
     
-    # Wait for MySQL to be ready
+    # Wait for MySQL to be ready - use mysql client instead of mysqladmin
     RETRIES=30
-    until mysqladmin ping -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" --silent > /dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
+    until mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" -e "SELECT 1" > /dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
         echo "MySQL is unavailable - sleeping (retries left: $RETRIES)"
         sleep 2
         RETRIES=$((RETRIES-1))
