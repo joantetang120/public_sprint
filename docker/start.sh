@@ -132,6 +132,11 @@ echo "Application setup complete!"
 echo "Starting Nginx and PHP-FPM..."
 echo "========================================="
 echo ""
+echo "Nginx will listen on 0.0.0.0:8080"
+echo "Access logs: /var/log/nginx/access.log"
+echo "Error logs: /var/log/nginx/error.log"
+echo "PHP-FPM logs: /var/log/php-fpm.log"
+echo ""
 
 # Start supervisor (which starts nginx and php-fpm)
 exec /usr/bin/supervisord -c /etc/supervisord.conf
