@@ -3,7 +3,7 @@ import { Link, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Home, Compass, PlusCircle, Bell, User, Menu, X, 
-    Zap, TrendingUp, MessageSquare, UserPlus, Search
+    Zap, TrendingUp, MessageSquare, UserPlus, Search, Settings
 } from 'lucide-react';
 import UserAvatar from '@/Components/UserAvatar';
 
@@ -61,6 +61,7 @@ export default function PublicSprintLayout({ children }) {
         { name: 'Discover', href: route('discover'), icon: Compass },
         { name: 'Sprints', href: route('sprints.index'), icon: TrendingUp },
         { name: 'Profile', href: auth.user ? route('users.show', auth.user.id) : route('login'), icon: User },
+        ...(auth.user ? [{ name: 'Settings', href: route('settings.index'), icon: Settings }] : []),
     ];
 
     return (
@@ -75,13 +76,11 @@ export default function PublicSprintLayout({ children }) {
                     <div className="flex justify-between items-center h-16">
                         {/* Logo */}
                         <Link href="/" className="flex items-center space-x-3 group">
-                            <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center shadow-sm">
-                                <Zap className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-xl font-bold text-gray-900 leading-none">PublicSprint</span>
-                                <span className="text-xs text-green-600 font-medium">Build in public</span>
-                            </div>
+                            <img 
+                                src="/logo/log2.png" 
+                                alt="PublicSprint Logo" 
+                                className="h-20 w-auto"
+                            />
                         </Link>
 
                         {/* Desktop Navigation */}
@@ -223,13 +222,11 @@ export default function PublicSprintLayout({ children }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex flex-col md:flex-row justify-between items-center">
                         <div className="flex items-center space-x-3 mb-4 md:mb-0">
-                            <div className="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center">
-                                <Zap className="w-4 h-4 text-white" />
-                            </div>
-                            <div>
-                                <span className="text-lg font-bold text-gray-900">PublicSprint</span>
-                                <span className="text-xs text-green-600 block">Build in public, together</span>
-                            </div>
+                            <img 
+                                src="/logo/log2.png" 
+                                alt="PublicSprint Logo" 
+                                className="h-16 w-auto"
+                            />
                         </div>
                         <div className="flex items-center space-x-6 text-sm text-gray-600">
                             <Link href="/about" className="hover:text-green-600 transition-colors">About</Link>

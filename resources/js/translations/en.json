@@ -1,0 +1,211 @@
+{
+  "common": {
+    "home": "Home",
+    "discover": "Discover",
+    "sprints": "Sprints",
+    "profile": "Profile",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "logout": "Logout",
+    "login": "Sign in",
+    "register": "Get Started",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "nav": {
+    "createSprint": "Create Sprint",
+    "mySprints": "My Sprints",
+    "discoverSprints": "Discover Sprints"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "welcome": "Welcome back, {name}!",
+    "stats": {
+      "activeSprints": "Active Sprints",
+      "completedSprints": "Completed",
+      "currentStreak": "Day Streak",
+      "totalLikes": "Total Likes",
+      "updatesPosted": "Updates Posted"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "summaries": "My Summaries"
+    },
+    "completionHistory": "Completion History",
+    "recentActivity": "Recent Activity",
+    "noUpdates": "No updates yet",
+    "joinSprint": "Join a sprint and start sharing your progress"
+  },
+  "sprints": {
+    "title": "Sprints",
+    "create": "Create Sprint",
+    "join": "Join Sprint",
+    "leave": "Leave Sprint",
+    "completed": "Completed",
+    "active": "Active",
+    "upcoming": "Upcoming",
+    "duration": "{days} days",
+    "participants": "{count} participants",
+    "updates": "{count} updates",
+    "leaderboard": "Leaderboard",
+    "description": "Description",
+    "tags": "Tags",
+    "creator": "Creator",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "status": "Status"
+  },
+  "updates": {
+    "title": "Updates",
+    "create": "Create Update",
+    "edit": "Edit Update",
+    "delete": "Delete Update",
+    "noUpdates": "No updates yet",
+    "writeUpdate": "Write an update...",
+    "postUpdate": "Post Update",
+    "reactions": "Reactions",
+    "comments": "Comments",
+    "addComment": "Add a comment..."
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account preferences",
+    "tabs": {
+      "notifications": "Notifications",
+      "privacy": "Privacy",
+      "account": "Account",
+      "preferences": "Preferences"
+    },
+    "notifications": {
+      "title": "Email Notifications",
+      "master": "Email Notifications",
+      "masterDesc": "Receive email updates about your activity",
+      "sprintUpdates": "Sprint Updates",
+      "sprintUpdatesDesc": "New updates in sprints you're participating in",
+      "comments": "Comments",
+      "commentsDesc": "Someone comments on your update",
+      "reactions": "Reactions",
+      "reactionsDesc": "Someone reacts to your update",
+      "sprintCompletion": "Sprint Completion",
+      "sprintCompletionDesc": "When a sprint you're in completes",
+      "save": "Save Notification Settings",
+      "saving": "Saving..."
+    },
+    "privacy": {
+      "title": "Privacy Settings",
+      "publicProfile": "Public Profile",
+      "publicProfileDesc": "Allow others to view your profile",
+      "showEmail": "Show Email",
+      "showEmailDesc": "Display your email on your profile",
+      "showStats": "Show Stats",
+      "showStatsDesc": "Display your statistics publicly",
+      "save": "Save Privacy Settings",
+      "saving": "Saving..."
+    },
+    "account": {
+      "title": "Account Information",
+      "name": "Name",
+      "email": "Email",
+      "bio": "Bio",
+      "bioPlaceholder": "Tell us about yourself...",
+      "changePassword": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "save": "Save Account Settings",
+      "saving": "Saving...",
+      "dangerZone": "Danger Zone",
+      "dangerZoneDesc": "Once you delete your account, there is no going back. Please be certain.",
+      "deleteAccount": "Delete Account",
+      "deleteConfirm": "Are you absolutely sure? This action cannot be undone.",
+      "deleteModal": {
+        "title": "Delete Account",
+        "description": "This action cannot be undone. All your data, sprints, updates, and progress will be permanently deleted.",
+        "passwordLabel": "Enter your password to confirm",
+        "passwordPlaceholder": "Your password",
+        "cancel": "Cancel",
+        "confirm": "Delete Account",
+        "deleting": "Deleting..."
+      }
+    },
+    "preferences": {
+      "title": "Preferences",
+      "theme": "Theme",
+      "themeLight": "Light",
+      "themeLightDesc": "Bright and clean",
+      "themeDark": "Dark",
+      "themeDarkDesc": "Easy on eyes",
+      "themeAuto": "Auto",
+      "themeAutoDesc": "System default",
+      "language": "Language",
+      "languageEn": "English",
+      "languageEnDesc": "English (US)",
+      "languageFr": "Français",
+      "languageFrDesc": "French",
+      "save": "Save Preferences",
+      "saving": "Saving..."
+    }
+  },
+  "aiSummary": {
+    "title": "AI Sprint Summary",
+    "generate": "Generate Summary",
+    "regenerate": "Regenerate Summary",
+    "generating": "Generating...",
+    "viewFull": "View Full Summary & Share",
+    "selectStyle": "Select Summary Style",
+    "styles": {
+      "professional": "Professional",
+      "casual": "Casual",
+      "technical": "Technical"
+    },
+    "modal": {
+      "title": "Your Sprint Summary",
+      "copy": "Copy Summary",
+      "copied": "Copied!",
+      "download": "Download",
+      "shareOn": "Share on {platform}",
+      "copyLink": "Copy Link",
+      "images": "Images",
+      "resources": "Resources",
+      "proTip": "Pro tip: Share your summary on social media to inspire others!"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "edit": "Edit Profile",
+    "followers": "Followers",
+    "following": "Following",
+    "sprints": "Sprints",
+    "updates": "Updates",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "bio": "Bio"
+  },
+  "messages": {
+    "success": {
+      "saved": "Settings saved successfully!",
+      "updated": "Updated successfully!",
+      "created": "Created successfully!",
+      "deleted": "Deleted successfully!"
+    },
+    "error": {
+      "generic": "Something went wrong. Please try again.",
+      "notFound": "Not found",
+      "unauthorized": "Unauthorized",
+      "validation": "Please check your input"
+    }
+  }
+}

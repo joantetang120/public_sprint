@@ -1,0 +1,116 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
+
+class SettingsController extends Controller
+{
+    public function index()
+    {
+        return Inertia::render('Settings/Index', [
+            'user' => auth()->user(),
+        ]);
+    }
+
+    public function updateNotifications(Request $request)
+    {
+        $validated = $request->validate([
+            'email_notifications' => 'boolean',
+            'sprint_updates_notifications' => 'boolean',
+            'comment_notifications' => 'boolean',
+            'reaction_notifications' => 'boolean',
+            'sprint_completion_notifications' => 'boolean',
+        ]);
+
+        auth()->user()->update($validated);
+
+        return back()->with('success', 'Notification settings updated successfully!');
+    }
+
+    public function updatePrivacy(Request $request)
+    {
+        $validated = $request->validate([
+            'profile_public' => 'boolean',
+            'show_email' => 'boolean',
+            'show_stats' => 'boolean',
+        ]);
+
+        auth()->user()->update($validated);
+
+        return back()->with('success', 'Privacy settings updated successfully!');
+    }
+
+    public function updatePreferences(Request $request)
+    {
+        $validated = $request->validate([
+            'theme' => 'required|in:light,dark,auto',
+            'language' => 'required|in:en,fr',
+        ]);
+
+        auth()->user()->update($validated);
+
+        return back()->with('success', 'Preferences updated successfully!');
+    }
+
+    public function updateAccount(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . auth()->id(),
+            'bio' => 'nullable|string|max:500',
+            'current_password' => 'nullable|required_with:new_password',
+            'new_password' => ['nullable', 'confirmed', Password::min(8)],
+        ]);
+
+        $user = auth()->user();
+
+        // Update basic info
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        if (isset($validated['bio'])) {
+            $user->bio = $validated['bio'];
+        }
+
+        // Update password if provided
+        if ($request->filled('current_password')) {
+            if (!Hash::check($request->current_password, $user->password)) {
+                return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+            }
+            $user->password = Hash::make($validated['new_password']);
+        }
+
+        $user->save();
+
+        return back()->with('success', 'Account settings updated successfully!');
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $request->validate([
+            'password' => 'required',
+        ]);
+
+        $user = auth()->user();
+
+        if (!Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['password' => 'Password is incorrect.']);
+        }
+
+        // Delete user's data
+        $user->sprints()->detach();
+        $user->updates()->delete();
+        $user->comments()->delete();
+        $user->reactions()->delete();
+        
+        // Delete user
+        $user->delete();
+
+        auth()->logout();
+
+        return redirect('/')->with('success', 'Your account has been deleted.');
+    }
+}

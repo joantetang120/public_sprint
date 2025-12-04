@@ -1,0 +1,211 @@
+{
+  "common": {
+    "home": "Accueil",
+    "discover": "Découvrir",
+    "sprints": "Sprints",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "notifications": "Notifications",
+    "logout": "Déconnexion",
+    "login": "Se connecter",
+    "register": "Commencer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "update": "Mettre à jour",
+    "search": "Rechercher",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès"
+  },
+  "nav": {
+    "createSprint": "Créer un Sprint",
+    "mySprints": "Mes Sprints",
+    "discoverSprints": "Découvrir les Sprints"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "greeting": {
+      "morning": "Bonjour",
+      "afternoon": "Bon après-midi",
+      "evening": "Bonsoir"
+    },
+    "welcome": "Bon retour, {name}!",
+    "stats": {
+      "activeSprints": "Sprints Actifs",
+      "completedSprints": "Terminés",
+      "currentStreak": "Jours de Suite",
+      "totalLikes": "Total J'aime",
+      "updatesPosted": "Mises à Jour"
+    },
+    "tabs": {
+      "overview": "Aperçu",
+      "summaries": "Mes Résumés"
+    },
+    "completionHistory": "Historique des Complétions",
+    "recentActivity": "Activité Récente",
+    "noUpdates": "Aucune mise à jour",
+    "joinSprint": "Rejoignez un sprint et commencez à partager vos progrès"
+  },
+  "sprints": {
+    "title": "Sprints",
+    "create": "Créer un Sprint",
+    "join": "Rejoindre",
+    "leave": "Quitter",
+    "completed": "Terminé",
+    "active": "Actif",
+    "upcoming": "À venir",
+    "duration": "{days} jours",
+    "participants": "{count} participants",
+    "updates": "{count} mises à jour",
+    "leaderboard": "Classement",
+    "description": "Description",
+    "tags": "Tags",
+    "creator": "Créateur",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "status": "Statut"
+  },
+  "updates": {
+    "title": "Mises à jour",
+    "create": "Créer une mise à jour",
+    "edit": "Modifier la mise à jour",
+    "delete": "Supprimer la mise à jour",
+    "noUpdates": "Aucune mise à jour",
+    "writeUpdate": "Écrire une mise à jour...",
+    "postUpdate": "Publier",
+    "reactions": "Réactions",
+    "comments": "Commentaires",
+    "addComment": "Ajouter un commentaire..."
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Gérez vos préférences de compte",
+    "tabs": {
+      "notifications": "Notifications",
+      "privacy": "Confidentialité",
+      "account": "Compte",
+      "preferences": "Préférences"
+    },
+    "notifications": {
+      "title": "Notifications par Email",
+      "master": "Notifications par Email",
+      "masterDesc": "Recevoir des mises à jour par email sur votre activité",
+      "sprintUpdates": "Mises à jour Sprint",
+      "sprintUpdatesDesc": "Nouvelles mises à jour dans les sprints auxquels vous participez",
+      "comments": "Commentaires",
+      "commentsDesc": "Quelqu'un commente votre mise à jour",
+      "reactions": "Réactions",
+      "reactionsDesc": "Quelqu'un réagit à votre mise à jour",
+      "sprintCompletion": "Fin de Sprint",
+      "sprintCompletionDesc": "Quand un sprint auquel vous participez se termine",
+      "save": "Enregistrer les Notifications",
+      "saving": "Enregistrement..."
+    },
+    "privacy": {
+      "title": "Paramètres de Confidentialité",
+      "publicProfile": "Profil Public",
+      "publicProfileDesc": "Permettre aux autres de voir votre profil",
+      "showEmail": "Afficher l'Email",
+      "showEmailDesc": "Afficher votre email sur votre profil",
+      "showStats": "Afficher les Stats",
+      "showStatsDesc": "Afficher vos statistiques publiquement",
+      "save": "Enregistrer la Confidentialité",
+      "saving": "Enregistrement..."
+    },
+    "account": {
+      "title": "Informations du Compte",
+      "name": "Nom",
+      "email": "Email",
+      "bio": "Bio",
+      "bioPlaceholder": "Parlez-nous de vous...",
+      "changePassword": "Changer le Mot de Passe",
+      "currentPassword": "Mot de Passe Actuel",
+      "newPassword": "Nouveau Mot de Passe",
+      "confirmPassword": "Confirmer le Mot de Passe",
+      "save": "Enregistrer le Compte",
+      "saving": "Enregistrement...",
+      "dangerZone": "Zone Dangereuse",
+      "dangerZoneDesc": "Une fois votre compte supprimé, il n'y a pas de retour en arrière. Soyez certain.",
+      "deleteAccount": "Supprimer le Compte",
+      "deleteConfirm": "Êtes-vous absolument sûr? Cette action ne peut pas être annulée.",
+      "deleteModal": {
+        "title": "Supprimer le Compte",
+        "description": "Cette action ne peut pas être annulée. Toutes vos données, sprints, mises à jour et progrès seront définitivement supprimés.",
+        "passwordLabel": "Entrez votre mot de passe pour confirmer",
+        "passwordPlaceholder": "Votre mot de passe",
+        "cancel": "Annuler",
+        "confirm": "Supprimer le Compte",
+        "deleting": "Suppression..."
+      }
+    },
+    "preferences": {
+      "title": "Préférences",
+      "theme": "Thème",
+      "themeLight": "Clair",
+      "themeLightDesc": "Lumineux et propre",
+      "themeDark": "Sombre",
+      "themeDarkDesc": "Reposant pour les yeux",
+      "themeAuto": "Auto",
+      "themeAutoDesc": "Système par défaut",
+      "language": "Langue",
+      "languageEn": "English",
+      "languageEnDesc": "Anglais (US)",
+      "languageFr": "Français",
+      "languageFrDesc": "Français",
+      "save": "Enregistrer les Préférences",
+      "saving": "Enregistrement..."
+    }
+  },
+  "aiSummary": {
+    "title": "Résumé IA du Sprint",
+    "generate": "Générer le Résumé",
+    "regenerate": "Régénérer le Résumé",
+    "generating": "Génération...",
+    "viewFull": "Voir le Résumé Complet",
+    "selectStyle": "Sélectionner le Style",
+    "styles": {
+      "professional": "Professionnel",
+      "casual": "Décontracté",
+      "technical": "Technique"
+    },
+    "modal": {
+      "title": "Votre Résumé de Sprint",
+      "copy": "Copier le Résumé",
+      "copied": "Copié!",
+      "download": "Télécharger",
+      "shareOn": "Partager sur {platform}",
+      "copyLink": "Copier le Lien",
+      "images": "Images",
+      "resources": "Ressources",
+      "proTip": "Astuce: Partagez votre résumé sur les réseaux sociaux pour inspirer les autres!"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "edit": "Modifier le Profil",
+    "followers": "Abonnés",
+    "following": "Abonnements",
+    "sprints": "Sprints",
+    "updates": "Mises à jour",
+    "follow": "Suivre",
+    "unfollow": "Ne plus suivre",
+    "bio": "Bio"
+  },
+  "messages": {
+    "success": {
+      "saved": "Paramètres enregistrés avec succès!",
+      "updated": "Mis à jour avec succès!",
+      "created": "Créé avec succès!",
+      "deleted": "Supprimé avec succès!"
+    },
+    "error": {
+      "generic": "Quelque chose s'est mal passé. Veuillez réessayer.",
+      "notFound": "Non trouvé",
+      "unauthorized": "Non autorisé",
+      "validation": "Veuillez vérifier votre saisie"
+    }
+  }
+}

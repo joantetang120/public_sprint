@@ -164,4 +164,43 @@ class Sprint extends Model
         }
         return false;
     }
+
+    /**
+     * Get completion statistics for the sprint
+     */
+    public function getCompletionStats(): array
+    {
+        $participants = $this->participants()
+            ->withPivot(['updates_posted', 'reactions_received', 'comments_made', 'score', 'badges'])
+            ->get();
+
+        $totalUpdates = $this->updates()->count();
+        $totalParticipants = $participants->count();
+        $activeParticipants = $participants->filter(fn($p) => ($p->pivot->updates_posted ?? 0) > 0)->count();
+        
+        $topContributor = $participants->sortByDesc('pivot.score')->first();
+        $mostActive = $participants->sortByDesc('pivot.updates_posted')->first();
+        $mostEngaged = $participants->sortByDesc('pivot.reactions_received')->first();
+
+        return [
+            'total_updates' => $totalUpdates,
+            'total_participants' => $totalParticipants,
+            'active_participants' => $activeParticipants,
+            'completion_rate' => $totalParticipants > 0 ? round(($activeParticipants / $totalParticipants) * 100, 1) : 0,
+            'avg_updates_per_participant' => $activeParticipants > 0 ? round($totalUpdates / $activeParticipants, 1) : 0,
+            'top_contributor' => $topContributor,
+            'most_active' => $mostActive,
+            'most_engaged' => $mostEngaged,
+            'total_reactions' => $participants->sum('pivot.reactions_received'),
+            'total_comments' => $participants->sum('pivot.comments_made'),
+        ];
+    }
+
+    /**
+     * Check if sprint is completed
+     */
+    public function isCompleted(): bool
+    {
+        return $this->computed_status === 'completed';
+    }
 }
