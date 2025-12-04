@@ -18,6 +18,11 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok']);
+});
+
+
 Route::get('/discover', [SprintController::class, 'discover'])->name('discover');
 
 // Serve update images

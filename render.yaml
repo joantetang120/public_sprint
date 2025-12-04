@@ -1,0 +1,287 @@
+# Render Blueprint for PublicSprint
+# This file defines the infrastructure for deploying on Render.com
+
+services:
+  # Main Web Application
+  - type: web
+    name: publicsprint-app
+    env: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: starter
+    branch: main
+    healthCheckPath: /up
+    envVars:
+      # Application
+      - key: APP_NAME
+        value: PublicSprint
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        value: base64:vX2xPZWGs/qsUBi+N6tJO2+S9Lgx+ybCFulEcj9ESxM=
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: https://publicsprint.onrender.com
+      
+      # Localization
+      - key: APP_LOCALE
+        value: en
+      - key: APP_FALLBACK_LOCALE
+        value: en
+      - key: APP_FAKER_LOCALE
+        value: en_US
+      
+      # Maintenance
+      - key: APP_MAINTENANCE_DRIVER
+        value: file
+      
+      # Security
+      - key: BCRYPT_ROUNDS
+        value: 12
+      
+      # Logging
+      - key: LOG_CHANNEL
+        value: stack
+      - key: LOG_STACK
+        value: single
+      - key: LOG_DEPRECATIONS_CHANNEL
+        value: null
+      - key: LOG_LEVEL
+        value: error
+      
+      # Database - Use Render PostgreSQL
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: publicsprint-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: publicsprint-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: publicsprint-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: publicsprint-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: publicsprint-db
+          property: password
+      
+      # Session
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_LIFETIME
+        value: 120
+      - key: SESSION_ENCRYPT
+        value: false
+      - key: SESSION_PATH
+        value: /
+      - key: SESSION_DOMAIN
+        value: null
+      
+      # Broadcasting
+      - key: BROADCAST_CONNECTION
+        value: pusher
+      
+      # Filesystem
+      - key: FILESYSTEM_DISK
+        value: cloudinary
+      
+      # Queue
+      - key: QUEUE_CONNECTION
+        value: database
+      
+      # Cache
+      - key: CACHE_STORE
+        value: database
+      - key: CACHE_PREFIX
+        value: publicsprint
+      
+      # Redis - Use Render Redis
+      - key: REDIS_CLIENT
+        value: phpredis
+      - key: REDIS_HOST
+        fromService:
+          name: publicsprint-redis
+          type: redis
+          property: host
+      - key: REDIS_PASSWORD
+        fromService:
+          name: publicsprint-redis
+          type: redis
+          property: password
+      - key: REDIS_PORT
+        fromService:
+          name: publicsprint-redis
+          type: redis
+          property: port
+      
+      # Mail - Configure with your mail service
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_SCHEME
+        value: null
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: 587
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM_ADDRESS
+        value: hello@publicsprint.com
+      - key: MAIL_FROM_NAME
+        value: PublicSprint
+      
+      # AWS (Optional - if using S3)
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_DEFAULT_REGION
+        value: us-east-1
+      - key: AWS_BUCKET
+        sync: false
+      - key: AWS_USE_PATH_STYLE_ENDPOINT
+        value: false
+      
+      # Cloudinary (Required for image uploads)
+      - key: CLOUDINARY_CLOUD_NAME
+        value: dlxzjeqbz
+      - key: CLOUDINARY_API_KEY
+        value: 144532644859176
+      - key: CLOUDINARY_API_SECRET
+        value: 6bFPPMSWxjNH8S_bwx5x1UpO0_o
+      - key: CLOUDINARY_URL
+        value: cloudinary://144532644859176:6bFPPMSWxjNH8S_bwx5x1UpO0_o@dlxzjeqbz
+      
+      # Pusher (Required for real-time features)
+      - key: PUSHER_APP_ID
+        value: 2075747
+      - key: PUSHER_APP_KEY
+        value: 4027594ef6415333e661
+      - key: PUSHER_APP_SECRET
+        value: 46b37af0f9e65470c6ee
+      - key: PUSHER_APP_CLUSTER
+        value: mt1
+      
+      # Vite
+      - key: VITE_APP_NAME
+        value: PublicSprint
+      - key: VITE_PUSHER_APP_KEY
+        value: 4027594ef6415333e661
+      - key: VITE_PUSHER_APP_CLUSTER
+        value: mt1
+      
+      # AI Summary (Optional - for AI features)
+      - key: OPENAI_API_KEY
+        value: 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
+      - key: HUGGINGFACE_API_KEY
+        value: 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
+      - key: OPENROUTER_API_KEY
+        sync: false
+
+  # Background Queue Worker
+  - type: worker
+    name: publicsprint-queue
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: php artisan queue:work --tries=3 --timeout=90
+    region: oregon
+    plan: starter
+    branch: main
+    envVars:
+      # Inherit all environment variables from the web service
+      - key: APP_NAME
+        value: PublicSprint
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        fromService:
+          name: publicsprint-app
+          type: web
+          envVarKey: APP_KEY
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: https://publicsprint.onrender.com
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: publicsprint-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: publicsprint-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: publicsprint-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: publicsprint-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: publicsprint-db
+          property: password
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: REDIS_HOST
+        fromService:
+          name: publicsprint-redis
+          type: redis
+          property: host
+      - key: REDIS_PASSWORD
+        fromService:
+          name: publicsprint-redis
+          type: redis
+          property: password
+      - key: REDIS_PORT
+        fromService:
+          name: publicsprint-redis
+          type: redis
+          property: port
+      - key: CLOUDINARY_CLOUD_NAME
+        value: dlxzjeqbz
+      - key: CLOUDINARY_API_KEY
+        value: 144532644859176
+      - key: CLOUDINARY_API_SECRET
+        value: 6bFPPMSWxjNH8S_bwx5x1UpO0_o
+      - key: CLOUDINARY_URL
+        value: cloudinary://144532644859176:6bFPPMSWxjNH8S_bwx5x1UpO0_o@dlxzjeqbz
+      
+      # AI Summary (Optional - for AI features)
+      - key: OPENAI_API_KEY
+        value: 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
+      - key: HUGGINGFACE_API_KEY
+        value: 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
+      - key: OPENROUTER_API_KEY
+        sync: false
+
+databases:
+  # PostgreSQL Database
+  - name: publicsprint-db
+    databaseName: publicsprint
+    user: publicsprint
+    region: oregon
+    plan: starter
+
+# Redis for caching and sessions (optional but recommended)
+# Note: Redis is a paid add-on on Render
+# Uncomment if you want to use Redis
+# - type: redis
+#   name: publicsprint-redis
+#   region: oregon
+#   plan: starter
+#   maxmemoryPolicy: allkeys-lru
