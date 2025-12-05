@@ -172,4 +172,5 @@ echo ""
 # Start supervisor (which starts nginx and php-fpm)
 # Tail logs in background to see errors
 tail -f /var/log/nginx/error.log 2>/dev/null &
+tail -f /var/www/html/storage/logs/laravel.log 2>/dev/null &
 exec /usr/bin/supervisord -c /etc/supervisord.conf
