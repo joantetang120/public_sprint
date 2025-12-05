@@ -92,14 +92,24 @@ chown -R www-data:www-data /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage
 chmod -R 775 /var/www/html/bootstrap/cache
 
-# Clear any existing caches first
-echo "Clearing existing caches..."
-php artisan config:clear || echo "Config clear failed (may not exist yet)"
-php artisan route:clear || echo "Route clear failed (may not exist yet)"
-php artisan view:clear || echo "View clear failed (may not exist yet)"
+# CRITICAL: Clear ALL caches to ensure fresh config with environment variables
+echo "Clearing all caches (ensuring fresh config with env vars)..."
+php artisan config:clear || true
+php artisan route:clear || true
+php artisan view:clear || true
+php artisan cache:clear || true
 
-# Cache configuration
-echo "Caching configuration..."
+# Verify APP_KEY is set
+echo "Verifying APP_KEY..."
+if [ -z "$APP_KEY" ]; then
+    echo "ERROR: APP_KEY environment variable is not set!"
+    echo "Please set APP_KEY in Railway variables"
+    exit 1
+fi
+echo "✓ APP_KEY is set"
+
+# Cache configuration with environment variables
+echo "Caching configuration with environment variables..."
 php artisan config:cache || {
     echo "ERROR: Config cache failed!"
     exit 1
