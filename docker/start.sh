@@ -102,11 +102,14 @@ php artisan cache:clear || true
 # Verify APP_KEY is set
 echo "Verifying APP_KEY..."
 if [ -z "$APP_KEY" ]; then
-    echo "ERROR: APP_KEY environment variable is not set!"
-    echo "Please set APP_KEY in Railway variables"
-    exit 1
+    echo "⚠ WARNING: APP_KEY environment variable is not set!"
+    echo "This will cause encryption errors"
+    echo "Attempting to generate one..."
+    php artisan key:generate --force || echo "Failed to generate key"
+else
+    echo "✓ APP_KEY is set (${#APP_KEY} characters)"
+    echo "APP_KEY starts with: ${APP_KEY:0:15}..."
 fi
-echo "✓ APP_KEY is set"
 
 # Cache configuration with environment variables
 echo "Caching configuration with environment variables..."
