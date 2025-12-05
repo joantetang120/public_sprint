@@ -138,5 +138,25 @@ echo "Error logs: /var/log/nginx/error.log"
 echo "PHP-FPM logs: /var/log/php-fpm.log"
 echo ""
 
+# Test PHP configuration
+echo "Testing PHP configuration..."
+php -v
+php -m | head -20
+echo ""
+
+# Check if Vite build exists
+echo "Checking Vite build..."
+if [ -f "/var/www/html/public/build/manifest.json" ]; then
+    echo "✓ Vite manifest found"
+    ls -lh /var/www/html/public/build/ | head -10
+else
+    echo "⚠ WARNING: Vite manifest NOT found!"
+    echo "This will cause 500 errors"
+    ls -la /var/www/html/public/
+fi
+echo ""
+
 # Start supervisor (which starts nginx and php-fpm)
+# Tail logs in background to see errors
+tail -f /var/log/nginx/error.log 2>/dev/null &
 exec /usr/bin/supervisord -c /etc/supervisord.conf
