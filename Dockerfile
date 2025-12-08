@@ -79,7 +79,14 @@ RUN mkdir -p /var/log/supervisor \
     && mkdir -p /var/www/html/storage/logs \
     && mkdir -p /var/www/html/bootstrap/cache \
     && mkdir -p /tmp/php-uploads \
-    && chmod 777 /tmp/php-uploads
+    && chmod 777 /tmp/php-uploads \
+    && mkdir -p /tmp/nginx/body \
+    && mkdir -p /tmp/nginx/proxy \
+    && mkdir -p /tmp/nginx/fastcgi \
+    && mkdir -p /tmp/nginx/uwsgi \
+    && mkdir -p /tmp/nginx/scgi \
+    && chown -R www-data:www-data /tmp/nginx \
+    && chmod -R 755 /tmp/nginx
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
