@@ -77,7 +77,9 @@ RUN mkdir -p /var/log/supervisor \
     && mkdir -p /var/www/html/storage/framework/sessions \
     && mkdir -p /var/www/html/storage/framework/views \
     && mkdir -p /var/www/html/storage/logs \
-    && mkdir -p /var/www/html/bootstrap/cache
+    && mkdir -p /var/www/html/bootstrap/cache \
+    && mkdir -p /tmp/php-uploads \
+    && chmod 777 /tmp/php-uploads
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
@@ -104,6 +106,7 @@ RUN echo "pm = dynamic" >> /usr/local/etc/php-fpm.d/www.conf && \
 # Configure PHP
 RUN echo "upload_max_filesize = 50M" >> /usr/local/etc/php/conf.d/uploads.ini && \
     echo "post_max_size = 50M" >> /usr/local/etc/php/conf.d/uploads.ini && \
+    echo "upload_tmp_dir = /tmp/php-uploads" >> /usr/local/etc/php/conf.d/uploads.ini && \
     echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/memory.ini && \
     echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/execution.ini
 
