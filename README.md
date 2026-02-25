@@ -771,10 +771,10 @@ SOFTWARE.
 
 **Project Maintainer**: Your Name
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
-- Email: your.email@example.com
-- Portfolio: [yourwebsite.com](https://yourwebsite.com)
+- GitHub: [@joantetang120](https://github.com/joantetang120)
+- LinkedIn: [LinkIn](https://www.linkedin.com/in/jerry-joanito-365318324?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app)
+- Email: juenjerry120@gmail.com
+- Portfolio: [Tetang Jerry](https://portfolio-eight-delta-48.vercel.app/)
 
 ---
 
