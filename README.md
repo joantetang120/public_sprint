@@ -732,7 +732,7 @@ This project is licensed under the **MIT License**.
 ```
 MIT License
 
-Copyright (c) 2024 PublicSprint
+Copyright (c) 2026 PublicSprint
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -780,10 +780,10 @@ SOFTWARE.
 
 <div align="center">
 
-**Built with ❤️ for builders who build in public**
+
 
 ⭐ **Star this repo if you find it helpful!**
 
-[Report Bug](https://github.com/yourusername/PublicSprint/issues) • [Request Feature](https://github.com/yourusername/PublicSprint/issues)
+[Report Bug](https://github.com/joantetang120/public_sprint/issues) • [Request Feature](https://github.com/joantetang120/public_sprint/issues)
 
 </div>
