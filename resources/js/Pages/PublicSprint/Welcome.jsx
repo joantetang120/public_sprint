@@ -11,31 +11,31 @@ export default function Welcome({ canLogin, canRegister }) {
 
     const testimonials = [
         {
-            quote: "I've tried every productivity hack. Nothing worked until PublicSprint. The daily accountability is a game-changer.",
-            author: "Sarah Chen",
-            role: "Founder @ TechFlow",
-            image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
+            quote: "PublicSprint helped me ship the first version of my fintech app in Douala. The daily check-ins kept me accountable.",
+            author: "Jerry Tetang",
+            role: "Builder @ PublicSprint (Cameroon)",
+            image: "https://images.unsplash.com/photo-1544006659-f0b21884ce1d?w=150&h=150&fit=crop&crop=faces",
             rating: 5
         },
         {
-            quote: "Shipped my MVP in 7 days. The community feedback during the sprint helped me pivot early and save months of work.",
-            author: "Marcus Johnson",
-            role: "Indie Developer",
-            image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+            quote: "I used one 7-day sprint to launch my design studio portfolio and get my first international client.",
+            author: "Amina Nguemeni",
+            role: "Product Designer, Yaoundé",
+            image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop&crop=faces",
             rating: 5
         },
         {
-            quote: "Finally broke my perfectionism cycle. Seeing others ship 'imperfect' projects gave me permission to just launch.",
-            author: "Emma Rodriguez",
-            role: "Designer & Creator",
-            image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+            quote: "Seeing other African builders share raw progress every day gave me the courage to launch my edtech MVP.",
+            author: "Lionel Fokou",
+            role: "Indie Hacker, Buea",
+            image: "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=150&h=150&fit=crop&crop=faces",
             rating: 5
         },
         {
-            quote: "The 3-day sprint is perfect for quick experiments. Built and validated 3 ideas in one month.",
-            author: "Alex Kim",
-            role: "Serial Entrepreneur",
-            image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+            quote: "We ran a 3-day sprint with our dev community in Bamenda and shipped three projects in one weekend.",
+            author: "Brenda Mbarga",
+            role: "Community Lead, Cameroon",
+            image: "https://images.unsplash.com/photo-1559599101-7466fe601f5a?w=150&h=150&fit=crop&crop=faces",
             rating: 5
         }
     ];
@@ -217,12 +217,18 @@ export default function Welcome({ canLogin, canRegister }) {
                                     <div className="mb-4">
                                         <div className="text-sm text-gray-600 mb-3">Active builders</div>
                                         <div className="flex -space-x-2">
-                                            {[1,2,3,4,5].map((i) => (
+                                            {[
+                                                "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=150&h=150&fit=crop&crop=faces",
+                                                "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=faces",
+                                                "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop&crop=faces",
+                                                "https://images.unsplash.com/photo-1559599101-7466fe601f5a?w=150&h=150&fit=crop&crop=faces",
+                                                "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=150&h=150&fit=crop&crop=faces",
+                                            ].map((src, i) => (
                                                 <img 
                                                     key={i}
-                                                    src={`https://i.pravatar.cc/150?img=${i}`}
-                                                    className="w-8 h-8 rounded-full border-2 border-white"
-                                                    alt=""
+                                                    src={src}
+                                                    className="w-8 h-8 rounded-full border-2 border-white object-cover"
+                                                    alt="PublicSprint builder"
                                                 />
                                             ))}
                                             <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center">
@@ -235,25 +241,25 @@ export default function Welcome({ canLogin, canRegister }) {
                                     <div className="space-y-3">
                                         <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
                                             <img 
-                                                src="https://i.pravatar.cc/150?img=11"
-                                                className="w-8 h-8 rounded-full"
-                                                alt=""
+                                                src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=150&h=150&fit=crop&crop=faces"
+                                                className="w-8 h-8 rounded-full object-cover"
+                                                alt="Builder avatar"
                                             />
                                             <div className="flex-1">
-                                                <div className="text-sm font-medium text-gray-900">Sarah Chen</div>
-                                                <div className="text-sm text-gray-600">Just shipped the authentication system! 🎉</div>
+                                                <div className="text-sm font-medium text-gray-900">Clarisse N.</div>
+                                                <div className="text-sm text-gray-600">Just shipped the authentication system for my SaaS from Douala! 🎉</div>
                                             </div>
                                             <div className="text-xs text-gray-400">2h ago</div>
                                         </div>
                                         <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
                                             <img 
-                                                src="https://i.pravatar.cc/150?img=12"
-                                                className="w-8 h-8 rounded-full"
-                                                alt=""
+                                                src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=faces"
+                                                className="w-8 h-8 rounded-full object-cover"
+                                                alt="Builder avatar"
                                             />
                                             <div className="flex-1">
-                                                <div className="text-sm font-medium text-gray-900">Marcus J.</div>
-                                                <div className="text-sm text-gray-600">Working on the dashboard UI today 📊</div>
+                                                <div className="text-sm font-medium text-gray-900">Samuel Etoundi</div>
+                                                <div className="text-sm text-gray-600">Iterating on my sprint dashboard UI today 📊</div>
                                             </div>
                                             <div className="text-xs text-gray-400">1h ago</div>
                                         </div>
@@ -266,7 +272,7 @@ export default function Welcome({ canLogin, canRegister }) {
                                         <Trophy className="w-8 h-8 text-yellow-500" />
                                         <div>
                                             <div className="text-sm font-semibold text-gray-900">Weekly Leader</div>
-                                            <div className="text-xs text-gray-500">Sarah Chen</div>
+                                            <div className="text-xs text-gray-500">Jerry Tetang</div>
                                         </div>
                                     </div>
                                 </div>
