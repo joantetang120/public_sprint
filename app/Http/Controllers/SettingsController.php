@@ -18,7 +18,7 @@ class SettingsController extends Controller
 
     public function updateNotifications(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'email_notifications' => 'boolean',
             'sprint_updates_notifications' => 'boolean',
             'comment_notifications' => 'boolean',
@@ -26,20 +26,32 @@ class SettingsController extends Controller
             'sprint_completion_notifications' => 'boolean',
         ]);
 
-        auth()->user()->update($validated);
+        $user = auth()->user();
+        $user->forceFill([
+            'email_notifications' => $request->boolean('email_notifications'),
+            'sprint_updates_notifications' => $request->boolean('sprint_updates_notifications'),
+            'comment_notifications' => $request->boolean('comment_notifications'),
+            'reaction_notifications' => $request->boolean('reaction_notifications'),
+            'sprint_completion_notifications' => $request->boolean('sprint_completion_notifications'),
+        ])->save();
 
         return back()->with('success', 'Notification settings updated successfully!');
     }
 
     public function updatePrivacy(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'profile_public' => 'boolean',
             'show_email' => 'boolean',
             'show_stats' => 'boolean',
         ]);
 
-        auth()->user()->update($validated);
+        $user = auth()->user();
+        $user->forceFill([
+            'profile_public' => $request->boolean('profile_public'),
+            'show_email' => $request->boolean('show_email'),
+            'show_stats' => $request->boolean('show_stats'),
+        ])->save();
 
         return back()->with('success', 'Privacy settings updated successfully!');
     }
@@ -51,7 +63,7 @@ class SettingsController extends Controller
             'language' => 'required|in:en,fr',
         ]);
 
-        auth()->user()->update($validated);
+        auth()->user()->forceFill($validated)->save();
 
         return back()->with('success', 'Preferences updated successfully!');
     }

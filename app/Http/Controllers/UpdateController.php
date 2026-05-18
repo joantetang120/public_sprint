@@ -231,6 +231,8 @@ class UpdateController extends Controller
 
                 // Check and update streak
                 $this->updateUserStreak();
+
+                NotificationService::sprintUpdate($sprint, auth()->user(), $update);
             }
 
             return redirect()->route('sprints.show', $sprint->id)

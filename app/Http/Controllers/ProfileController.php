@@ -21,39 +21,92 @@ class ProfileController extends Controller
      */
     public function show(User $user): Response
     {
+        $isOwnProfile = auth()->check() && auth()->id() === $user->id;
+        $isFollowing = false;
+
+        if (auth()->check()) {
+            $isFollowing = auth()->user()->following()->where('following_id', $user->id)->exists();
+        }
+
+        if (!$isOwnProfile && !$user->profile_public) {
+            return Inertia::render('Profile/Show', [
+                'profile' => $this->visibleProfile($user, false, false, false),
+                'stats' => $this->hiddenStats(),
+                'isFollowing' => $isFollowing,
+                'isOwnProfile' => false,
+                'followers' => [],
+                'followingUsers' => [],
+            ]);
+        }
+
         $user->load(['sprints' => function($query) {
             $query->withPivot('score', 'updates_posted', 'reactions_received')
                   ->orderByPivot('created_at', 'desc')
                   ->take(10);
         }]);
 
-        $stats = [
-            'sprints_completed' => $user->sprints_completed ?? 0,
-            'current_streak' => $user->current_streak ?? 0,
-            'longest_streak' => $user->longest_streak ?? 0,
-            'total_likes' => $user->total_likes ?? 0,
-            'followers_count' => $user->followers_count ?? 0,
-            'following_count' => $user->following_count ?? 0,
-            'total_sprints' => $user->sprints()->count(),
-        ];
-
-        $isFollowing = false;
-        if (auth()->check()) {
-            $isFollowing = auth()->user()->following()->where('following_id', $user->id)->exists();
-        }
+        $stats = $isOwnProfile || $user->show_stats
+            ? [
+                'sprints_completed' => $user->sprints_completed ?? 0,
+                'current_streak' => $user->current_streak ?? 0,
+                'longest_streak' => $user->longest_streak ?? 0,
+                'total_likes' => $user->total_likes ?? 0,
+                'followers_count' => $user->followers_count ?? 0,
+                'following_count' => $user->following_count ?? 0,
+                'total_sprints' => $user->sprints()->count(),
+            ]
+            : $this->hiddenStats();
 
         // Get followers and following lists
-        $followers = $user->followers()->get();
-        $followingUsers = $user->following()->get();
+        $canShowConnections = $isOwnProfile || $user->show_stats;
+        $followers = $canShowConnections ? $user->followers()->get() : [];
+        $followingUsers = $canShowConnections ? $user->following()->get() : [];
 
         return Inertia::render('Profile/Show', [
-            'profile' => $user,
+            'profile' => $this->visibleProfile(
+                $user,
+                true,
+                $isOwnProfile || $user->show_email,
+                $isOwnProfile || $user->show_stats
+            ),
             'stats' => $stats,
             'isFollowing' => $isFollowing,
-            'isOwnProfile' => auth()->check() && auth()->id() === $user->id,
+            'isOwnProfile' => $isOwnProfile,
             'followers' => $followers,
             'followingUsers' => $followingUsers,
         ]);
+    }
+
+    private function visibleProfile(User $user, bool $canViewDetails, bool $canShowEmail, bool $canShowStats): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $canShowEmail ? $user->email : null,
+            'avatar' => $user->avatar,
+            'cover_image' => $user->cover_image,
+            'bio' => $canViewDetails ? $user->bio : null,
+            'location' => $canViewDetails ? $user->location : null,
+            'website' => $canViewDetails ? $user->website : null,
+            'created_at' => $canViewDetails ? $user->created_at : null,
+            'profile_public' => (bool) $user->profile_public,
+            'show_email' => $canShowEmail,
+            'show_stats' => $canShowStats,
+            'sprints' => $canViewDetails ? $user->sprints : [],
+        ];
+    }
+
+    private function hiddenStats(): array
+    {
+        return [
+            'followers_count' => 0,
+            'following_count' => 0,
+            'total_sprints' => 0,
+            'sprints_completed' => 0,
+            'current_streak' => 0,
+            'longest_streak' => 0,
+            'total_likes' => 0,
+        ];
     }
 
     /**

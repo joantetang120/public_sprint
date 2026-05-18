@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Notifications\CommentActivityEmail;
+use App\Notifications\ReactionActivityEmail;
+use App\Notifications\SprintCompletedEmail;
+use App\Notifications\SprintUpdateEmail;
 use App\Models\User;
-use Illuminate\Support\Facades\Notification;
 
 class NotificationService
 {
@@ -55,6 +58,10 @@ class NotificationService
                     'sprint_id' => $update->sprint_id,
                 ]
             );
+
+            if ($updateOwner->wantsCommentNotifications()) {
+                $updateOwner->notify(new CommentActivityEmail($commenter, $update, $comment));
+            }
         }
     }
 
@@ -71,6 +78,10 @@ class NotificationService
                     'sprint_id' => $update->sprint_id,
                 ]
             );
+
+            if ($updateOwner->wantsReactionNotifications()) {
+                $updateOwner->notify(new ReactionActivityEmail($reactor, $update));
+            }
         }
     }
 
@@ -95,6 +106,30 @@ class NotificationService
                 $participant,
                 ['sprint_id' => $sprint->id]
             );
+        }
+    }
+
+    public static function sprintUpdate($sprint, User $author, $update): void
+    {
+        $participants = $sprint->participants()
+            ->where('users.id', '!=', $author->id)
+            ->get();
+
+        foreach ($participants as $participant) {
+            if ($participant->wantsSprintUpdateNotifications()) {
+                $participant->notify(new SprintUpdateEmail($author, $sprint, $update));
+            }
+        }
+    }
+
+    public static function sprintCompleted($sprint): void
+    {
+        $participants = $sprint->participants()->get();
+
+        foreach ($participants as $participant) {
+            if ($participant->wantsSprintCompletionNotifications()) {
+                $participant->notify(new SprintCompletedEmail($sprint));
+            }
         }
     }
 }
