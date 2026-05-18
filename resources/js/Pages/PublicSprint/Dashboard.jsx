@@ -6,20 +6,13 @@ import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
 import SprintProgressCard from '@/Components/SprintProgressCard';
 import AISprintSummary from '@/Components/AISprintSummary';
+import { getSprintReportPreview, hasSprintReport } from '@/lib/sprintReport';
 
 export default function Dashboard({ auth, updates = [], stats = {}, completedSprints = [] }) {
     const [selectedSprint, setSelectedSprint] = useState(null);
     const [activeTab, setActiveTab] = useState('overview'); // overview, summaries
-    
-    console.log('Dashboard completedSprints:', completedSprints);
-    
-    // Filter sprints with summaries
-    const sprintsWithSummaries = completedSprints.filter(item => {
-        console.log('Checking sprint:', item.sprint.title, 'ai_summary:', item.ai_summary);
-        return item.ai_summary && item.ai_summary.trim().length > 0;
-    });
-    
-    console.log('Sprints with summaries:', sprintsWithSummaries.length);
+
+    const sprintsWithSummaries = completedSprints.filter(item => hasSprintReport(item.ai_summary));
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -324,11 +317,9 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                 className="space-y-6"
                             >
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-2xl font-bold text-gray-900">
-                                        ✨ My AI Summaries
-                                    </h2>
+                                    <h2 className="text-2xl font-bold text-gray-900">Sprint Reports</h2>
                                     <span className="text-sm text-gray-600">
-                                        {sprintsWithSummaries.length} {sprintsWithSummaries.length === 1 ? 'summary' : 'summaries'}
+                                        {sprintsWithSummaries.length} {sprintsWithSummaries.length === 1 ? 'report' : 'reports'}
                                     </span>
                                 </div>
 
@@ -336,7 +327,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         {sprintsWithSummaries.map((item, index) => {
                                             const { sprint, user_rank, user_score, user_badges } = item;
-                                            const cleanSummary = item.ai_summary?.replace(/\n\n\[IMAGES:.*?\]/, '') || '';
+                                            const cleanSummary = getSprintReportPreview(item.ai_summary, sprint);
                                             const badges = user_badges || [];
                                             
                                             return (
@@ -352,7 +343,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                         <div className="flex-1">
                                                             <div className="flex items-center space-x-2 mb-2">
                                                                 <Sparkles className="w-5 h-5 text-purple-600" />
-                                                                <span className="text-xs font-semibold text-purple-700 uppercase tracking-wide">AI Generated</span>
+                                                                <span className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Structured Report</span>
                                                             </div>
                                                             <h3 className="text-lg font-bold text-gray-900 line-clamp-2 mb-2">
                                                                 {sprint.title}
@@ -401,7 +392,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                         className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
                                                     >
                                                         <Sparkles className="w-5 h-5" />
-                                                        <span>View & Share Summary</span>
+                                                        <span>View Report</span>
                                                     </button>
                                                 </motion.div>
                                             );
@@ -410,9 +401,9 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                 ) : (
                                     <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-12 text-center border-2 border-purple-200">
                                         <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                                        <h3 className="text-xl font-bold text-gray-900 mb-2">No Summaries Yet</h3>
+                                        <h3 className="text-xl font-bold text-gray-900 mb-2">No Reports Yet</h3>
                                         <p className="text-gray-600 mb-6">
-                                            Complete a sprint and generate an AI summary to see it here!
+                                            Complete a sprint and generate a report to see it here.
                                         </p>
                                         <Link
                                             href={route('sprints.index')}
@@ -595,7 +586,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900">Share Your Achievement</h2>
+                            <h2 className="text-2xl font-bold text-gray-900">Sprint Report & Share Assets</h2>
                             <button
                                 onClick={() => setSelectedSprint(null)}
                                 className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
@@ -607,7 +598,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                         </div>
 
                         <div className="space-y-6">
-                            {/* AI Summary Section - Only show if summary exists, otherwise show generator */}
+                            {/* Sprint report section - Only show if report exists, otherwise show generator */}
                             {selectedSprint.ai_summary ? (
                                 <AISprintSummary 
                                     sprint={selectedSprint.sprint}

@@ -1,7 +1,26 @@
-import { useState, useEffect } from 'react';
-import { Sparkles, Copy, Check, Download, Briefcase, MessageCircle, Code, Wand2, Eye } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
+import {
+    ArrowRight,
+    BookText,
+    Briefcase,
+    Check,
+    Clipboard,
+    Eye,
+    FileDown,
+    GalleryVerticalEnd,
+    LayoutTemplate,
+    RefreshCcw,
+    Sparkles,
+} from 'lucide-react';
 import AISummaryModal from './AISummaryModal';
+import { getSprintReportPreview, parseSprintReport } from '@/lib/sprintReport';
+
+const styles = [
+    { value: 'professional', label: 'Professional', description: 'Clean for LinkedIn and public sharing', icon: Briefcase },
+    { value: 'casual', label: 'Builder Story', description: 'Warmer and more personal', icon: Sparkles },
+    { value: 'technical', label: 'Technical', description: 'Sharper, more execution-focused', icon: LayoutTemplate },
+];
 
 export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = false }) {
     const [summary, setSummary] = useState(aiSummary);
@@ -11,245 +30,285 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
     const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
-        console.log('AISprintSummary received:', { sprint: sprint.id, aiSummary });
         setSummary(aiSummary);
     }, [aiSummary]);
 
+    const report = useMemo(() => parseSprintReport(summary, sprint), [summary, sprint]);
+    const previewText = getSprintReportPreview(summary, sprint);
+
     const generateSummary = (style = selectedStyle) => {
         setIsGenerating(true);
-        
-        console.log('Generating summary with style:', style);
-        
-        // Call backend to generate AI summary
-        router.post(route('sprints.generate-summary', sprint.id), 
+
+        router.post(
+            route('sprints.generate-summary', sprint.id),
             { style },
             {
-                preserveScroll: false,
-                onSuccess: (page) => {
-                    console.log('Summary generation successful', page);
+                preserveScroll: true,
+                onSuccess: () => {
                     setIsGenerating(false);
-                    // Force full page reload to ensure fresh data
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
+                    router.reload({ preserveScroll: true });
                 },
-                onError: (errors) => {
-                    console.error('Summary generation failed', errors);
+                onError: () => {
                     setIsGenerating(false);
-                    alert('Failed to generate summary. Please try again.');
-                }
+                    alert('Failed to generate report. Please try again.');
+                },
             }
         );
     };
 
     const handleCopy = async () => {
-        if (!summary) return;
-        
+        if (!report?.formats?.linkedin) {
+            return;
+        }
+
         try {
-            await navigator.clipboard.writeText(summary);
+            await navigator.clipboard.writeText(report.formats.linkedin);
             setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error('Failed to copy:', err);
+            setTimeout(() => setCopied(false), 1800);
+        } catch (error) {
+            console.error('Failed to copy:', error);
         }
     };
 
     const handleDownload = () => {
-        if (!summary) return;
+        if (!report?.formats?.portfolio) {
+            return;
+        }
 
-        const blob = new Blob([summary], { type: 'text/plain' });
+        const blob = new Blob([report.formats.portfolio], { type: 'text/markdown;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${sprint.title.replace(/[^a-z0-9]/gi, '_')}_summary.txt`;
+        link.download = `${sprint.title.replace(/[^a-z0-9]/gi, '_')}_report.md`;
         link.click();
         URL.revokeObjectURL(url);
     };
 
     return (
         <>
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl border-2 border-purple-200 dark:border-purple-800 overflow-hidden shadow-lg">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 p-8">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                            <Wand2 className="w-8 h-8 text-white" />
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-black text-white mb-1">AI Summary</h3>
-                            <p className="text-sm text-purple-100 font-medium">
-                                {summary ? '✨ LinkedIn-ready content' : '🚀 Generate with AI'}
+            <div className="overflow-hidden rounded-[28px] border border-stone-200 bg-[linear-gradient(180deg,#fffdf8_0%,#f2ede1_100%)] shadow-lg">
+                <div className="border-b border-stone-200 bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.16),_transparent_32%),linear-gradient(135deg,#173327,#2f6b4f)] px-6 py-7 sm:px-8">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="max-w-2xl">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-50">
+                                Free structured report
+                            </div>
+                            <h3 className="mt-4 text-3xl font-black tracking-tight text-white">End-of-sprint report</h3>
+                            <p className="mt-3 text-sm leading-6 text-emerald-50/82 sm:text-base">
+                                Turn your sprint history into a polished recap with a cleaner overview, exportable copy, and a gallery of progress shots.
                             </p>
                         </div>
+
+                        {report && (
+                            <div className="flex flex-wrap items-center gap-3">
+                                <button
+                                    onClick={handleCopy}
+                                    className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                                        copied ? 'bg-emerald-400 text-emerald-950' : 'bg-white/12 text-white hover:bg-white/18'
+                                    }`}
+                                >
+                                    {copied ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+                                    Copy LinkedIn
+                                </button>
+                                <button
+                                    onClick={handleDownload}
+                                    className="inline-flex items-center gap-2 rounded-2xl bg-white/12 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/18"
+                                >
+                                    <FileDown className="h-4 w-4" />
+                                    Download
+                                </button>
+                            </div>
+                        )}
                     </div>
-                    {summary && (
-                        <div className="flex items-center space-x-2">
-                            <button
-                                onClick={handleCopy}
-                                className={`p-2.5 rounded-lg transition-all ${
-                                    copied 
-                                        ? 'bg-green-500 text-white scale-110' 
-                                        : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
-                                }`}
-                                title="Copy summary"
-                            >
-                                {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                            </button>
-                            <button
-                                onClick={handleDownload}
-                                className="p-2.5 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 rounded-lg transition-all"
-                                title="Download summary"
-                            >
-                                <Download className="w-5 h-5" />
-                            </button>
+                </div>
+
+                <div className="p-6 sm:p-8">
+                    {report ? (
+                        <div className="space-y-6">
+                            <div className="grid gap-6 xl:grid-cols-[1.15fr,0.85fr]">
+                                <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">Overview</div>
+                                            <h4 className="mt-2 text-2xl font-black text-stone-900">{report.headline}</h4>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowModal(true)}
+                                            className="inline-flex items-center gap-2 rounded-2xl bg-emerald-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                            Open full report
+                                        </button>
+                                    </div>
+                                    <p className="mt-5 text-sm leading-8 text-stone-700">{previewText}</p>
+                                </section>
+
+                                <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
+                                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">At a glance</div>
+                                    <div className="mt-5 grid grid-cols-2 gap-4">
+                                        {[
+                                            ['Updates', report.metrics.updates_posted],
+                                            ['Score', report.metrics.score],
+                                            ['Reactions', report.metrics.reactions_received],
+                                            ['Images', report.metrics.images_count],
+                                        ].map(([label, value]) => (
+                                            <div key={label} className="rounded-2xl bg-stone-100 p-4">
+                                                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">{label}</div>
+                                                <div className="mt-3 text-2xl font-black text-stone-900">{value}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            </div>
+
+                            <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
+                                <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
+                                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+                                        <BookText className="h-4 w-4" />
+                                        Export formats
+                                    </div>
+                                    <div className="mt-5 space-y-4">
+                                        <div className="rounded-2xl bg-stone-100 p-4">
+                                            <div className="font-bold text-stone-900">LinkedIn post</div>
+                                            <p className="mt-2 text-sm leading-7 text-stone-600">
+                                                Ready-to-copy public post with metrics, story, and hashtags.
+                                            </p>
+                                        </div>
+                                        <div className="rounded-2xl bg-stone-100 p-4">
+                                            <div className="font-bold text-stone-900">Portfolio copy</div>
+                                            <p className="mt-2 text-sm leading-7 text-stone-600">
+                                                Longer case-study style text for your site, Notion page, or project archive.
+                                            </p>
+                                        </div>
+                                        <div className="rounded-2xl bg-stone-100 p-4">
+                                            <div className="font-bold text-stone-900">Printable report</div>
+                                            <p className="mt-2 text-sm leading-7 text-stone-600">
+                                                Open the full report and save it as a PDF with the image gallery included.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
+                                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+                                        <GalleryVerticalEnd className="h-4 w-4" />
+                                        What gets included
+                                    </div>
+                                    <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                                        {[
+                                            'A clean written overview of your sprint',
+                                            'Top accomplishments pulled from your updates',
+                                            'A timeline of key milestones',
+                                            'Any images attached during the sprint',
+                                            'Any resource links shared along the way',
+                                            'Copy tailored for sharing outside the app',
+                                        ].map((item) => (
+                                            <div key={item} className="flex items-start gap-3 rounded-2xl bg-stone-100 p-4">
+                                                <div className="mt-1 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-emerald-700" />
+                                                <p className="text-sm leading-7 text-stone-700">{item}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            </div>
+
+                            {!viewOnly && (
+                                <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
+                                    <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                                        <div>
+                                            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">Regenerate tone</div>
+                                            <p className="mt-2 text-sm leading-7 text-stone-600">
+                                                Keep the same report structure and switch the writing tone.
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => generateSummary()}
+                                            disabled={isGenerating}
+                                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-950 px-5 py-4 text-sm font-semibold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            <RefreshCcw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                                            {isGenerating ? 'Regenerating report...' : 'Regenerate report'}
+                                        </button>
+                                    </div>
+
+                                    <div className="mt-5 grid gap-3 md:grid-cols-3">
+                                        {styles.map((style) => (
+                                            <button
+                                                key={style.value}
+                                                onClick={() => setSelectedStyle(style.value)}
+                                                className={`rounded-[22px] border p-5 text-left transition ${
+                                                    selectedStyle === style.value
+                                                        ? 'border-emerald-900 bg-emerald-950 text-white shadow-lg'
+                                                        : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                                                }`}
+                                            >
+                                                <style.icon className="h-6 w-6" />
+                                                <div className="mt-4 font-bold">{style.label}</div>
+                                                <p className={`mt-2 text-sm leading-6 ${selectedStyle === style.value ? 'text-emerald-50/78' : 'text-stone-500'}`}>
+                                                    {style.description}
+                                                </p>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
+                                <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+                                    <div className="max-w-2xl">
+                                        <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">Generate your first report</div>
+                                        <h4 className="mt-3 text-2xl font-black text-stone-900">Build a clean, shareable sprint recap for free</h4>
+                                        <p className="mt-4 text-sm leading-8 text-stone-600">
+                                            We will turn your updates, metrics, attached images, and resource links into a structured end-of-sprint report with LinkedIn copy, portfolio text, and a printable PDF layout.
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => generateSummary()}
+                                        disabled={isGenerating}
+                                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-950 px-6 py-4 text-sm font-semibold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        <Sparkles className={`h-5 w-5 ${isGenerating ? 'animate-spin' : ''}`} />
+                                        {isGenerating ? 'Generating report...' : 'Generate report'}
+                                        {!isGenerating && <ArrowRight className="h-4 w-4" />}
+                                    </button>
+                                </div>
+                            </section>
+
+                            <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
+                                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">Choose a tone</div>
+                                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                                    {styles.map((style) => (
+                                        <button
+                                            key={style.value}
+                                            onClick={() => setSelectedStyle(style.value)}
+                                            className={`rounded-[22px] border p-5 text-left transition ${
+                                                selectedStyle === style.value
+                                                    ? 'border-emerald-900 bg-emerald-950 text-white shadow-lg'
+                                                    : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                                            }`}
+                                        >
+                                            <style.icon className="h-6 w-6" />
+                                            <div className="mt-4 font-bold">{style.label}</div>
+                                            <p className={`mt-2 text-sm leading-6 ${selectedStyle === style.value ? 'text-emerald-50/78' : 'text-stone-500'}`}>
+                                                {style.description}
+                                            </p>
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="p-8">
-
-                {summary ? (
-                    <div className="space-y-6">
-                        {/* Summary Preview */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-2 border-purple-200 dark:border-purple-700 shadow-sm">
-                            <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap text-base line-clamp-4">
-                                {summary.replace(/\n\n\[IMAGES:.*?\]/, '')}
-                            </p>
-                            <button
-                                onClick={() => setShowModal(true)}
-                                className="mt-4 w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-                            >
-                                <Eye className="w-5 h-5" />
-                                <span>View Full Summary & Share</span>
-                            </button>
-                        </div>
-
-                        {/* Style Selector for Regeneration - Only show if not viewOnly */}
-                        {!viewOnly && (
-                            <>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">Try Different Style</label>
-                                    <div className="grid grid-cols-3 gap-3">
-                                    {[
-                                        { value: 'professional', icon: Briefcase, label: 'Professional' },
-                                        { value: 'casual', icon: MessageCircle, label: 'Casual' },
-                                        { value: 'technical', icon: Code, label: 'Technical' }
-                                        ].map((style) => (
-                                            <button
-                                                key={style.value}
-                                                onClick={() => setSelectedStyle(style.value)}
-                                                className={`flex flex-col items-center space-y-2 p-4 rounded-xl border-2 transition-all ${
-                                                    selectedStyle === style.value
-                                                        ? 'border-purple-500 bg-white dark:bg-purple-900/30 shadow-lg scale-105'
-                                                        : 'border-gray-200 dark:border-gray-700 bg-white/50 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md'
-                                                }`}
-                                            >
-                                                <style.icon className={`w-6 h-6 ${
-                                                    selectedStyle === style.value ? 'text-purple-600 dark:text-purple-400' : 'text-gray-500'
-                                                }`} />
-                                                <span className={`text-xs font-bold ${
-                                                    selectedStyle === style.value ? 'text-purple-700 dark:text-purple-300' : 'text-gray-600 dark:text-gray-400'
-                                                }`}>{style.label}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Regenerate Button */}
-                                <button
-                                    onClick={() => generateSummary()}
-                                    disabled={isGenerating}
-                                    className="w-full inline-flex items-center justify-center space-x-3 px-6 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 text-white rounded-xl font-black text-base hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95"
-                                >
-                                    <Sparkles className={`w-6 h-6 ${isGenerating ? 'animate-spin' : ''}`} />
-                                    <span>{isGenerating ? 'Regenerating...' : 'Regenerate Summary'}</span>
-                                </button>
-                            </>
-                        )}
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        {/* Info Card */}
-                        <div className="bg-white dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 border-2 border-purple-200 dark:border-purple-700 shadow-sm">
-                            <div className="flex items-start space-x-4">
-                                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                                    <Sparkles className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <h4 className="text-lg font-black text-gray-900 dark:text-white mb-2">AI-Powered Summary</h4>
-                                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                                        Generate a professional summary of your sprint journey. Perfect for LinkedIn, Twitter, or your portfolio. Our AI analyzes your actual updates to create personalized content.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {/* Style Selection */}
-                        <div>
-                            <label className="block text-base font-black text-gray-900 dark:text-gray-100 mb-4">Choose Your Style</label>
-                            <div className="grid grid-cols-3 gap-4">
-                                {[
-                                    { value: 'professional', icon: Briefcase, label: 'Professional', desc: 'LinkedIn-ready' },
-                                    { value: 'casual', icon: MessageCircle, label: 'Casual', desc: 'Friendly tone' },
-                                    { value: 'technical', icon: Code, label: 'Technical', desc: 'Data-focused' }
-                                ].map((style) => (
-                                    <button
-                                        key={style.value}
-                                        onClick={() => setSelectedStyle(style.value)}
-                                        className={`flex flex-col items-center space-y-3 p-5 rounded-2xl border-2 transition-all ${
-                                            selectedStyle === style.value
-                                                ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 dark:bg-purple-900/30 shadow-xl scale-105'
-                                                : 'border-gray-200 dark:border-gray-700 bg-white hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-lg'
-                                        }`}
-                                    >
-                                        <style.icon className={`w-8 h-8 ${
-                                            selectedStyle === style.value ? 'text-purple-600 dark:text-purple-400' : 'text-gray-500'
-                                        }`} />
-                                        <div className="text-center">
-                                            <div className={`text-sm font-black mb-1 ${
-                                                selectedStyle === style.value ? 'text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'
-                                            }`}>{style.label}</div>
-                                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{style.desc}</div>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Generate Button */}
-                        <button
-                            onClick={() => generateSummary()}
-                            disabled={isGenerating}
-                            className="w-full inline-flex items-center justify-center space-x-3 px-8 py-5 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 text-white rounded-2xl font-black text-lg hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl hover:shadow-purple-500/50 hover:scale-105 active:scale-95"
-                        >
-                            <Wand2 className={`w-7 h-7 ${isGenerating ? 'animate-spin' : ''}`} />
-                            <span>{isGenerating ? 'Generating with AI...' : 'Generate Summary'}</span>
-                        </button>
-                    </div>
-                )}
-
-                {/* Pro Tip */}
-                <div className="mt-6 p-5 bg-gradient-to-r from-purple-100 via-pink-100 to-purple-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-2xl border-2 border-purple-200 dark:border-purple-700">
-                    <p className="text-sm text-purple-900 dark:text-purple-200 flex items-start space-x-3">
-                        <Sparkles className="w-5 h-5 flex-shrink-0 mt-0.5 text-purple-600" />
-                        <span className="leading-relaxed">
-                            <strong className="font-black">Pro tip:</strong> {summary ? 'Copy and paste directly to LinkedIn, Twitter, or your portfolio! Share your achievement with the world.' : 'Our AI analyzes your actual sprint updates to create personalized, professional content tailored to your journey.'}
-                        </span>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {/* AI Summary Modal */}
-        <AISummaryModal 
-            isOpen={showModal}
-            onClose={() => setShowModal(false)}
-            summary={summary}
-            sprint={sprint}
-        />
+            <AISummaryModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                summary={summary}
+                sprint={sprint}
+            />
         </>
     );
 }
