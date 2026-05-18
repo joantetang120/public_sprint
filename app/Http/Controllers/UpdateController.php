@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Sprint;
 use App\Models\Update;
 use App\Models\Reaction;
+use App\Services\EngagementService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -218,10 +219,7 @@ class UpdateController extends Controller
 
                 // Update participant stats (only if user is participant)
                 if ($sprint->participants()->where('user_id', auth()->id())->exists()) {
-                    $sprint->participants()->updateExistingPivot(auth()->id(), [
-                        'updates_posted' => \DB::raw('updates_posted + 1'),
-                        'score' => \DB::raw('score + 2'), // 2 points per update
-                    ]);
+                    EngagementService::recordPublishedUpdate($update);
                 }
 
                 // Update user stats
@@ -278,21 +276,7 @@ class UpdateController extends Controller
             abort(403);
         }
 
-        // Delete image if exists
-        if ($update->image) {
-            Storage::disk('cloudinary')->delete($update->image);
-        }
-
-        // Update stats if not draft
-        if (!$update->is_draft) {
-            $update->sprint->decrement('updates_count');
-            $update->sprint->participants()->updateExistingPivot(auth()->id(), [
-                'updates_posted' => \DB::raw('updates_posted - 1'),
-                'score' => \DB::raw('score - 2'),
-            ]);
-        }
-
-        $update->delete();
+        EngagementService::deleteUpdate($update);
 
         return back()->with('success', 'Update deleted.');
     }
@@ -337,42 +321,18 @@ class UpdateController extends Controller
             ->first();
 
         if ($existingReaction) {
-            // Unlike - remove reaction
-            $existingReaction->delete();
-            
-            // Update stats
-            $update->sprint->participants()->updateExistingPivot($update->user_id, [
-                'reactions_received' => \DB::raw('GREATEST(reactions_received - 1, 0)'),
-                'score' => \DB::raw('GREATEST(score - 1, 0)'),
-            ]);
-            
-            // Update user total likes
-            if ($update->user->total_likes > 0) {
-                $update->user->decrement('total_likes');
-            }
-            
-            $message = 'Reaction removed';
+            EngagementService::deleteReaction($existingReaction);
         } else {
-            // Like - add reaction
             Reaction::create([
                 'update_id' => $update->id,
                 'user_id' => $user->id,
                 'type' => 'heart',
             ]);
-            
-            // Update stats
-            $update->sprint->participants()->updateExistingPivot($update->user_id, [
-                'reactions_received' => \DB::raw('reactions_received + 1'),
-                'score' => \DB::raw('score + 1'),
-            ]);
-            
-            // Update user total likes
-            $update->user->increment('total_likes');
-            
+
+            EngagementService::recordReactionCreated($update);
+
             // Create notification
             NotificationService::newReaction($update->user, auth()->user(), $update);
-            
-            $message = 'Reaction added';
         }
 
         // Return back to reload the page with updated data

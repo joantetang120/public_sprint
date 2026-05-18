@@ -112,6 +112,7 @@ class User extends Authenticatable
     public function sprints(): BelongsToMany
     {
         return $this->belongsToMany(Sprint::class, 'sprint_participants')
+            ->using(SprintParticipant::class)
             ->withPivot(['joined_at', 'updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges'])
             ->withTimestamps();
     }

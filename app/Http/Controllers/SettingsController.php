@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Services\EngagementService;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
+use Inertia\Inertia;
 
 class SettingsController extends Controller
 {
@@ -112,14 +115,10 @@ class SettingsController extends Controller
             return back()->withErrors(['password' => 'Password is incorrect.']);
         }
 
-        // Delete user's data
-        $user->sprints()->detach();
-        $user->updates()->delete();
-        $user->comments()->delete();
-        $user->reactions()->delete();
-        
-        // Delete user
-        $user->delete();
+        DB::transaction(function () use ($user) {
+            EngagementService::deleteUserData($user);
+            User::whereKey($user->id)->delete();
+        });
 
         auth()->logout();
 

@@ -67,6 +67,7 @@ class Sprint extends Model
     public function participants(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'sprint_participants')
+            ->using(SprintParticipant::class)
             ->withPivot(['joined_at', 'updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges'])
             ->withTimestamps();
     }
