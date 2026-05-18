@@ -1,242 +1,373 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Copy, Download, Check, Share2, Linkedin, Twitter, Facebook, Instagram, Link2, Image as ImageIcon } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+    BookOpen,
+    Briefcase,
+    Check,
+    Clipboard,
+    Download,
+    ExternalLink,
+    FileText,
+    GalleryVerticalEnd,
+    Image as ImageIcon,
+    Link2,
+    Printer,
+    Sparkles,
+    X,
+} from 'lucide-react';
+import { buildPrintableReportHtml, parseSprintReport } from '@/lib/sprintReport';
 
-export default function AISummaryModal({ isOpen, onClose, summary, sprint, images = [] }) {
-    const [copied, setCopied] = useState(false);
-    const [shareSuccess, setShareSuccess] = useState('');
+const tabs = [
+    { id: 'overview', label: 'Overview', icon: Sparkles },
+    { id: 'linkedin', label: 'LinkedIn', icon: Briefcase },
+    { id: 'portfolio', label: 'Portfolio', icon: FileText },
+    { id: 'gallery', label: 'Gallery', icon: GalleryVerticalEnd },
+];
 
-    // Parse summary to extract images metadata
-    const parseImages = () => {
-        const match = summary?.match(/\[IMAGES:(.*?)\]/);
-        if (match && match[1]) {
-            return match[1].split(',').filter(img => img);
+export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
+    const [activeTab, setActiveTab] = useState('overview');
+    const [copiedState, setCopiedState] = useState('');
+
+    const report = useMemo(() => parseSprintReport(summary, sprint), [summary, sprint]);
+
+    const copyText = async (value, key) => {
+        if (!value) {
+            return;
         }
-        return images;
-    };
 
-    // Clean summary text (remove images metadata)
-    const cleanSummary = summary?.replace(/\n\n\[IMAGES:.*?\]/, '') || '';
-
-    const summaryImages = parseImages();
-
-    const handleCopy = async () => {
         try {
-            await navigator.clipboard.writeText(cleanSummary);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error('Failed to copy:', err);
+            await navigator.clipboard.writeText(value);
+            setCopiedState(key);
+            setTimeout(() => setCopiedState(''), 1800);
+        } catch (error) {
+            console.error('Failed to copy:', error);
         }
     };
 
-    const handleDownload = () => {
-        const blob = new Blob([cleanSummary], { type: 'text/plain' });
+    const downloadMarkdown = () => {
+        if (!report) {
+            return;
+        }
+
+        const blob = new Blob([report.formats.portfolio], { type: 'text/markdown;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${sprint.title.replace(/[^a-z0-9]/gi, '_')}_summary.txt`;
+        link.download = `${sprint.title.replace(/[^a-z0-9]/gi, '_')}_report.md`;
         link.click();
         URL.revokeObjectURL(url);
     };
 
-    const shareToLinkedIn = () => {
-        const text = encodeURIComponent(cleanSummary);
-        const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.origin)}&summary=${text}`;
-        window.open(url, '_blank', 'width=600,height=600');
-        setShareSuccess('LinkedIn');
-        setTimeout(() => setShareSuccess(''), 2000);
-    };
-
-    const shareToTwitter = () => {
-        const text = encodeURIComponent(cleanSummary.substring(0, 280));
-        const url = `https://twitter.com/intent/tweet?text=${text}`;
-        window.open(url, '_blank', 'width=600,height=600');
-        setShareSuccess('Twitter');
-        setTimeout(() => setShareSuccess(''), 2000);
-    };
-
-    const shareToFacebook = () => {
-        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin)}&quote=${encodeURIComponent(cleanSummary)}`;
-        window.open(url, '_blank', 'width=600,height=600');
-        setShareSuccess('Facebook');
-        setTimeout(() => setShareSuccess(''), 2000);
-    };
-
-    const copyLink = async () => {
-        try {
-            await navigator.clipboard.writeText(window.location.href);
-            setShareSuccess('Link copied!');
-            setTimeout(() => setShareSuccess(''), 2000);
-        } catch (err) {
-            console.error('Failed to copy link:', err);
+    const printReport = () => {
+        if (!report) {
+            return;
         }
+
+        const printWindow = window.open('', '_blank', 'width=1100,height=900');
+        if (!printWindow) {
+            return;
+        }
+
+        printWindow.document.open();
+        printWindow.document.write(buildPrintableReportHtml(report, sprint));
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
     };
 
-    if (!isOpen) return null;
+    if (!isOpen || !report) {
+        return null;
+    }
 
     return (
         <AnimatePresence>
-            {isOpen && (
-                <div 
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-                    onClick={onClose}
+            <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+                onClick={onClose}
+            >
+                <motion.div
+                    initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 16, scale: 0.98 }}
+                    transition={{ duration: 0.18 }}
+                    className="max-h-[92vh] w-full max-w-6xl overflow-hidden rounded-[28px] bg-stone-50 shadow-2xl"
+                    onClick={(event) => event.stopPropagation()}
                 >
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        transition={{ duration: 0.2 }}
-                        className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 p-6 sm:p-8">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
-                                        🎉 Your Sprint Summary
-                                    </h2>
-                                    <p className="text-purple-100 text-sm sm:text-base font-medium">
-                                        {sprint.title}
-                                    </p>
+                    <div className="bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.18),_transparent_38%),linear-gradient(135deg,#173327,#2f6b4f)] px-6 py-7 sm:px-8">
+                        <div className="flex items-start justify-between gap-6">
+                            <div className="max-w-3xl">
+                                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-50">
+                                    Sprint Report
                                 </div>
-                                <button
-                                    onClick={onClose}
-                                    className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all"
-                                >
-                                    <X className="w-6 h-6" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-6 sm:p-8 overflow-y-auto max-h-[calc(90vh-200px)]">
-                            {/* Summary Text */}
-                            <div className="bg-gradient-to-br from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/20 rounded-2xl p-6 mb-6 border-2 border-purple-200 dark:border-purple-700">
-                                <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap text-base">
-                                    {cleanSummary}
+                                <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
+                                    {report.headline}
+                                </h2>
+                                <p className="mt-3 max-w-2xl text-sm leading-6 text-emerald-50/82 sm:text-base">
+                                    {report.subheadline}
                                 </p>
                             </div>
+                            <button
+                                onClick={onClose}
+                                className="rounded-2xl border border-white/15 bg-white/10 p-3 text-white transition hover:bg-white/20"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+                    </div>
 
-                            {/* Images Gallery */}
-                            {summaryImages.length > 0 && (
-                                <div className="mb-6">
-                                    <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
-                                        <ImageIcon className="w-5 h-5 text-purple-600" />
-                                        <span>Journey Snapshots</span>
-                                    </h3>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                        {summaryImages.map((img, index) => (
-                                            <div key={index} className="relative aspect-square rounded-xl overflow-hidden shadow-lg">
-                                                <img 
-                                                    src={img} 
-                                                    alt={`Sprint moment ${index + 1}`}
-                                                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                                                />
+                    <div className="grid max-h-[calc(92vh-148px)] grid-cols-1 overflow-hidden lg:grid-cols-[220px,1fr]">
+                        <aside className="border-b border-stone-200 bg-white lg:border-b-0 lg:border-r">
+                            <div className="flex gap-2 overflow-x-auto p-4 lg:block lg:space-y-2">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`flex min-w-[160px] items-center gap-3 rounded-2xl px-4 py-3 text-left transition lg:w-full ${
+                                            activeTab === tab.id
+                                                ? 'bg-emerald-950 text-white shadow-lg'
+                                                : 'text-stone-600 hover:bg-stone-100'
+                                        }`}
+                                    >
+                                        <tab.icon className="h-5 w-5" />
+                                        <span className="font-semibold">{tab.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="border-t border-stone-200 p-4">
+                                <div className="space-y-3 rounded-3xl bg-stone-100 p-4">
+                                    <button
+                                        onClick={() => copyText(report.formats.linkedin, 'linkedin')}
+                                        className="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <Clipboard className="h-4 w-4" />
+                                            Copy LinkedIn
+                                        </span>
+                                        {copiedState === 'linkedin' && <Check className="h-4 w-4 text-emerald-600" />}
+                                    </button>
+                                    <button
+                                        onClick={() => copyText(report.formats.portfolio, 'portfolio')}
+                                        className="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <BookOpen className="h-4 w-4" />
+                                            Copy Portfolio
+                                        </span>
+                                        {copiedState === 'portfolio' && <Check className="h-4 w-4 text-emerald-600" />}
+                                    </button>
+                                    <button
+                                        onClick={downloadMarkdown}
+                                        className="flex w-full items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
+                                    >
+                                        <Download className="h-4 w-4" />
+                                        Download Markdown
+                                    </button>
+                                    <button
+                                        onClick={printReport}
+                                        className="flex w-full items-center gap-2 rounded-2xl bg-emerald-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
+                                    >
+                                        <Printer className="h-4 w-4" />
+                                        Print / Save PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <div className="overflow-y-auto bg-stone-50 p-5 sm:p-8">
+                            {activeTab === 'overview' && (
+                                <div className="space-y-6">
+                                    <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
+                                        <p className="text-lg leading-8 text-stone-700">{report.summary}</p>
+                                    </section>
+
+                                    <section className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+                                        {[
+                                            ['Duration', `${report.metrics.duration_days} days`],
+                                            ['Updates', report.metrics.updates_posted],
+                                            ['Score', report.metrics.score],
+                                            ['Reactions', report.metrics.reactions_received],
+                                            ['Rank', report.metrics.rank_label],
+                                        ].map(([label, value]) => (
+                                            <div key={label} className="rounded-[24px] border border-stone-200 bg-white p-5 shadow-sm">
+                                                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">{label}</div>
+                                                <div className="mt-3 text-2xl font-black text-stone-900">{value}</div>
                                             </div>
                                         ))}
+                                    </section>
+
+                                    <div className="grid gap-6 xl:grid-cols-[1.05fr,0.95fr]">
+                                        <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
+                                            <h3 className="text-sm font-black uppercase tracking-[0.24em] text-emerald-800">Accomplishments</h3>
+                                            <div className="mt-5 space-y-4">
+                                                {report.accomplishments.map((item, index) => (
+                                                    <div key={item} className="flex gap-4">
+                                                        <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-800">
+                                                            {index + 1}
+                                                        </div>
+                                                        <p className="text-sm leading-7 text-stone-700">{item}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </section>
+
+                                        <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
+                                            <h3 className="text-sm font-black uppercase tracking-[0.24em] text-emerald-800">Lessons</h3>
+                                            <div className="mt-5 space-y-4">
+                                                {report.lessons.map((item) => (
+                                                    <div key={item} className="rounded-2xl bg-stone-100 p-4 text-sm leading-7 text-stone-700">
+                                                        {item}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </section>
                                     </div>
+
+                                    <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
+                                        <h3 className="text-sm font-black uppercase tracking-[0.24em] text-emerald-800">Timeline</h3>
+                                        <div className="mt-5 space-y-5">
+                                            {report.timeline.map((item) => (
+                                                <div key={`${item.title}-${item.day_number}`} className="rounded-3xl border border-stone-200 p-5">
+                                                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+                                                        {item.title} · Day {item.day_number}
+                                                    </div>
+                                                    <p className="mt-3 text-sm leading-7 text-stone-700">{item.summary}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
                                 </div>
                             )}
 
-                            {/* Action Buttons */}
-                            <div className="space-y-4">
-                                {/* Copy & Download */}
-                                <div className="flex items-center space-x-3">
-                                    <button
-                                        onClick={handleCopy}
-                                        className={`flex-1 flex items-center justify-center space-x-2 px-6 py-4 rounded-xl font-bold transition-all ${
-                                            copied
-                                                ? 'bg-green-500 text-white'
-                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                                        }`}
-                                    >
-                                        {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                                        <span>{copied ? 'Copied!' : 'Copy Text'}</span>
-                                    </button>
-                                    <button
-                                        onClick={handleDownload}
-                                        className="flex-1 flex items-center justify-center space-x-2 px-6 py-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
-                                    >
-                                        <Download className="w-5 h-5" />
-                                        <span>Download</span>
-                                    </button>
+                            {activeTab === 'linkedin' && (
+                                <div className="space-y-6">
+                                    <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <h3 className="text-xl font-black text-stone-900">LinkedIn-ready post</h3>
+                                                <p className="mt-2 text-sm text-stone-600">
+                                                    Copy this directly, then attach screenshots or add your own voice before posting.
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => copyText(report.formats.linkedin, 'linkedin-main')}
+                                                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
+                                            >
+                                                {copiedState === 'linkedin-main' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+                                                Copy
+                                            </button>
+                                        </div>
+                                        <div className="mt-6 rounded-3xl bg-stone-100 p-6">
+                                            <pre className="whitespace-pre-wrap font-sans text-sm leading-7 text-stone-700">{report.formats.linkedin}</pre>
+                                        </div>
+                                    </section>
                                 </div>
+                            )}
 
-                                {/* Social Share Buttons */}
-                                <div>
-                                    <h3 className="text-sm font-black text-gray-700 dark:text-gray-300 mb-3 flex items-center space-x-2">
-                                        <Share2 className="w-4 h-4" />
-                                        <span>Share Your Achievement</span>
-                                    </h3>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                        {/* LinkedIn */}
-                                        <button
-                                            onClick={shareToLinkedIn}
-                                            className="flex flex-col items-center space-y-2 p-4 bg-[#0077B5] hover:bg-[#006399] text-white rounded-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-lg"
-                                        >
-                                            <Linkedin className="w-6 h-6" />
-                                            <span className="text-xs">LinkedIn</span>
-                                        </button>
-
-                                        {/* Twitter */}
-                                        <button
-                                            onClick={shareToTwitter}
-                                            className="flex flex-col items-center space-y-2 p-4 bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white rounded-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-lg"
-                                        >
-                                            <Twitter className="w-6 h-6" />
-                                            <span className="text-xs">Twitter</span>
-                                        </button>
-
-                                        {/* Facebook */}
-                                        <button
-                                            onClick={shareToFacebook}
-                                            className="flex flex-col items-center space-y-2 p-4 bg-[#1877F2] hover:bg-[#1564d4] text-white rounded-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-lg"
-                                        >
-                                            <Facebook className="w-6 h-6" />
-                                            <span className="text-xs">Facebook</span>
-                                        </button>
-
-                                        {/* Copy Link */}
-                                        <button
-                                            onClick={copyLink}
-                                            className="flex flex-col items-center space-y-2 p-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-lg"
-                                        >
-                                            <Link2 className="w-6 h-6" />
-                                            <span className="text-xs">Copy Link</span>
-                                        </button>
-                                    </div>
+                            {activeTab === 'portfolio' && (
+                                <div className="space-y-6">
+                                    <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <h3 className="text-xl font-black text-stone-900">Portfolio / case study copy</h3>
+                                                <p className="mt-2 text-sm text-stone-600">
+                                                    A longer format for your site, Notion page, or resume project appendix.
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => copyText(report.formats.portfolio, 'portfolio-main')}
+                                                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
+                                            >
+                                                {copiedState === 'portfolio-main' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+                                                Copy
+                                            </button>
+                                        </div>
+                                        <div className="mt-6 rounded-3xl bg-stone-100 p-6">
+                                            <pre className="whitespace-pre-wrap font-sans text-sm leading-7 text-stone-700">{report.formats.portfolio}</pre>
+                                        </div>
+                                    </section>
                                 </div>
+                            )}
 
-                                {/* Success Message */}
-                                <AnimatePresence>
-                                    {shareSuccess && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            className="p-4 bg-green-100 dark:bg-green-900/30 border-2 border-green-500 rounded-xl text-center"
-                                        >
-                                            <p className="text-green-700 dark:text-green-300 font-bold flex items-center justify-center space-x-2">
-                                                <Check className="w-5 h-5" />
-                                                <span>Shared to {shareSuccess}!</span>
-                                            </p>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
+                            {activeTab === 'gallery' && (
+                                <div className="space-y-6">
+                                    <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <h3 className="text-xl font-black text-stone-900">Report assets</h3>
+                                                <p className="mt-2 text-sm text-stone-600">
+                                                    Use these images as proof points in LinkedIn carousels, a PDF export, or your portfolio entry.
+                                                </p>
+                                            </div>
+                                            {report.resources?.length > 0 && (
+                                                <div className="rounded-2xl bg-stone-100 px-4 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+                                                    {report.resources.length} linked resource{report.resources.length === 1 ? '' : 's'}
+                                                </div>
+                                            )}
+                                        </div>
 
-                            {/* Pro Tip */}
-                            <div className="mt-6 p-5 bg-gradient-to-r from-purple-100 via-pink-100 to-purple-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-2xl border-2 border-purple-200 dark:border-purple-700">
-                                <p className="text-sm text-purple-900 dark:text-purple-200 text-center">
-                                    <strong className="font-black">💡 Pro tip:</strong> Share your achievement on LinkedIn to showcase your consistency and build-in-public journey!
-                                </p>
-                            </div>
+                                        {report.gallery?.length > 0 ? (
+                                            <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                                                {report.gallery.map((item) => (
+                                                    <figure key={`${item.url}-${item.position}`} className="overflow-hidden rounded-[24px] border border-stone-200 bg-stone-50">
+                                                        <div className="aspect-[4/3] overflow-hidden bg-stone-200">
+                                                            <img
+                                                                src={item.url}
+                                                                alt={item.caption || 'Sprint image'}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        </div>
+                                                        <figcaption className="space-y-2 p-4">
+                                                            <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+                                                                <span>Day {item.day_number ?? '-'}</span>
+                                                                <a href={item.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-emerald-800">
+                                                                    Open
+                                                                    <ExternalLink className="h-3 w-3" />
+                                                                </a>
+                                                            </div>
+                                                            <p className="text-sm leading-6 text-stone-700">{item.caption}</p>
+                                                        </figcaption>
+                                                    </figure>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="mt-6 rounded-3xl border border-dashed border-stone-300 bg-stone-100 p-10 text-center">
+                                                <ImageIcon className="mx-auto h-10 w-10 text-stone-400" />
+                                                <p className="mt-4 text-sm text-stone-600">
+                                                    No images were attached to this sprint, but the written report is still ready to export.
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {report.resources?.length > 0 && (
+                                            <div className="mt-6 rounded-3xl bg-stone-100 p-5">
+                                                <div className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-[0.24em] text-stone-600">
+                                                    <Link2 className="h-4 w-4" />
+                                                    Resources
+                                                </div>
+                                                <div className="space-y-3">
+                                                    {report.resources.map((resource) => (
+                                                        <a
+                                                            key={resource}
+                                                            href={resource}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm text-stone-700 transition hover:bg-stone-50"
+                                                        >
+                                                            <span className="truncate pr-3">{resource}</span>
+                                                            <ExternalLink className="h-4 w-4 flex-shrink-0 text-stone-400" />
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </section>
+                                </div>
+                            )}
                         </div>
-                    </motion.div>
-                </div>
-            )}
+                    </div>
+                </motion.div>
+            </div>
         </AnimatePresence>
     );
 }

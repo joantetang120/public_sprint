@@ -330,7 +330,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                         </div>
                                     )}
 
-                                    {/* AI Summary for Completed Sprints - Full Width */}
+                                    {/* Sprint report for completed sprints */}
                                     {auth.user && isParticipant && sprint.computed_status === 'completed' && (
                                         <div className="mt-6">
                                             <AISprintSummary 

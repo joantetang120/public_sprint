@@ -323,11 +323,11 @@ class SprintController extends Controller
             ->where('is_draft', false)
             ->get();
 
-        // Generate AI summary
+        // Generate structured sprint report
         $summary = $aiService->generateSprintSummary($sprint, $userParticipation, $updates, $style);
 
         // Log for debugging
-        \Log::info('AI Summary Generated', [
+        \Log::info('Sprint report generated', [
             'sprint_id' => $sprint->id,
             'user_id' => auth()->id(),
             'style' => $style,
@@ -358,6 +358,6 @@ class SprintController extends Controller
             'summary_preview' => substr($summary, 0, 100)
         ]);
 
-        return redirect()->back()->with('success', 'Summary generated successfully!');
+        return redirect()->back()->with('success', 'Sprint report generated successfully!');
     }
 }
