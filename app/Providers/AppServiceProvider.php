@@ -23,5 +23,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
         Schema::defaultStringLength(191);
+        
+        // Force HTTPS in production (for Railway proxy)
+        if (config('app.env') === 'production') {
+            \URL::forceScheme('https');
+        }
     }
 }

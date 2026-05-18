@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\NotificationService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -66,6 +67,7 @@ class Sprint extends Model
     public function participants(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'sprint_participants')
+            ->using(SprintParticipant::class)
             ->withPivot(['joined_at', 'updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges'])
             ->withTimestamps();
     }
@@ -160,7 +162,14 @@ class Sprint extends Model
     {
         $newStatus = $this->calculateStatus();
         if ($this->status !== $newStatus) {
-            return $this->update(['status' => $newStatus]);
+            $wasCompleted = $this->status === 'completed';
+            $updated = $this->update(['status' => $newStatus]);
+
+            if ($updated && !$wasCompleted && $newStatus === 'completed') {
+                NotificationService::sprintCompleted($this);
+            }
+
+            return $updated;
         }
         return false;
     }

@@ -21,39 +21,92 @@ class ProfileController extends Controller
      */
     public function show(User $user): Response
     {
+        $isOwnProfile = auth()->check() && auth()->id() === $user->id;
+        $isFollowing = false;
+
+        if (auth()->check()) {
+            $isFollowing = auth()->user()->following()->where('following_id', $user->id)->exists();
+        }
+
+        if (!$isOwnProfile && !$user->profile_public) {
+            return Inertia::render('Profile/Show', [
+                'profile' => $this->visibleProfile($user, false, false, false),
+                'stats' => $this->hiddenStats(),
+                'isFollowing' => $isFollowing,
+                'isOwnProfile' => false,
+                'followers' => [],
+                'followingUsers' => [],
+            ]);
+        }
+
         $user->load(['sprints' => function($query) {
             $query->withPivot('score', 'updates_posted', 'reactions_received')
                   ->orderByPivot('created_at', 'desc')
                   ->take(10);
         }]);
 
-        $stats = [
-            'sprints_completed' => $user->sprints_completed ?? 0,
-            'current_streak' => $user->current_streak ?? 0,
-            'longest_streak' => $user->longest_streak ?? 0,
-            'total_likes' => $user->total_likes ?? 0,
-            'followers_count' => $user->followers_count ?? 0,
-            'following_count' => $user->following_count ?? 0,
-            'total_sprints' => $user->sprints()->count(),
-        ];
-
-        $isFollowing = false;
-        if (auth()->check()) {
-            $isFollowing = auth()->user()->following()->where('following_id', $user->id)->exists();
-        }
+        $stats = $isOwnProfile || $user->show_stats
+            ? [
+                'sprints_completed' => $user->sprints_completed ?? 0,
+                'current_streak' => $user->current_streak ?? 0,
+                'longest_streak' => $user->longest_streak ?? 0,
+                'total_likes' => $user->total_likes ?? 0,
+                'followers_count' => $user->followers_count ?? 0,
+                'following_count' => $user->following_count ?? 0,
+                'total_sprints' => $user->sprints()->count(),
+            ]
+            : $this->hiddenStats();
 
         // Get followers and following lists
-        $followers = $user->followers()->get();
-        $followingUsers = $user->following()->get();
+        $canShowConnections = $isOwnProfile || $user->show_stats;
+        $followers = $canShowConnections ? $user->followers()->get() : [];
+        $followingUsers = $canShowConnections ? $user->following()->get() : [];
 
         return Inertia::render('Profile/Show', [
-            'profile' => $user,
+            'profile' => $this->visibleProfile(
+                $user,
+                true,
+                $isOwnProfile || $user->show_email,
+                $isOwnProfile || $user->show_stats
+            ),
             'stats' => $stats,
             'isFollowing' => $isFollowing,
-            'isOwnProfile' => auth()->check() && auth()->id() === $user->id,
+            'isOwnProfile' => $isOwnProfile,
             'followers' => $followers,
             'followingUsers' => $followingUsers,
         ]);
+    }
+
+    private function visibleProfile(User $user, bool $canViewDetails, bool $canShowEmail, bool $canShowStats): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $canShowEmail ? $user->email : null,
+            'avatar' => $user->avatar,
+            'cover_image' => $user->cover_image,
+            'bio' => $canViewDetails ? $user->bio : null,
+            'location' => $canViewDetails ? $user->location : null,
+            'website' => $canViewDetails ? $user->website : null,
+            'created_at' => $canViewDetails ? $user->created_at : null,
+            'profile_public' => (bool) $user->profile_public,
+            'show_email' => $canShowEmail,
+            'show_stats' => $canShowStats,
+            'sprints' => $canViewDetails ? $user->sprints : [],
+        ];
+    }
+
+    private function hiddenStats(): array
+    {
+        return [
+            'followers_count' => 0,
+            'following_count' => 0,
+            'total_sprints' => 0,
+            'sprints_completed' => 0,
+            'current_streak' => 0,
+            'longest_streak' => 0,
+            'total_likes' => 0,
+        ];
     }
 
     /**
@@ -71,42 +124,65 @@ class ProfileController extends Controller
      * Update the user's full profile with images.
      */
     public function updateFull(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $request->user()->id,
-            'bio' => 'nullable|string|max:500',
-            'location' => 'nullable|string|max:255',
-            'website' => 'nullable|url|max:255',
-            'avatar' => 'nullable|image|max:2048',
-            'cover_image' => 'nullable|image|max:5120', // 5MB for cover
-        ]);
+{
+    \Log::info('updateFull called', [
+        'has_avatar'      => $request->hasFile('avatar'),
+        'has_cover_image' => $request->hasFile('cover_image'),
+    ]);
 
-        $user = $request->user();
+    $validated = $request->validate([
+        // same rules…
+    ]);
 
-        // Handle avatar upload
+    $user = $request->user();
+
+    try {
         if ($request->hasFile('avatar')) {
-            // Delete old avatar
+            \Log::info('Processing avatar upload');
+
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                \Log::info('Deleting old avatar', ['path' => $user->avatar]);
                 Storage::disk('public')->delete($user->avatar);
             }
-            $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
+
+            $path = $request->file('avatar')->store('avatars', 'public');
+            \Log::info('Stored new avatar', ['path' => $path]);
+
+            $validated['avatar'] = $path;
         }
 
-        // Handle cover image upload
         if ($request->hasFile('cover_image')) {
-            // Delete old cover
+            \Log::info('Processing cover_image upload');
+
             if ($user->cover_image && Storage::disk('public')->exists($user->cover_image)) {
+                \Log::info('Deleting old cover', ['path' => $user->cover_image]);
                 Storage::disk('public')->delete($user->cover_image);
             }
-            $validated['cover_image'] = $request->file('cover_image')->store('covers', 'public');
+
+            $path = $request->file('cover_image')->store('covers', 'public');
+            \Log::info('Stored new cover_image', ['path' => $path]);
+
+            $validated['cover_image'] = $path;
         }
 
-        // Update user
         $user->update($validated);
+        \Log::info('User updated successfully');
 
-        return redirect()->route('users.show', $user->id)->with('success', 'Profile updated successfully!');
+        return redirect()
+            ->route('users.show', $user->id)
+            ->with('success', 'Profile updated successfully!');
+    } catch (\Throwable $e) {
+        \Log::error('updateFull failed', [
+            'message' => $e->getMessage(),
+            'file'    => $e->getFile(),
+            'line'    => $e->getLine(),
+            'trace'   => $e->getTraceAsString(),
+        ]);
+
+        // Re-throw so we still get a 500, but now with logs
+        throw $e;
     }
+}
 
     /**
      * Update the user's profile information.
