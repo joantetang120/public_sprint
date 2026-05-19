@@ -61,6 +61,38 @@ class ProfileTest extends TestCase
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
 
+    public function test_full_profile_information_can_be_updated(): void
+    {
+        $user = User::factory()->create([
+            'bio' => 'Old bio',
+            'location' => 'Old location',
+            'website' => 'https://old.example.com',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('profile.update.full'), [
+                'name' => 'Updated Builder',
+                'email' => 'updated@example.com',
+                'bio' => 'Shipping better work in public every week.',
+                'location' => 'Lagos, Nigeria',
+                'website' => 'https://new.example.com',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('users.show', $user));
+
+        $user->refresh();
+
+        $this->assertSame('Updated Builder', $user->name);
+        $this->assertSame('updated@example.com', $user->email);
+        $this->assertSame('Shipping better work in public every week.', $user->bio);
+        $this->assertSame('Lagos, Nigeria', $user->location);
+        $this->assertSame('https://new.example.com', $user->website);
+        $this->assertNull($user->email_verified_at);
+    }
+
     public function test_user_can_delete_their_account(): void
     {
         $user = User::factory()->create();
