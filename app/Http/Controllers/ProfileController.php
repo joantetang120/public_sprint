@@ -136,6 +136,8 @@ class ProfileController extends Controller
             'cover_image' => 'nullable|image|max:5120',
         ]);
 
+        unset($validated['avatar'], $validated['cover_image']);
+
         if ($request->hasFile('avatar')) {
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
