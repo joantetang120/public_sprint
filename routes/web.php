@@ -24,6 +24,7 @@ Route::get('/health', function () {
 
 
 Route::get('/discover', [SprintController::class, 'discover'])->name('discover');
+Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread');
 
 // Serve update images
 Route::get('/storage/updates/{filename}', function ($filename) {
@@ -88,7 +89,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');

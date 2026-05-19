@@ -23,9 +23,19 @@ class GoogleAuthController extends Controller
             ]);
         }
 
-        return Socialite::driver('google')
-            ->scopes(['openid', 'profile', 'email'])
-            ->redirect();
+        try {
+            return Socialite::driver('google')
+                ->scopes(['openid', 'profile', 'email'])
+                ->redirect();
+        } catch (Throwable $exception) {
+            Log::warning('Google OAuth redirect failed.', [
+                'message' => $exception->getMessage(),
+            ]);
+
+            return redirect()->route('login')->withErrors([
+                'google' => 'Google sign-in is temporarily unavailable. Please try again in a moment.',
+            ]);
+        }
     }
 
     public function callback(): RedirectResponse
@@ -54,7 +64,7 @@ class GoogleAuthController extends Controller
         Auth::login($user);
         request()->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->route('users.show', $user);
     }
 
     private function resolveUser(GoogleUser $googleUser): User
