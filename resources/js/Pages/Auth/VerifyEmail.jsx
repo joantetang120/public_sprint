@@ -1,6 +1,15 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Zap, Mail, ArrowRight, CheckCircle2, LogOut, Users, Rocket, Star } from 'lucide-react';
+import {
+    ArrowRightIcon as ArrowRight,
+    ArrowRightOnRectangleIcon as LogOut,
+    BoltIcon as Zap,
+    CheckCircleIcon as CheckCircle2,
+    EnvelopeIcon as Mail,
+    RocketLaunchIcon as Rocket,
+    StarIcon as Star,
+    UserGroupIcon as Users,
+} from '@heroicons/react/24/outline';
 
 export default function VerifyEmail({ status }) {
     const { post, processing } = useForm({});

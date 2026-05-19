@@ -1,11 +1,11 @@
 export default function UserAvatar({ user, size = 'md', className = '' }) {
     const sizeClasses = {
-        'xs': 'w-6 h-6',
-        'sm': 'w-8 h-8',
-        'md': 'w-10 h-10',
-        'lg': 'w-12 h-12',
-        'xl': 'w-16 h-16',
-        '2xl': 'w-32 h-32',
+        'xs': 'h-6 w-6',
+        'sm': 'h-8 w-8',
+        'md': 'h-10 w-10',
+        'lg': 'h-12 w-12',
+        'xl': 'h-16 w-16',
+        '2xl': 'h-32 w-32',
     };
 
     const getAvatarUrl = () => {
@@ -16,10 +16,12 @@ export default function UserAvatar({ user, size = 'md', className = '' }) {
     };
 
     return (
-        <img 
-            src={getAvatarUrl()}
-            alt={user?.name || 'User'}
-            className={`${sizeClasses[size]} rounded-xl object-cover ${className}`}
-        />
+        <span className={`relative inline-flex shrink-0 rounded-full bg-[linear-gradient(135deg,#b7f34a,#63b3ff,#ff8066)] p-[2px] ${className}`}>
+            <img
+                src={getAvatarUrl()}
+                alt={user?.name || 'User'}
+                className={`${sizeClasses[size]} rounded-full border-2 border-white object-cover shadow-sm`}
+            />
+        </span>
     );
 }

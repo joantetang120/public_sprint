@@ -1,6 +1,16 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Zap, Lock, ArrowRight, Shield, Eye, EyeOff, Users, Rocket, Star } from 'lucide-react';
+import {
+    ArrowRightIcon as ArrowRight,
+    BoltIcon as Zap,
+    EyeIcon as Eye,
+    EyeSlashIcon as EyeOff,
+    LockClosedIcon as Lock,
+    RocketLaunchIcon as Rocket,
+    ShieldCheckIcon as Shield,
+    StarIcon as Star,
+    UserGroupIcon as Users,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 export default function ConfirmPassword() {

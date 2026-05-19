@@ -1,18 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
 import {
-    ArrowRight,
-    BookText,
-    Briefcase,
-    Check,
-    Clipboard,
-    Eye,
-    FileDown,
-    GalleryVerticalEnd,
-    LayoutTemplate,
-    RefreshCcw,
-    Sparkles,
-} from 'lucide-react';
+    ArrowRightIcon as ArrowRight,
+    ArrowPathIcon as RefreshCcw,
+    BookmarkSquareIcon as FileDown,
+    BriefcaseIcon as Briefcase,
+    CheckIcon as Check,
+    ClipboardDocumentIcon as Clipboard,
+    DocumentTextIcon as BookText,
+    EyeIcon as Eye,
+    PhotoIcon as GalleryVerticalEnd,
+    RectangleGroupIcon as LayoutTemplate,
+    SparklesIcon as Sparkles,
+} from '@heroicons/react/24/outline';
 import AISummaryModal from './AISummaryModal';
 import { getSprintReportPreview, parseSprintReport } from '@/lib/sprintReport';
 import { useLanguage } from '@/Contexts/LanguageContext';

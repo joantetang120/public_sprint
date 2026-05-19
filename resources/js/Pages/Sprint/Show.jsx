@@ -1,11 +1,35 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Zap, Calendar, Users, Target, TrendingUp, MessageSquare, 
-    Heart, Share2, Flag, Clock, CheckCircle2, ArrowRight, Plus, 
-    Link as Link2, Trash2, Reply, MoreVertical, Sparkles, Rocket, X,
-    Trophy, Award, Medal, Crown, Star, Flame, Check, Copy
-} from 'lucide-react';
+import {
+    ArrowRightIcon as ArrowRight,
+    ArrowTrendingUpIcon as TrendingUp,
+    BoltIcon as Zap,
+    CalendarDaysIcon as Calendar,
+    ChatBubbleOvalLeftEllipsisIcon as MessageSquare,
+    ChatBubbleLeftEllipsisIcon as Reply,
+    CheckCircleIcon as CheckCircle2,
+    CheckIcon as Check,
+    ClipboardDocumentIcon as Copy,
+    ClockIcon as Clock,
+    CursorArrowRaysIcon as Target,
+    EllipsisVerticalIcon as MoreVertical,
+    FireIcon as Flame,
+    FlagIcon as Flag,
+    HeartIcon as Heart,
+    LinkIcon as Link2,
+    PlusIcon as Plus,
+    RocketLaunchIcon as Rocket,
+    ShareIcon as Share2,
+    SparklesIcon as Sparkles,
+    StarIcon as Star,
+    TrashIcon as Trash2,
+    TrophyIcon as Award,
+    TrophyIcon as Crown,
+    TrophyIcon as Medal,
+    TrophyIcon as Trophy,
+    UserGroupIcon as Users,
+    XMarkIcon as X,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
@@ -318,7 +342,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                             </div>
                                             <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                                 <div className="text-xl font-bold text-gray-900 dark:text-white">{sprint.updates?.length || 0}</div>
-                                                <div className="text-sm text-gray-600 dark:text-gray-400">{tl('Updates')}</div>
+                                                <div className="text-sm text-gray-600 dark:text-gray-400">{tl('Publications')}</div>
                                             </div>
                                             <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                                 <div className="text-xl font-bold text-gray-900 dark:text-white">{getDaysRemaining()}</div>
@@ -367,7 +391,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                             className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm text-sm"
                                                         >
                                                             <Plus className="w-4 h-4" />
-                                                            <span>{tl('Post Update')}</span>
+                                                            <span>{tl('New Publication')}</span>
                                                         </Link>
                                                     ) : (
                                                         <div className="w-full text-center px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg font-medium text-sm">
@@ -454,7 +478,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
                                         <div className="text-3xl font-black mb-1">{completionStats.total_updates}</div>
-                                        <div className="text-sm text-green-100">{tl('Total Updates')}</div>
+                                        <div className="text-sm text-green-100">{tl('Total Publications')}</div>
                                     </div>
                                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
                                         <div className="text-3xl font-black mb-1">{completionStats.active_participants}</div>
@@ -534,7 +558,9 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
                                         }`}
                                     >
-                                        {tl(tab.charAt(0).toUpperCase() + tab.slice(1))}
+                                        {tab === 'updates'
+                                            ? tl('Publications')
+                                            : tl(tab.charAt(0).toUpperCase() + tab.slice(1))}
                                     </button>
                                 ))}
                             </div>
@@ -542,7 +568,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
 
                         {/* Main Content Area */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Updates Feed */}
+                            {/* Publications Feed */}
                             <div className="lg:col-span-2 space-y-4 order-2 lg:order-1">
                                 {activeTab === 'updates' && (
                                     <>
@@ -555,7 +581,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                     transition={{ delay: i * 0.1 }}
                                                     className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow"
                                                 >
-                                                    {/* Update Header */}
+                                                    {/* Publication Header */}
                                                     <div className="flex items-start justify-between mb-3">
                                                         <div className="flex items-center space-x-3">
                                                             <UserAvatar 
@@ -576,7 +602,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                         </span>
                                                     </div>
 
-                                                    {/* Update Content */}
+                                                    {/* Publication Content */}
                                                     <div className="mb-3">
                                                         <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                                                             {(() => {
@@ -648,7 +674,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                         </div>
                                                     )}
 
-                                                    {/* Update Images */}
+                                                    {/* Publication Images */}
                                                     {update.images && update.images.length > 0 && (
                                                         <div className="mb-3">
                                                             <div className={`grid gap-2 ${
@@ -867,19 +893,26 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                             <div className="text-center py-8 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
                                                 <Sparkles className="w-8 h-8 mx-auto mb-3 text-gray-400" />
                                                 <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
-                                                    {tl('No updates yet')}
+                                                    {tl('No publications yet')}
                                                 </h3>
                                                 <p className="text-gray-600 dark:text-gray-400 mb-3 text-sm">
-                                                    {tl('Be the first to share your progress!')}
+                                                    {isParticipant && !isSprintActive()
+                                                        ? tl('Publications will open when the sprint starts.')
+                                                        : tl('Be the first to share your progress!')}
                                                 </p>
-                                                {isParticipant && (
+                                                {isParticipant && isSprintActive() && (
                                                     <Link
                                                         href={getUpdateCreateRoute()}
                                                         className="inline-flex items-center space-x-1 px-3 py-1.5 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors text-sm"
                                                     >
                                                         <Plus className="w-3 h-3" />
-                                                        <span>{tl('Post Update')}</span>
+                                                        <span>{tl('New Publication')}</span>
                                                     </Link>
+                                                )}
+                                                {isParticipant && !isSprintActive() && (
+                                                    <div className="inline-flex items-center rounded-lg bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                                                        {tl('Starts on {date}', { date: formatDate(sprint.starts_at) })}
+                                                    </div>
                                                 )}
                                             </div>
                                         )}
@@ -1048,7 +1081,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                         </div>
                                                                         <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-2 text-xs">
                                                                             <div>
-                                                                                <div className="text-gray-500 dark:text-gray-400">{tl('Updates')}</div>
+                                                                                <div className="text-gray-500 dark:text-gray-400">{tl('Publications')}</div>
                                                                                 <div className="font-semibold text-gray-900 dark:text-white">{user.pivot?.updates_posted || 0}</div>
                                                                             </div>
                                                                             <div>
@@ -1150,7 +1183,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                     <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">{tl('Sprint Activity')}</h3>
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-xs">
-                                            <span className="text-gray-600 dark:text-gray-400">{tl('Total Updates')}</span>
+                                            <span className="text-gray-600 dark:text-gray-400">{tl('Total Publications')}</span>
                                             <span className="font-semibold text-gray-900 dark:text-white">{sprint.updates?.length || 0}</span>
                                         </div>
                                         <div className="flex justify-between text-xs">

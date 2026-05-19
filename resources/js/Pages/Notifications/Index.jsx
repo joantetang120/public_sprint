@@ -1,6 +1,15 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Bell, Heart, MessageSquare, UserPlus, Zap, Check, Trash2, CheckCheck } from 'lucide-react';
+import {
+    BellAlertIcon as Bell,
+    BoltIcon as Zap,
+    ChatBubbleOvalLeftEllipsisIcon as MessageSquare,
+    CheckIcon as Check,
+    CheckCircleIcon as CheckCheck,
+    HeartIcon as Heart,
+    TrashIcon as Trash2,
+    UserPlusIcon as UserPlus,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';

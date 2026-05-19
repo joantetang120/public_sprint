@@ -61,6 +61,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/sprints', [SprintController::class, 'index'])->name('sprints.index');
     Route::get('/sprints/create', [SprintController::class, 'create'])->name('sprints.create');
     Route::post('/sprints', [SprintController::class, 'store'])->name('sprints.store');
+    Route::get('/sprints/{sprint}/edit', [SprintController::class, 'edit'])->name('sprints.edit');
+    Route::put('/sprints/{sprint}', [SprintController::class, 'update'])->name('sprints.update');
+    Route::delete('/sprints/{sprint}', [SprintController::class, 'destroy'])->name('sprints.destroy');
     Route::post('/sprints/{sprint}/join', [SprintController::class, 'join'])->name('sprints.join');
     Route::post('/sprints/{sprint}/leave', [SprintController::class, 'leave'])->name('sprints.leave');
     Route::get('/sprints/{sprint}/leaderboard', [SprintController::class, 'leaderboard'])->name('sprints.leaderboard');

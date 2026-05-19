@@ -1,6 +1,25 @@
 import { Link, Head } from '@inertiajs/react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Zap, ArrowRight, Play, CheckCircle2, Timer, Target, Star, Quote, ChevronLeft, ChevronRight, Check, Users, Rocket, TrendingUp, Sparkles, MessageCircle, Calendar, Trophy } from 'lucide-react';
+import {
+    ArrowRightIcon as ArrowRight,
+    ArrowTrendingUpIcon as TrendingUp,
+    BoltIcon as Zap,
+    CalendarDaysIcon as Calendar,
+    ChatBubbleOvalLeftEllipsisIcon as MessageCircle,
+    CheckCircleIcon as CheckCircle2,
+    CheckIcon as Check,
+    ChevronLeftIcon as ChevronLeft,
+    ChevronRightIcon as ChevronRight,
+    ClockIcon as Timer,
+    CursorArrowRaysIcon as Target,
+    PlayCircleIcon as Play,
+    RocketLaunchIcon as Rocket,
+    SparklesIcon as Sparkles,
+    StarIcon as Star,
+    TrophyIcon as Trophy,
+    UserGroupIcon as Users,
+    ChatBubbleLeftRightIcon as Quote,
+} from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 import LanguageSwitcher from '@/Components/LanguageSwitcher';
 import { useLanguage } from '@/Contexts/LanguageContext';

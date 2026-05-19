@@ -1,9 +1,20 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Search, Filter, SlidersHorizontal, TrendingUp, Clock, Users, X, Sparkles, Zap, Rocket } from 'lucide-react';
+import {
+    AdjustmentsHorizontalIcon as SlidersHorizontal,
+    ArrowTrendingUpIcon as TrendingUp,
+    BoltIcon as Zap,
+    ClockIcon as Clock,
+    MagnifyingGlassIcon as Search,
+    RocketLaunchIcon as Rocket,
+    SparklesIcon as Sparkles,
+    UserGroupIcon as Users,
+    XMarkIcon as X,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import SprintCard from '@/Components/SprintCard';
+import ActivityPulseStrip from '@/Components/ActivityPulseStrip';
 import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function DiscoverNew({ sprints, statusCounts, featured, popularTags, filters }) {
@@ -66,23 +77,25 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
         <PublicSprintLayout>
             <Head title={tl('Discover Sprints')} />
 
-            <div className="min-h-screen bg-gray-50 py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen py-2">
                     <div className="space-y-8">
                         {/* Header */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-center"
+                            className="ps-hero-band p-7 text-center"
                         >
-                            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-green-50 rounded-full mb-4 border border-green-200">
-                                <Sparkles className="w-4 h-4 text-green-600" />
-                                <span className="text-sm font-semibold text-green-700">{tl('Explore the community')}</span>
+                            <div className="relative z-10 mx-auto mb-5 max-w-sm">
+                                <ActivityPulseStrip />
                             </div>
-                            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-                                {tl('Discover')} <span className="text-green-600">{tl('Sprints')}</span>
+                            <div className="relative z-10 mb-4 inline-flex items-center space-x-2 rounded-full border border-white/15 bg-white/12 px-4 py-2 backdrop-blur-sm">
+                                <Sparkles className="h-4 w-4 text-[#b7f34a]" />
+                                <span className="text-sm font-semibold text-white">{tl('Explore the community')}</span>
+                            </div>
+                            <h1 className="relative z-10 mb-4 font-display text-4xl font-black text-white sm:text-5xl">
+                                {tl('Discover')} <span className="text-[#b7f34a]">{tl('Sprints')}</span>
                             </h1>
-                            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                            <p className="relative z-10 mx-auto max-w-2xl text-lg text-white/74">
                                 {tl('Find inspiring projects and join fellow builders in active sprints')}
                             </p>
                         </motion.div>
@@ -92,7 +105,7 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="bg-white rounded-xl p-6 border border-gray-200"
+                            className="ps-panel p-6"
                         >
                             {/* Search Bar */}
                             <form onSubmit={handleSearch} className="flex gap-3 mb-4">
@@ -242,9 +255,9 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-white rounded-xl p-12 text-center border border-gray-200"
+                                className="ps-empty-state"
                             >
-                                <Search className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                                <Search className="mx-auto mb-4 h-16 w-16 text-[#66736d]" />
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                                     {tl('No sprints found')}
                                 </h3>
@@ -367,7 +380,6 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                             </motion.section>
                         )}
                     </div>
-                </div>
             </div>
         </PublicSprintLayout>
     );

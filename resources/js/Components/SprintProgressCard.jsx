@@ -1,5 +1,15 @@
 import { useRef } from 'react';
-import { Trophy, Zap, Users, TrendingUp, Calendar, Target, Award, Download, Share2 } from 'lucide-react';
+import {
+    ArrowTrendingUpIcon as TrendingUp,
+    BoltIcon as Zap,
+    CalendarDaysIcon as Calendar,
+    CursorArrowRaysIcon as Target,
+    DocumentArrowDownIcon as Download,
+    ShareIcon as Share2,
+    TrophyIcon as Award,
+    TrophyIcon as Trophy,
+    UserGroupIcon as Users,
+} from '@heroicons/react/24/outline';
 import UserAvatar from './UserAvatar';
 import html2canvas from 'html2canvas';
 

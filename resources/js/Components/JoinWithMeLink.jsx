@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { Link2, Check, Copy, Twitter, Linkedin, Facebook } from 'lucide-react';
+import {
+    CheckIcon as Check,
+    ClipboardDocumentIcon as Copy,
+    LinkIcon as Link2,
+} from '@heroicons/react/24/outline';
 import { useLanguage } from '@/Contexts/LanguageContext';
 import { routeKey } from '@/lib/routeKey';
 
@@ -92,23 +96,23 @@ export default function JoinWithMeLink({ sprint, user }) {
                 <div className="grid grid-cols-3 gap-2">
                     <button
                         onClick={() => handleShare('twitter')}
-                        className="flex items-center justify-center space-x-1.5 px-3 py-2 bg-[#1DA1F2] text-white rounded-lg font-semibold hover:bg-[#1a8cd8] transition-colors text-sm"
+                        className="flex items-center justify-center space-x-1.5 rounded-lg bg-[#1DA1F2] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1a8cd8]"
                     >
-                        <Twitter className="w-4 h-4" />
+                        <span className="font-black">X</span>
                         <span>Twitter</span>
                     </button>
                     <button
                         onClick={() => handleShare('linkedin')}
                         className="flex items-center justify-center space-x-1.5 px-3 py-2 bg-[#0A66C2] text-white rounded-lg font-semibold hover:bg-[#095196] transition-colors text-sm"
                     >
-                        <Linkedin className="w-4 h-4" />
+                        <span className="font-black">in</span>
                         <span>LinkedIn</span>
                     </button>
                     <button
                         onClick={() => handleShare('facebook')}
                         className="flex items-center justify-center space-x-1.5 px-3 py-2 bg-[#1877F2] text-white rounded-lg font-semibold hover:bg-[#166fe5] transition-colors text-sm"
                     >
-                        <Facebook className="w-4 h-4" />
+                        <span className="font-black">f</span>
                         <span>Facebook</span>
                     </button>
                 </div>

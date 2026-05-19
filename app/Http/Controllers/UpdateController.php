@@ -77,18 +77,17 @@ class UpdateController extends Controller
                 ->with('error', 'You must be a participant to post updates.');
         }
 
-        // TEMPORARILY DISABLED FOR TESTING
-        // // Check if sprint has started
-        // if ($sprint->status === 'upcoming' || now()->isBefore($sprint->starts_at)) {
-        //     return redirect()->route('sprints.show', $sprint)
-        //         ->with('error', 'You can only post updates after the sprint has started.');
-        // }
+        // Check if sprint has started
+        if ($sprint->status === 'upcoming' || now()->isBefore($sprint->starts_at)) {
+            return redirect()->route('sprints.show', $sprint)
+                ->with('error', 'You can only publish after the sprint has started.');
+        }
 
-        // // Check if sprint has ended
-        // if ($sprint->status === 'completed' || now()->isAfter($sprint->ends_at)) {
-        //     return redirect()->route('sprints.show', $sprint)
-        //         ->with('error', 'This sprint has ended. You can no longer post updates.');
-        // }
+        // Check if sprint has ended
+        if ($sprint->status === 'completed' || now()->isAfter($sprint->ends_at)) {
+            return redirect()->route('sprints.show', $sprint)
+                ->with('error', 'This sprint has ended. You can no longer publish.');
+        }
 
         // Calculate current day
         $daysPassed = now()->diffInDays($sprint->starts_at) + 1;
@@ -101,22 +100,20 @@ class UpdateController extends Controller
 
     public function store(Request $request, Sprint $sprint)
     {
-        // TEMPORARILY DISABLED FOR TESTING - Allow anyone to post
-        // // Check if user is participant
-        // if (!$sprint->participants()->where('user_id', auth()->id())->exists()) {
-        //     return back()->withErrors(['error' => 'You must be a participant to post updates.']);
-        // }
+        // Check if user is participant
+        if (!$sprint->participants()->where('user_id', auth()->id())->exists()) {
+            return back()->withErrors(['error' => 'You must be a participant to publish.']);
+        }
 
-        // TEMPORARILY DISABLED FOR TESTING
-        // // Check if sprint has started
-        // if ($sprint->status === 'upcoming' || now()->isBefore($sprint->starts_at)) {
-        //     return back()->withErrors(['error' => 'You can only post updates after the sprint has started.']);
-        // }
+        // Check if sprint has started
+        if ($sprint->status === 'upcoming' || now()->isBefore($sprint->starts_at)) {
+            return back()->withErrors(['error' => 'You can only publish after the sprint has started.']);
+        }
 
-        // // Check if sprint has ended
-        // if ($sprint->status === 'completed' || now()->isAfter($sprint->ends_at)) {
-        //     return back()->withErrors(['error' => 'This sprint has ended. You can no longer post updates.']);
-        // }
+        // Check if sprint has ended
+        if ($sprint->status === 'completed' || now()->isAfter($sprint->ends_at)) {
+            return back()->withErrors(['error' => 'This sprint has ended. You can no longer publish.']);
+        }
 
         $validated = $request->validate([
             'content' => 'required|string|max:1000',

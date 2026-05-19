@@ -1,11 +1,27 @@
 import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Zap, TrendingUp, Users, Trophy, Plus, ArrowRight, Calendar, Target, MessageSquare, Sparkles, CheckCircle2, Award, Medal, Crown, Star, Flame, Heart } from 'lucide-react';
 import { useState } from 'react';
+import {
+    ArrowRightIcon as ArrowRight,
+    ArrowTrendingUpIcon as TrendingUp,
+    CalendarDaysIcon as Calendar,
+    ChatBubbleOvalLeftEllipsisIcon as MessageSquare,
+    CheckBadgeIcon as CheckCircle2,
+    CursorArrowRaysIcon as Target,
+    DocumentTextIcon as DocumentText,
+    FireIcon as Flame,
+    HeartIcon as Heart,
+    PlusIcon as Plus,
+    StarIcon as Star,
+    TrophyIcon as Trophy,
+    UserGroupIcon as Users,
+    BoltIcon as Zap,
+} from '@heroicons/react/24/outline';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
 import SprintProgressCard from '@/Components/SprintProgressCard';
 import AISprintSummary from '@/Components/AISprintSummary';
+import ActivityPulseStrip from '@/Components/ActivityPulseStrip';
 import { getSprintReportPreview, hasSprintReport } from '@/lib/sprintReport';
 import { routeKey } from '@/lib/routeKey';
 import { useLanguage } from '@/Contexts/LanguageContext';
@@ -13,9 +29,9 @@ import { useLanguage } from '@/Contexts/LanguageContext';
 export default function Dashboard({ auth, updates = [], stats = {}, completedSprints = [] }) {
     const { t, tl, formatDate } = useLanguage();
     const [selectedSprint, setSelectedSprint] = useState(null);
-    const [activeTab, setActiveTab] = useState('overview'); // overview, summaries
+    const [activeTab, setActiveTab] = useState('overview');
 
-    const sprintsWithSummaries = completedSprints.filter(item => hasSprintReport(item.ai_summary));
+    const sprintsWithSummaries = completedSprints.filter((item) => hasSprintReport(item.ai_summary));
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -24,477 +40,501 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
         return t('dashboard.greeting.evening');
     };
 
+    const statCards = [
+        {
+            label: t('dashboard.stats.activeSprints'),
+            value: stats.active_sprints || 0,
+            icon: Target,
+            iconClass: 'text-emerald-600',
+            boxClass: 'bg-emerald-100',
+        },
+        {
+            label: t('dashboard.stats.currentStreak'),
+            value: stats.current_streak || 0,
+            suffix: tl('days'),
+            icon: Flame,
+            iconClass: 'text-amber-600',
+            boxClass: 'bg-amber-100',
+        },
+        {
+            label: t('dashboard.stats.totalLikes'),
+            value: stats.total_likes || 0,
+            icon: Heart,
+            iconClass: 'text-rose-600',
+            boxClass: 'bg-rose-100',
+        },
+        {
+            label: t('dashboard.stats.updatesPosted'),
+            value: stats.updates_posted || 0,
+            icon: MessageSquare,
+            iconClass: 'text-sky-600',
+            boxClass: 'bg-sky-100',
+        },
+    ];
+
     return (
         <PublicSprintLayout>
             <Head title={t('dashboard.title')} />
 
-            <div className="min-h-screen bg-gray-50 py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="space-y-8">
-                        {/* Welcome Section */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-8 text-white"
-                        >
-                            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
-                                <div className="mb-6 lg:mb-0">
-                                    <div className="inline-flex items-center space-x-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full mb-4">
-                                        <Sparkles className="w-4 h-4" />
-                                        <span className="text-sm font-semibold">
-                                            {getGreeting()}
-                                        </span>
-                                    </div>
-                                    <h1 className="text-3xl lg:text-4xl font-bold mb-2">
-                                        {t('dashboard.welcome', { name: auth.user.name })}
-                                    </h1>
-                                    <p className="text-green-100 text-lg">
-                                        {stats.active_sprints > 0 
-                                            ? tl('You have {count} active sprint{suffix} in progress', {
-                                                count: stats.active_sprints,
-                                                suffix: stats.active_sprints > 1 ? 's' : '',
-                                            })
-                                            : tl('Ready to start building something amazing?')}
-                                    </p>
+            <div className="min-h-screen py-2">
+                <div className="space-y-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="ps-hero-band p-7"
+                    >
+                        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                            <div>
+                                <div className="mb-4 inline-flex items-center space-x-2 rounded-full border border-white/15 bg-white/12 px-4 py-2 backdrop-blur-sm">
+                                    <Calendar className="h-4 w-4" />
+                                    <span className="text-sm font-semibold">{getGreeting()}</span>
                                 </div>
-                                <Link
-                                    href={route('sprints.create')}
-                                    className="group px-6 py-3 bg-white text-green-600 rounded-lg font-semibold hover:scale-105 transition-all flex items-center space-x-2 shadow-lg"
-                                >
-                                    <Plus className="w-5 h-5" />
+                                <h1 className="mb-2 font-display text-3xl font-black lg:text-4xl">
+                                    {t('dashboard.welcome', { name: auth.user.name })}
+                                </h1>
+                                <p className="max-w-2xl text-lg text-white/80">
+                                    {stats.active_sprints > 0
+                                        ? tl('You have {count} active sprint{suffix} in progress', {
+                                              count: stats.active_sprints,
+                                              suffix: stats.active_sprints > 1 ? 's' : '',
+                                          })
+                                        : tl('Ready to start building something amazing?')}
+                                </p>
+                            </div>
+
+                            <div className="w-full max-w-md space-y-3 lg:w-[360px]">
+                                <ActivityPulseStrip />
+                                <Link href={route('sprints.create')} className="ps-command-button w-full">
+                                    <Plus className="h-5 w-5" />
                                     <span>{tl('New Sprint')}</span>
-                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    <ArrowRight className="h-4 w-4" />
                                 </Link>
                             </div>
-                        </motion.div>
-
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
-                                className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
-                            >
-                                <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
-                                        <Target className="w-6 h-6 text-green-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-gray-600 mb-1">{t('dashboard.stats.activeSprints')}</p>
-                                        <p className="text-2xl font-bold text-gray-900">
-                                            {stats.active_sprints || 0}
-                                        </p>
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                                className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
-                            >
-                                <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
-                                        <Zap className="w-6 h-6 text-orange-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-gray-600 mb-1">{t('dashboard.stats.currentStreak')}</p>
-                                        <p className="text-2xl font-bold text-gray-900">
-                                            {stats.current_streak || 0} <span className="text-lg">🔥</span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 }}
-                                className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
-                            >
-                                <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                                        <Trophy className="w-6 h-6 text-blue-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-gray-600 mb-1">{t('dashboard.stats.totalLikes')}</p>
-                                        <p className="text-2xl font-bold text-gray-900">
-                                            {stats.total_likes || 0}
-                                        </p>
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4 }}
-                                className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
-                            >
-                                <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
-                                        <MessageSquare className="w-6 h-6 text-purple-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-gray-600 mb-1">{t('dashboard.stats.updatesPosted')}</p>
-                                        <p className="text-2xl font-bold text-gray-900">
-                                            {stats.updates_posted || 0}
-                                        </p>
-                                    </div>
-                                </div>
-                            </motion.div>
                         </div>
+                    </motion.div>
 
-                        {/* Tab Navigation */}
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                        {statCards.map((card, index) => {
+                            const Icon = card.icon;
+
+                            return (
+                                <motion.div
+                                    key={card.label}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 * (index + 1) }}
+                                    className="rounded-xl border border-gray-200 bg-white p-6 transition-shadow hover:shadow-md"
+                                >
+                                    <div className="flex items-center space-x-4">
+                                        <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${card.boxClass}`}>
+                                            <Icon className={`h-6 w-6 ${card.iconClass}`} />
+                                        </div>
+                                        <div>
+                                            <p className="mb-1 text-sm font-semibold text-gray-600">{card.label}</p>
+                                            <p className="text-2xl font-bold text-gray-900">
+                                                {card.value}
+                                                {card.suffix && <span className="ml-1 text-base text-gray-500">{card.suffix}</span>}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="rounded-xl border border-gray-200 bg-white p-2"
+                    >
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={() => setActiveTab('overview')}
+                                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-3 font-bold transition-all ${
+                                    activeTab === 'overview'
+                                        ? 'bg-emerald-950 text-white shadow-lg'
+                                        : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                            >
+                                <TrendingUp className="h-4 w-4" />
+                                <span>{t('dashboard.tabs.overview')}</span>
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('summaries')}
+                                className={`relative flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-3 font-bold transition-all ${
+                                    activeTab === 'summaries'
+                                        ? 'bg-stone-900 text-white shadow-lg'
+                                        : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                            >
+                                <DocumentText className="h-4 w-4" />
+                                <span>{tl('Recaps')}</span>
+                                {sprintsWithSummaries.length > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-xs font-black text-white">
+                                        {sprintsWithSummaries.length}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+                    </motion.div>
+
+                    {activeTab === 'overview' && completedSprints.length > 0 && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                            className="bg-white rounded-xl border border-gray-200 p-2"
+                            transition={{ delay: 0.1 }}
+                            className="space-y-4"
                         >
-                            <div className="flex items-center space-x-2">
-                                <button
-                                    onClick={() => setActiveTab('overview')}
-                                    className={`flex-1 px-6 py-3 rounded-lg font-bold transition-all ${
-                                        activeTab === 'overview'
-                                            ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
-                                            : 'text-gray-600 hover:bg-gray-100'
-                                    }`}
+                            <div className="flex items-center justify-between">
+                                <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+                                    <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                                    <span>{t('dashboard.completionHistory')}</span>
+                                </h2>
+                                <Link
+                                    href={route('sprints.index')}
+                                    className="flex items-center space-x-1 text-sm font-semibold text-green-600 hover:text-green-700"
                                 >
-                                    {`📊 ${t('dashboard.tabs.overview')}`}
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('summaries')}
-                                    className={`flex-1 px-6 py-3 rounded-lg font-bold transition-all relative ${
-                                        activeTab === 'summaries'
-                                            ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
-                                            : 'text-gray-600 hover:bg-gray-100'
-                                    }`}
-                                >
-                                    {`✨ ${t('dashboard.tabs.summaries')}`}
-                                    {sprintsWithSummaries.length > 0 && (
-                                        <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white text-xs font-black rounded-full flex items-center justify-center">
-                                            {sprintsWithSummaries.length}
-                                        </span>
-                                    )}
-                                </button>
+                                    <span>{tl('View all sprints')}</span>
+                                    <ArrowRight className="h-4 w-4" />
+                                </Link>
                             </div>
-                        </motion.div>
 
-                        {/* Overview Tab */}
-                        {activeTab === 'overview' && completedSprints && completedSprints.length > 0 && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
-                                className="space-y-4"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-2xl font-bold text-gray-900">
-                                        {`🏆 ${t('dashboard.completionHistory')}`}
-                                    </h2>
-                                    <Link 
-                                        href={route('sprints.index')} 
-                                        className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center space-x-1"
-                                    >
-                                        <span>{tl('View all sprints')}</span>
-                                        <ArrowRight className="w-4 h-4" />
-                                    </Link>
-                                </div>
+                            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                                {completedSprints.map((item, index) => {
+                                    const { sprint, stats: sprintStats, user_rank, user_score, user_badges } = item;
+                                    const badges = user_badges || [];
 
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                    {completedSprints.map((item, index) => {
-                                        const { sprint, stats, user_rank, user_score, user_badges } = item;
-                                        const badges = user_badges || [];
-                                        
-                                        return (
-                                            <Link
-                                                key={sprint.id}
-                                                href={route('sprints.show', routeKey(sprint))}
+                                    return (
+                                        <Link key={sprint.id} href={route('sprints.show', routeKey(sprint))}>
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.1 * index }}
+                                                className="group cursor-pointer rounded-xl border border-emerald-200 bg-[linear-gradient(180deg,#f5fbf7_0%,#e8f4ee_100%)] p-6 transition-all hover:border-emerald-400 hover:shadow-lg"
                                             >
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ delay: 0.1 * index }}
-                                                    className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border-2 border-green-200 hover:border-green-400 hover:shadow-lg transition-all cursor-pointer group"
-                                                >
-                                                    {/* Header */}
-                                                    <div className="flex items-start justify-between mb-4">
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center space-x-2 mb-2">
-                                                                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                                                                <span className="text-xs font-semibold text-green-700 uppercase tracking-wide">{t('sprints.completed')}</span>
-                                                            </div>
-                                                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors line-clamp-2">
-                                                                {sprint.title}
-                                                            </h3>
+                                                <div className="mb-4 flex items-start justify-between">
+                                                    <div className="flex-1">
+                                                        <div className="mb-2 flex items-center space-x-2">
+                                                            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                                                            <span className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                                                                {t('sprints.completed')}
+                                                            </span>
                                                         </div>
-                                                        {user_rank && user_rank <= 3 && (
-                                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                                                user_rank === 1 ? 'bg-yellow-400' :
-                                                                user_rank === 2 ? 'bg-gray-300' :
-                                                                'bg-orange-400'
-                                                            }`}>
-                                                                {user_rank === 1 && <Crown className="w-5 h-5 text-yellow-900" />}
-                                                                {user_rank === 2 && <Medal className="w-5 h-5 text-gray-700" />}
-                                                                {user_rank === 3 && <Award className="w-5 h-5 text-orange-900" />}
-                                                            </div>
-                                                        )}
+                                                        <h3 className="line-clamp-2 text-lg font-bold text-gray-900 transition-colors group-hover:text-emerald-700">
+                                                            {sprint.title}
+                                                        </h3>
                                                     </div>
-
-                                                    {/* Your Performance */}
-                                                    <div className="bg-white/60 rounded-lg p-4 mb-4">
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <span className="text-sm font-semibold text-gray-700">{tl('Your Performance')}</span>
-                                                            {user_rank && (
-                                                                <span className="text-sm font-bold text-green-700">{tl('Rank #{rank}', { rank: user_rank })}</span>
-                                                            )}
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-2xl font-black text-green-600">{user_score}</span>
-                                                                <span className="text-sm text-gray-600">{tl('points')}</span>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Badges */}
-                                                    {badges.length > 0 && (
-                                                        <div className="flex flex-wrap gap-2 mb-4">
-                                                            {badges.map((badge, i) => (
-                                                                <div key={i} className="flex items-center space-x-1 px-2 py-1 bg-white/80 rounded-full text-xs font-semibold">
-                                                                    {badge === 'top_contributor' && <><Star className="w-3 h-3 text-purple-600" /><span className="text-purple-700">{tl('Top')}</span></>}
-                                                                    {badge === 'daily_streak' && <><Flame className="w-3 h-3 text-orange-600" /><span className="text-orange-700">{tl('Streak')}</span></>}
-                                                                    {badge === 'most_helpful' && <><Heart className="w-3 h-3 text-blue-600" /><span className="text-blue-700">{tl('Helpful')}</span></>}
-                                                                    {badge === 'early_bird' && <><Zap className="w-3 h-3 text-yellow-600" /><span className="text-yellow-700">{tl('Early')}</span></>}
-                                                                    {badge === 'consistent_builder' && <><Target className="w-3 h-3 text-green-600" /><span className="text-green-700">{tl('Consistent')}</span></>}
-                                                                </div>
-                                                            ))}
+                                                    {user_rank && user_rank <= 3 && (
+                                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm">
+                                                            <Trophy className="h-5 w-5" />
                                                         </div>
                                                     )}
+                                                </div>
 
-                                                    {/* Sprint Stats */}
-                                                    <div className="grid grid-cols-3 gap-2 text-center">
-                                                        <div className="bg-white/60 rounded-lg p-2">
-                                                            <div className="text-lg font-bold text-gray-900">{stats.total_updates}</div>
-                                                            <div className="text-xs text-gray-600">{t('dashboard.stats.updatesPosted')}</div>
+                                                <div className="mb-4 rounded-lg bg-white/80 p-4">
+                                                    <div className="mb-2 flex items-center justify-between">
+                                                        <span className="text-sm font-semibold text-gray-700">{tl('Your Performance')}</span>
+                                                        {user_rank && (
+                                                            <span className="text-sm font-bold text-emerald-700">
+                                                                {tl('Rank #{rank}', { rank: user_rank })}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-2xl font-black text-emerald-600">{user_score}</span>
+                                                        <span className="text-sm text-gray-600">{tl('points')}</span>
+                                                    </div>
+                                                </div>
+
+                                                {badges.length > 0 && (
+                                                    <div className="mb-4 flex flex-wrap gap-2">
+                                                        {badges.slice(0, 3).map((badge, i) => (
+                                                            <div
+                                                                key={i}
+                                                                className="flex items-center space-x-1 rounded-full bg-white/90 px-2 py-1 text-xs font-semibold"
+                                                            >
+                                                                {badge === 'top_contributor' && (
+                                                                    <>
+                                                                        <Star className="h-3 w-3 text-purple-600" />
+                                                                        <span className="text-purple-700">{tl('Top')}</span>
+                                                                    </>
+                                                                )}
+                                                                {badge === 'daily_streak' && (
+                                                                    <>
+                                                                        <Flame className="h-3 w-3 text-orange-600" />
+                                                                        <span className="text-orange-700">{tl('Streak')}</span>
+                                                                    </>
+                                                                )}
+                                                                {badge === 'most_helpful' && (
+                                                                    <>
+                                                                        <Heart className="h-3 w-3 text-blue-600" />
+                                                                        <span className="text-blue-700">{tl('Helpful')}</span>
+                                                                    </>
+                                                                )}
+                                                                {badge === 'early_bird' && (
+                                                                    <>
+                                                                        <Zap className="h-3 w-3 text-yellow-600" />
+                                                                        <span className="text-yellow-700">{tl('Early')}</span>
+                                                                    </>
+                                                                )}
+                                                                {badge === 'consistent_builder' && (
+                                                                    <>
+                                                                        <Target className="h-3 w-3 text-green-600" />
+                                                                        <span className="text-green-700">{tl('Consistent')}</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                <div className="grid grid-cols-3 gap-2 text-center">
+                                                    <div className="rounded-lg bg-white/80 p-2">
+                                                        <div className="text-lg font-bold text-gray-900">{sprintStats.total_updates}</div>
+                                                        <div className="text-xs text-gray-600">{t('dashboard.stats.updatesPosted')}</div>
+                                                    </div>
+                                                    <div className="rounded-lg bg-white/80 p-2">
+                                                        <div className="text-lg font-bold text-gray-900">{sprintStats.active_participants}</div>
+                                                        <div className="text-xs text-gray-600">{tl('Builders')}</div>
+                                                    </div>
+                                                    <div className="rounded-lg bg-white/80 p-2">
+                                                        <div className="text-lg font-bold text-gray-900">{sprintStats.completion_rate}%</div>
+                                                        <div className="text-xs text-gray-600">{tl('Rate')}</div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-4 flex items-center space-x-2">
+                                                    <button
+                                                        onClick={(event) => {
+                                                            event.preventDefault();
+                                                            setSelectedSprint(item);
+                                                        }}
+                                                        className="flex flex-1 items-center justify-center space-x-2 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50"
+                                                    >
+                                                        <Trophy className="h-4 w-4" />
+                                                        <span>{tl('Progress Card')}</span>
+                                                    </button>
+                                                    <div className="flex items-center space-x-1 text-sm font-semibold text-emerald-700 transition-colors group-hover:text-emerald-800">
+                                                        <span>{tl('View')}</span>
+                                                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'summaries' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="space-y-6"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-900">{tl('Sprint Recaps')}</h2>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        {tl('A cleaner summary of what you finished and shared.')}
+                                    </p>
+                                </div>
+                                <span className="text-sm text-gray-600">
+                                    {tl('{count} recap{suffix}', {
+                                        count: sprintsWithSummaries.length,
+                                        suffix: sprintsWithSummaries.length === 1 ? '' : 's',
+                                    })}
+                                </span>
+                            </div>
+
+                            {sprintsWithSummaries.length > 0 ? (
+                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                                    {sprintsWithSummaries.map((item, index) => {
+                                        const { sprint, user_rank, user_score, user_badges } = item;
+                                        const cleanSummary = getSprintReportPreview(item.ai_summary, sprint);
+                                        const badges = user_badges || [];
+
+                                        return (
+                                            <motion.div
+                                                key={sprint.id}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.1 * index }}
+                                                className="rounded-2xl border border-stone-200 bg-[linear-gradient(180deg,#fffefb_0%,#f3eee5_100%)] p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg"
+                                            >
+                                                <div className="mb-4 flex items-start justify-between">
+                                                    <div className="flex-1">
+                                                        <div className="mb-2 flex items-center space-x-2">
+                                                            <DocumentText className="h-5 w-5 text-emerald-700" />
+                                                            <span className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
+                                                                {tl('Sprint recap')}
+                                                            </span>
                                                         </div>
-                                                        <div className="bg-white/60 rounded-lg p-2">
-                                                            <div className="text-lg font-bold text-gray-900">{stats.active_participants}</div>
-                                                            <div className="text-xs text-gray-600">{tl('Builders')}</div>
-                                                        </div>
-                                                        <div className="bg-white/60 rounded-lg p-2">
-                                                            <div className="text-lg font-bold text-gray-900">{stats.completion_rate}%</div>
-                                                            <div className="text-xs text-gray-600">{tl('Rate')}</div>
+                                                        <h3 className="mb-2 line-clamp-2 text-lg font-bold text-gray-900">{sprint.title}</h3>
+                                                        <div className="flex items-center space-x-3 text-sm text-gray-600">
+                                                            <span className="flex items-center space-x-1">
+                                                                <Target className="h-4 w-4 text-emerald-600" />
+                                                                <span>{tl('Rank #{rank}', { rank: user_rank })}</span>
+                                                            </span>
+                                                            <span>&bull;</span>
+                                                            <span>{tl('{score} points', { score: user_score })}</span>
                                                         </div>
                                                     </div>
+                                                </div>
 
-                                                    {/* Action Buttons */}
-                                                    <div className="mt-4 flex items-center space-x-2">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                setSelectedSprint(item);
-                                                            }}
-                                                            className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-white text-green-700 rounded-lg font-semibold hover:bg-green-50 transition-colors text-sm border border-green-200"
-                                                        >
-                                                            <Trophy className="w-4 h-4" />
-                                                            <span>{tl('Progress Card')}</span>
-                                                        </button>
-                                                        <div className="flex items-center space-x-1 text-sm font-semibold text-green-700 group-hover:text-green-800">
-                                                            <span>{tl('View')}</span>
-                                                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                                        </div>
+                                                <div className="mb-4 rounded-xl border border-stone-200 bg-white/90 p-4">
+                                                    <p className="line-clamp-3 text-sm leading-relaxed text-gray-700">{cleanSummary}</p>
+                                                </div>
+
+                                                {badges.length > 0 && (
+                                                    <div className="mb-4 flex flex-wrap gap-2">
+                                                        {badges.slice(0, 3).map((badge, i) => (
+                                                            <div
+                                                                key={i}
+                                                                className="flex items-center space-x-1 rounded-full bg-white/80 px-2 py-1 text-xs font-semibold"
+                                                            >
+                                                                {badge === 'top_contributor' && (
+                                                                    <>
+                                                                        <Star className="h-3 w-3 text-purple-600" />
+                                                                        <span className="text-purple-700">{tl('Top')}</span>
+                                                                    </>
+                                                                )}
+                                                                {badge === 'daily_streak' && (
+                                                                    <>
+                                                                        <Flame className="h-3 w-3 text-orange-600" />
+                                                                        <span className="text-orange-700">{tl('Streak')}</span>
+                                                                    </>
+                                                                )}
+                                                                {badge === 'most_helpful' && (
+                                                                    <>
+                                                                        <Heart className="h-3 w-3 text-blue-600" />
+                                                                        <span className="text-blue-700">{tl('Helpful')}</span>
+                                                                    </>
+                                                                )}
+                                                                {badge === 'early_bird' && (
+                                                                    <>
+                                                                        <Zap className="h-3 w-3 text-yellow-600" />
+                                                                        <span className="text-yellow-700">{tl('Early')}</span>
+                                                                    </>
+                                                                )}
+                                                                {badge === 'consistent_builder' && (
+                                                                    <>
+                                                                        <Target className="h-3 w-3 text-green-600" />
+                                                                        <span className="text-green-700">{tl('Consistent')}</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                        {badges.length > 3 && (
+                                                            <span className="rounded-full bg-white/80 px-2 py-1 text-xs font-semibold text-gray-600">
+                                                                {tl('{count} more', { count: `+${badges.length - 3}` })}
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                </motion.div>
-                                            </Link>
+                                                )}
+
+                                                <button
+                                                    onClick={() => setSelectedSprint(item)}
+                                                    className="flex w-full items-center justify-center space-x-2 rounded-xl border border-stone-300 bg-white px-4 py-3 font-bold text-stone-800 transition-all hover:border-emerald-300 hover:bg-stone-50"
+                                                >
+                                                    <DocumentText className="h-5 w-5 text-emerald-700" />
+                                                    <span>{tl('Open recap')}</span>
+                                                </button>
+                                            </motion.div>
                                         );
                                     })}
                                 </div>
-                            </motion.div>
-                        )}
-
-                        {/* My Summaries Tab */}
-                        {activeTab === 'summaries' && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
-                                className="space-y-6"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-2xl font-bold text-gray-900">{tl('Sprint Reports')}</h2>
-                                    <span className="text-sm text-gray-600">
-                                        {tl('{count} report{suffix}', {
-                                            count: sprintsWithSummaries.length,
-                                            suffix: sprintsWithSummaries.length === 1 ? '' : 's',
-                                        })}
-                                    </span>
+                            ) : (
+                                <div className="rounded-2xl border border-stone-200 bg-[linear-gradient(180deg,#fffefb_0%,#f5f1e8_100%)] p-12 text-center">
+                                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100">
+                                        <DocumentText className="h-8 w-8 text-emerald-700" />
+                                    </div>
+                                    <h3 className="mb-2 text-xl font-bold text-gray-900">{tl('No recaps yet')}</h3>
+                                    <p className="mb-6 text-gray-600">
+                                        {tl('Finish a sprint to unlock a clean recap you can review and share later.')}
+                                    </p>
+                                    <Link
+                                        href={route('sprints.index')}
+                                        className="inline-flex items-center space-x-2 rounded-xl bg-emerald-950 px-6 py-3 font-bold text-white transition-all hover:bg-emerald-900"
+                                    >
+                                        <Plus className="h-5 w-5" />
+                                        <span>{tl('Discover Sprints')}</span>
+                                    </Link>
                                 </div>
+                            )}
+                        </motion.div>
+                    )}
 
-                                {sprintsWithSummaries.length > 0 ? (
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        {sprintsWithSummaries.map((item, index) => {
-                                            const { sprint, user_rank, user_score, user_badges } = item;
-                                            const cleanSummary = getSprintReportPreview(item.ai_summary, sprint);
-                                            const badges = user_badges || [];
-                                            
-                                            return (
-                                                <motion.div
-                                                    key={sprint.id}
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ delay: 0.1 * index }}
-                                                    className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200 hover:border-purple-400 hover:shadow-xl transition-all"
-                                                >
-                                                    {/* Header */}
-                                                    <div className="flex items-start justify-between mb-4">
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center space-x-2 mb-2">
-                                                                <Sparkles className="w-5 h-5 text-purple-600" />
-                                                                <span className="text-xs font-semibold text-purple-700 uppercase tracking-wide">{tl('Structured Report')}</span>
-                                                            </div>
-                                                            <h3 className="text-lg font-bold text-gray-900 line-clamp-2 mb-2">
-                                                                {sprint.title}
-                                                            </h3>
-                                                            <div className="flex items-center space-x-3 text-sm text-gray-600">
-                                                                <span className="flex items-center space-x-1">
-                                                                    <Trophy className="w-4 h-4 text-yellow-600" />
-                                                                    <span>{tl('Rank #{rank}', { rank: user_rank })}</span>
-                                                                </span>
-                                                                <span>•</span>
-                                                                <span>{tl('{score} points', { score: user_score })}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Summary Preview */}
-                                                    <div className="bg-white/80 rounded-xl p-4 mb-4">
-                                                        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
-                                                            {cleanSummary}
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Badges */}
-                                                    {badges.length > 0 && (
-                                                        <div className="flex flex-wrap gap-2 mb-4">
-                                                            {badges.slice(0, 3).map((badge, i) => (
-                                                                <div key={i} className="flex items-center space-x-1 px-2 py-1 bg-white/80 rounded-full text-xs font-semibold">
-                                                                    {badge === 'top_contributor' && <><Star className="w-3 h-3 text-purple-600" /><span className="text-purple-700">{tl('Top')}</span></>}
-                                                                    {badge === 'daily_streak' && <><Flame className="w-3 h-3 text-orange-600" /><span className="text-orange-700">{tl('Streak')}</span></>}
-                                                                    {badge === 'most_helpful' && <><Heart className="w-3 h-3 text-blue-600" /><span className="text-blue-700">{tl('Helpful')}</span></>}
-                                                                    {badge === 'early_bird' && <><Zap className="w-3 h-3 text-yellow-600" /><span className="text-yellow-700">{tl('Early')}</span></>}
-                                                                    {badge === 'consistent_builder' && <><Target className="w-3 h-3 text-green-600" /><span className="text-green-700">{tl('Consistent')}</span></>}
-                                                                </div>
-                                                            ))}
-                                                            {badges.length > 3 && (
-                                                                <span className="px-2 py-1 bg-white/80 rounded-full text-xs font-semibold text-gray-600">
-                                                                    {tl('{count} more', { count: `+${badges.length - 3}` })}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    )}
-
-                                                    {/* Action Button */}
-                                                    <button
-                                                        onClick={() => setSelectedSprint(item)}
-                                                        className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-                                                    >
-                                                        <Sparkles className="w-5 h-5" />
-                                                        <span>{tl('View Report')}</span>
-                                                    </button>
-                                                </motion.div>
-                                            );
-                                        })}
-                                    </div>
-                                ) : (
-                                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-12 text-center border-2 border-purple-200">
-                                        <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                                        <h3 className="text-xl font-bold text-gray-900 mb-2">{tl('No Reports Yet')}</h3>
-                                        <p className="text-gray-600 mb-6">
-                                            {tl('Complete a sprint and generate a report to see it here.')}
-                                        </p>
-                                        <Link
-                                            href={route('sprints.index')}
-                                            className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg"
-                                        >
-                                            <Plus className="w-5 h-5" />
-                                            <span>{tl('Discover Sprints')}</span>
-                                        </Link>
-                                    </div>
-                                )}
-                            </motion.div>
-                        )}
-
-                        {/* Recent Activity Section */}
-                        {activeTab === 'overview' && (
+                    {activeTab === 'overview' && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.6 }}
-                            className="bg-white rounded-xl border border-gray-200"
+                            className="rounded-xl border border-gray-200 bg-white"
                         >
-                            <div className="p-6 border-b border-gray-200">
+                            <div className="border-b border-gray-200 p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h2 className="text-xl font-bold text-gray-900 mb-1">
-                                            {t('dashboard.recentActivity')}
-                                        </h2>
+                                        <h2 className="mb-1 text-xl font-bold text-gray-900">{t('dashboard.recentActivity')}</h2>
                                         <p className="text-sm text-gray-600">{tl('Your latest updates and progress')}</p>
                                     </div>
-                                    <Link 
-                                        href="/discover" 
-                                        className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center space-x-1"
+                                    <Link
+                                        href="/discover"
+                                        className="flex items-center space-x-1 text-sm font-semibold text-green-600 hover:text-green-700"
                                     >
                                         <span>{tl('View all')}</span>
-                                        <ArrowRight className="w-4 h-4" />
+                                        <ArrowRight className="h-4 w-4" />
                                     </Link>
                                 </div>
                             </div>
 
-                            {updates && updates.length > 0 ? (
+                            {updates.length > 0 ? (
                                 <div className="divide-y divide-gray-200">
-                                    {updates.map((update, i) => (
+                                    {updates.map((update) => (
                                         <Link
                                             key={update.id}
                                             href={route('sprints.show', routeKey(update.sprint) ?? update.sprint_id)}
                                         >
-                                            <div className="p-6 hover:bg-gray-50 transition-colors cursor-pointer">
+                                            <div className="cursor-pointer p-6 transition-colors hover:bg-gray-50">
                                                 <div className="flex items-start space-x-4">
-                                                    <UserAvatar 
-                                                        user={update.user}
-                                                        size="lg"
-                                                    />
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center space-x-2 mb-2">
-                                                            <span className="font-semibold text-gray-900">
-                                                                {update.user?.name}
-                                                            </span>
-                                                            <span className="text-gray-400 text-sm">•</span>
-                                                            <span className="text-gray-500 text-sm">
-                                                                {tl('posted in')}
-                                                            </span>
-                                                            <span className="font-semibold text-green-600 text-sm truncate">
+                                                    <UserAvatar user={update.user} size="lg" />
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="mb-2 flex items-center space-x-2">
+                                                            <span className="font-semibold text-gray-900">{update.user?.name}</span>
+                                                            <span className="text-sm text-gray-400">&bull;</span>
+                                                            <span className="text-sm text-gray-500">{tl('posted in')}</span>
+                                                            <span className="truncate text-sm font-semibold text-green-600">
                                                                 {update.sprint?.title}
                                                             </span>
                                                         </div>
-                                                        <p className="text-gray-700 leading-relaxed line-clamp-2">
-                                                            {update.content}
-                                                        </p>
-                                                        <div className="flex items-center space-x-4 mt-3 text-xs text-gray-500">
+                                                        <p className="line-clamp-2 leading-relaxed text-gray-700">{update.content}</p>
+                                                        <div className="mt-3 flex items-center space-x-4 text-xs text-gray-500">
                                                             <span>{tl('Day {day}', { day: update.day_number })}</span>
-                                                            <span>•</span>
+                                                            <span>&bull;</span>
                                                             <span>{formatDate(update.created_at)}</span>
                                                             {update.images && update.images.length > 0 && (
                                                                 <>
-                                                                    <span>•</span>
-                                                                    <span>{tl('{count} image{suffix}', { count: update.images.length, suffix: update.images.length > 1 ? 's' : '' })}</span>
+                                                                    <span>&bull;</span>
+                                                                    <span>
+                                                                        {tl('{count} image{suffix}', {
+                                                                            count: update.images.length,
+                                                                            suffix: update.images.length > 1 ? 's' : '',
+                                                                        })}
+                                                                    </span>
                                                                 </>
                                                             )}
                                                             {update.links && update.links.length > 0 && (
                                                                 <>
-                                                                    <span>•</span>
-                                                                    <span>{tl('{count} link{suffix}', { count: update.links.length, suffix: update.links.length > 1 ? 's' : '' })}</span>
+                                                                    <span>&bull;</span>
+                                                                    <span>
+                                                                        {tl('{count} link{suffix}', {
+                                                                            count: update.links.length,
+                                                                            suffix: update.links.length > 1 ? 's' : '',
+                                                                        })}
+                                                                    </span>
                                                                 </>
                                                             )}
                                                         </div>
@@ -506,29 +546,25 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                 </div>
                             ) : (
                                 <div className="p-12 text-center">
-                                    <div className="max-w-sm mx-auto">
-                                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                                            <MessageSquare className="w-8 h-8 text-gray-400" />
+                                    <div className="mx-auto max-w-sm">
+                                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                                            <MessageSquare className="h-8 w-8 text-gray-400" />
                                         </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                            {t('dashboard.noUpdates')}
-                                        </h3>
-                                        <p className="text-sm text-gray-600 mb-6">
-                                            {t('dashboard.joinSprint')}
-                                        </p>
-                                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                        <h3 className="mb-2 text-lg font-semibold text-gray-900">{t('dashboard.noUpdates')}</h3>
+                                        <p className="mb-6 text-sm text-gray-600">{t('dashboard.joinSprint')}</p>
+                                        <div className="flex flex-col justify-center gap-3 sm:flex-row">
                                             <Link
                                                 href="/discover"
-                                                className="inline-flex items-center space-x-2 px-5 py-2.5 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-colors"
+                                                className="inline-flex items-center space-x-2 rounded-lg bg-green-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-600"
                                             >
                                                 <span>{tl('Discover Sprints')}</span>
-                                                <ArrowRight className="w-4 h-4" />
+                                                <ArrowRight className="h-4 w-4" />
                                             </Link>
                                             <Link
                                                 href={route('sprints.create')}
-                                                className="inline-flex items-center space-x-2 px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                                                className="inline-flex items-center space-x-2 rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
                                             >
-                                                <Plus className="w-4 h-4" />
+                                                <Plus className="h-4 w-4" />
                                                 <span>{tl('Start Sprint')}</span>
                                             </Link>
                                         </div>
@@ -536,26 +572,25 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                 </div>
                             )}
                         </motion.div>
-                        )}
+                    )}
 
-                        {/* Quick Actions */}
-                        {activeTab === 'overview' && (
+                    {activeTab === 'overview' && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.6 }}
-                            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                            className="grid grid-cols-1 gap-6 md:grid-cols-2"
                         >
                             <Link
                                 href="/discover"
-                                className="bg-white p-6 rounded-xl border border-gray-200 hover:border-green-500 hover:shadow-md transition-all group"
+                                className="group rounded-xl border border-gray-200 bg-white p-6 transition-all hover:border-green-500 hover:shadow-md"
                             >
                                 <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                                        <TrendingUp className="w-6 h-6 text-blue-600" />
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 transition-colors group-hover:bg-blue-200">
+                                        <TrendingUp className="h-6 w-6 text-blue-600" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-gray-900 mb-1">{tl('Discover Sprints')}</h3>
+                                        <h3 className="mb-1 font-semibold text-gray-900">{tl('Discover Sprints')}</h3>
                                         <p className="text-sm text-gray-600">{tl('Find inspiring projects to join')}</p>
                                     </div>
                                 </div>
@@ -563,72 +598,64 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
 
                             <Link
                                 href={route('sprints.index')}
-                                className="bg-white p-6 rounded-xl border border-gray-200 hover:border-green-500 hover:shadow-md transition-all group"
+                                className="group rounded-xl border border-gray-200 bg-white p-6 transition-all hover:border-green-500 hover:shadow-md"
                             >
                                 <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                                        <Users className="w-6 h-6 text-green-600" />
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 transition-colors group-hover:bg-green-200">
+                                        <Users className="h-6 w-6 text-green-600" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-gray-900 mb-1">{tl('My Sprints')}</h3>
+                                        <h3 className="mb-1 font-semibold text-gray-900">{tl('My Sprints')}</h3>
                                         <p className="text-sm text-gray-600">{tl('Manage all your active projects')}</p>
                                     </div>
                                 </div>
                             </Link>
                         </motion.div>
-                        )}
-                    </div>
+                    )}
                 </div>
             </div>
 
-            {/* Progress Card Modal */}
             {selectedSprint && (
-                <div 
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
                     onClick={() => setSelectedSprint(null)}
                 >
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="bg-white rounded-2xl p-6 max-w-5xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
-                        onClick={(e) => e.stopPropagation()}
+                        className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"
+                        onClick={(event) => event.stopPropagation()}
                     >
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900">{tl('Sprint Report & Share Assets')}</h2>
+                        <div className="mb-6 flex items-center justify-between">
+                            <h2 className="text-2xl font-bold text-gray-900">{tl('Sprint Recap & Share Assets')}</h2>
                             <button
                                 onClick={() => setSelectedSprint(null)}
-                                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                                className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
                             >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
 
                         <div className="space-y-6">
-                            {/* Sprint report section - Only show if report exists, otherwise show generator */}
-                            {selectedSprint.ai_summary ? (
-                                <AISprintSummary 
-                                    sprint={selectedSprint.sprint}
-                                    aiSummary={selectedSprint.ai_summary}
-                                    viewOnly={true}
-                                />
-                            ) : (
-                                <AISprintSummary 
-                                    sprint={selectedSprint.sprint}
-                                    aiSummary={selectedSprint.ai_summary}
-                                />
-                            )}
+                            <AISprintSummary
+                                sprint={selectedSprint.sprint}
+                                aiSummary={selectedSprint.ai_summary}
+                                viewOnly={Boolean(selectedSprint.ai_summary)}
+                            />
 
-                            {/* Progress Card Section */}
                             <SprintProgressCard
                                 sprint={selectedSprint.sprint}
                                 userStats={{
                                     user: auth.user,
-                                    updates_posted: selectedSprint.sprint.participants?.find(p => p.id === auth.user.id)?.pivot?.updates_posted || 0,
+                                    updates_posted:
+                                        selectedSprint.sprint.participants?.find((participant) => participant.id === auth.user.id)
+                                            ?.pivot?.updates_posted || 0,
                                     score: selectedSprint.user_score,
-                                    reactions_received: selectedSprint.sprint.participants?.find(p => p.id === auth.user.id)?.pivot?.reactions_received || 0,
+                                    reactions_received:
+                                        selectedSprint.sprint.participants?.find((participant) => participant.id === auth.user.id)
+                                            ?.pivot?.reactions_received || 0,
                                     rank: selectedSprint.user_rank,
                                     badges: selectedSprint.user_badges,
                                 }}
