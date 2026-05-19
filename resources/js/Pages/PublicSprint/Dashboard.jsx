@@ -8,8 +8,10 @@ import SprintProgressCard from '@/Components/SprintProgressCard';
 import AISprintSummary from '@/Components/AISprintSummary';
 import { getSprintReportPreview, hasSprintReport } from '@/lib/sprintReport';
 import { routeKey } from '@/lib/routeKey';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function Dashboard({ auth, updates = [], stats = {}, completedSprints = [] }) {
+    const { t, tl, formatDate } = useLanguage();
     const [selectedSprint, setSelectedSprint] = useState(null);
     const [activeTab, setActiveTab] = useState('overview'); // overview, summaries
 
@@ -17,14 +19,14 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
 
     const getGreeting = () => {
         const hour = new Date().getHours();
-        if (hour < 12) return 'Good morning';
-        if (hour < 18) return 'Good afternoon';
-        return 'Good evening';
+        if (hour < 12) return t('dashboard.greeting.morning');
+        if (hour < 18) return t('dashboard.greeting.afternoon');
+        return t('dashboard.greeting.evening');
     };
 
     return (
         <PublicSprintLayout>
-            <Head title="Dashboard - PublicSprint" />
+            <Head title={t('dashboard.title')} />
 
             <div className="min-h-screen bg-gray-50 py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,12 +46,15 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                         </span>
                                     </div>
                                     <h1 className="text-3xl lg:text-4xl font-bold mb-2">
-                                        Welcome back, {auth.user.name}!
+                                        {t('dashboard.welcome', { name: auth.user.name })}
                                     </h1>
                                     <p className="text-green-100 text-lg">
                                         {stats.active_sprints > 0 
-                                            ? `You have ${stats.active_sprints} active sprint${stats.active_sprints > 1 ? 's' : ''} in progress` 
-                                            : "Ready to start building something amazing?"}
+                                            ? tl('You have {count} active sprint{suffix} in progress', {
+                                                count: stats.active_sprints,
+                                                suffix: stats.active_sprints > 1 ? 's' : '',
+                                            })
+                                            : tl('Ready to start building something amazing?')}
                                     </p>
                                 </div>
                                 <Link
@@ -57,7 +62,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                     className="group px-6 py-3 bg-white text-green-600 rounded-lg font-semibold hover:scale-105 transition-all flex items-center space-x-2 shadow-lg"
                                 >
                                     <Plus className="w-5 h-5" />
-                                    <span>New Sprint</span>
+                                    <span>{tl('New Sprint')}</span>
                                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </Link>
                             </div>
@@ -76,7 +81,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                         <Target className="w-6 h-6 text-green-600" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-600 mb-1">Active Sprints</p>
+                                        <p className="text-sm font-semibold text-gray-600 mb-1">{t('dashboard.stats.activeSprints')}</p>
                                         <p className="text-2xl font-bold text-gray-900">
                                             {stats.active_sprints || 0}
                                         </p>
@@ -95,7 +100,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                         <Zap className="w-6 h-6 text-orange-600" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-600 mb-1">Current Streak</p>
+                                        <p className="text-sm font-semibold text-gray-600 mb-1">{t('dashboard.stats.currentStreak')}</p>
                                         <p className="text-2xl font-bold text-gray-900">
                                             {stats.current_streak || 0} <span className="text-lg">🔥</span>
                                         </p>
@@ -114,7 +119,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                         <Trophy className="w-6 h-6 text-blue-600" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-600 mb-1">Total Likes</p>
+                                        <p className="text-sm font-semibold text-gray-600 mb-1">{t('dashboard.stats.totalLikes')}</p>
                                         <p className="text-2xl font-bold text-gray-900">
                                             {stats.total_likes || 0}
                                         </p>
@@ -133,7 +138,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                         <MessageSquare className="w-6 h-6 text-purple-600" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-600 mb-1">Updates Posted</p>
+                                        <p className="text-sm font-semibold text-gray-600 mb-1">{t('dashboard.stats.updatesPosted')}</p>
                                         <p className="text-2xl font-bold text-gray-900">
                                             {stats.updates_posted || 0}
                                         </p>
@@ -158,7 +163,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                             : 'text-gray-600 hover:bg-gray-100'
                                     }`}
                                 >
-                                    📊 Overview
+                                    {`📊 ${t('dashboard.tabs.overview')}`}
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('summaries')}
@@ -168,7 +173,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                             : 'text-gray-600 hover:bg-gray-100'
                                     }`}
                                 >
-                                    ✨ My Summaries
+                                    {`✨ ${t('dashboard.tabs.summaries')}`}
                                     {sprintsWithSummaries.length > 0 && (
                                         <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white text-xs font-black rounded-full flex items-center justify-center">
                                             {sprintsWithSummaries.length}
@@ -188,13 +193,13 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                             >
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-2xl font-bold text-gray-900">
-                                        🏆 Completion History
+                                        {`🏆 ${t('dashboard.completionHistory')}`}
                                     </h2>
                                     <Link 
                                         href={route('sprints.index')} 
                                         className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center space-x-1"
                                     >
-                                        <span>View all sprints</span>
+                                        <span>{tl('View all sprints')}</span>
                                         <ArrowRight className="w-4 h-4" />
                                     </Link>
                                 </div>
@@ -220,7 +225,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                         <div className="flex-1">
                                                             <div className="flex items-center space-x-2 mb-2">
                                                                 <CheckCircle2 className="w-5 h-5 text-green-600" />
-                                                                <span className="text-xs font-semibold text-green-700 uppercase tracking-wide">Completed</span>
+                                                                <span className="text-xs font-semibold text-green-700 uppercase tracking-wide">{t('sprints.completed')}</span>
                                                             </div>
                                                             <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors line-clamp-2">
                                                                 {sprint.title}
@@ -242,14 +247,14 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                     {/* Your Performance */}
                                                     <div className="bg-white/60 rounded-lg p-4 mb-4">
                                                         <div className="flex items-center justify-between mb-2">
-                                                            <span className="text-sm font-semibold text-gray-700">Your Performance</span>
+                                                            <span className="text-sm font-semibold text-gray-700">{tl('Your Performance')}</span>
                                                             {user_rank && (
-                                                                <span className="text-sm font-bold text-green-700">Rank #{user_rank}</span>
+                                                                <span className="text-sm font-bold text-green-700">{tl('Rank #{rank}', { rank: user_rank })}</span>
                                                             )}
                                                         </div>
                                                         <div className="flex items-center justify-between">
                                                             <span className="text-2xl font-black text-green-600">{user_score}</span>
-                                                            <span className="text-sm text-gray-600">points</span>
+                                                                <span className="text-sm text-gray-600">{tl('points')}</span>
                                                         </div>
                                                     </div>
 
@@ -258,11 +263,11 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                         <div className="flex flex-wrap gap-2 mb-4">
                                                             {badges.map((badge, i) => (
                                                                 <div key={i} className="flex items-center space-x-1 px-2 py-1 bg-white/80 rounded-full text-xs font-semibold">
-                                                                    {badge === 'top_contributor' && <><Star className="w-3 h-3 text-purple-600" /><span className="text-purple-700">Top</span></>}
-                                                                    {badge === 'daily_streak' && <><Flame className="w-3 h-3 text-orange-600" /><span className="text-orange-700">Streak</span></>}
-                                                                    {badge === 'most_helpful' && <><Heart className="w-3 h-3 text-blue-600" /><span className="text-blue-700">Helpful</span></>}
-                                                                    {badge === 'early_bird' && <><Zap className="w-3 h-3 text-yellow-600" /><span className="text-yellow-700">Early</span></>}
-                                                                    {badge === 'consistent_builder' && <><Target className="w-3 h-3 text-green-600" /><span className="text-green-700">Consistent</span></>}
+                                                                    {badge === 'top_contributor' && <><Star className="w-3 h-3 text-purple-600" /><span className="text-purple-700">{tl('Top')}</span></>}
+                                                                    {badge === 'daily_streak' && <><Flame className="w-3 h-3 text-orange-600" /><span className="text-orange-700">{tl('Streak')}</span></>}
+                                                                    {badge === 'most_helpful' && <><Heart className="w-3 h-3 text-blue-600" /><span className="text-blue-700">{tl('Helpful')}</span></>}
+                                                                    {badge === 'early_bird' && <><Zap className="w-3 h-3 text-yellow-600" /><span className="text-yellow-700">{tl('Early')}</span></>}
+                                                                    {badge === 'consistent_builder' && <><Target className="w-3 h-3 text-green-600" /><span className="text-green-700">{tl('Consistent')}</span></>}
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -272,15 +277,15 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                     <div className="grid grid-cols-3 gap-2 text-center">
                                                         <div className="bg-white/60 rounded-lg p-2">
                                                             <div className="text-lg font-bold text-gray-900">{stats.total_updates}</div>
-                                                            <div className="text-xs text-gray-600">Updates</div>
+                                                            <div className="text-xs text-gray-600">{t('dashboard.stats.updatesPosted')}</div>
                                                         </div>
                                                         <div className="bg-white/60 rounded-lg p-2">
                                                             <div className="text-lg font-bold text-gray-900">{stats.active_participants}</div>
-                                                            <div className="text-xs text-gray-600">Builders</div>
+                                                            <div className="text-xs text-gray-600">{tl('Builders')}</div>
                                                         </div>
                                                         <div className="bg-white/60 rounded-lg p-2">
                                                             <div className="text-lg font-bold text-gray-900">{stats.completion_rate}%</div>
-                                                            <div className="text-xs text-gray-600">Rate</div>
+                                                            <div className="text-xs text-gray-600">{tl('Rate')}</div>
                                                         </div>
                                                     </div>
 
@@ -294,10 +299,10 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                             className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-white text-green-700 rounded-lg font-semibold hover:bg-green-50 transition-colors text-sm border border-green-200"
                                                         >
                                                             <Trophy className="w-4 h-4" />
-                                                            <span>Progress Card</span>
+                                                            <span>{tl('Progress Card')}</span>
                                                         </button>
                                                         <div className="flex items-center space-x-1 text-sm font-semibold text-green-700 group-hover:text-green-800">
-                                                            <span>View</span>
+                                                            <span>{tl('View')}</span>
                                                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                                         </div>
                                                     </div>
@@ -318,9 +323,12 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                 className="space-y-6"
                             >
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-2xl font-bold text-gray-900">Sprint Reports</h2>
+                                    <h2 className="text-2xl font-bold text-gray-900">{tl('Sprint Reports')}</h2>
                                     <span className="text-sm text-gray-600">
-                                        {sprintsWithSummaries.length} {sprintsWithSummaries.length === 1 ? 'report' : 'reports'}
+                                        {tl('{count} report{suffix}', {
+                                            count: sprintsWithSummaries.length,
+                                            suffix: sprintsWithSummaries.length === 1 ? '' : 's',
+                                        })}
                                     </span>
                                 </div>
 
@@ -344,7 +352,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                         <div className="flex-1">
                                                             <div className="flex items-center space-x-2 mb-2">
                                                                 <Sparkles className="w-5 h-5 text-purple-600" />
-                                                                <span className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Structured Report</span>
+                                                                <span className="text-xs font-semibold text-purple-700 uppercase tracking-wide">{tl('Structured Report')}</span>
                                                             </div>
                                                             <h3 className="text-lg font-bold text-gray-900 line-clamp-2 mb-2">
                                                                 {sprint.title}
@@ -352,10 +360,10 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                             <div className="flex items-center space-x-3 text-sm text-gray-600">
                                                                 <span className="flex items-center space-x-1">
                                                                     <Trophy className="w-4 h-4 text-yellow-600" />
-                                                                    <span>Rank #{user_rank}</span>
+                                                                    <span>{tl('Rank #{rank}', { rank: user_rank })}</span>
                                                                 </span>
                                                                 <span>•</span>
-                                                                <span>{user_score} points</span>
+                                                                <span>{tl('{score} points', { score: user_score })}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -372,16 +380,16 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                         <div className="flex flex-wrap gap-2 mb-4">
                                                             {badges.slice(0, 3).map((badge, i) => (
                                                                 <div key={i} className="flex items-center space-x-1 px-2 py-1 bg-white/80 rounded-full text-xs font-semibold">
-                                                                    {badge === 'top_contributor' && <><Star className="w-3 h-3 text-purple-600" /><span className="text-purple-700">Top</span></>}
-                                                                    {badge === 'daily_streak' && <><Flame className="w-3 h-3 text-orange-600" /><span className="text-orange-700">Streak</span></>}
-                                                                    {badge === 'most_helpful' && <><Heart className="w-3 h-3 text-blue-600" /><span className="text-blue-700">Helpful</span></>}
-                                                                    {badge === 'early_bird' && <><Zap className="w-3 h-3 text-yellow-600" /><span className="text-yellow-700">Early</span></>}
-                                                                    {badge === 'consistent_builder' && <><Target className="w-3 h-3 text-green-600" /><span className="text-green-700">Consistent</span></>}
+                                                                    {badge === 'top_contributor' && <><Star className="w-3 h-3 text-purple-600" /><span className="text-purple-700">{tl('Top')}</span></>}
+                                                                    {badge === 'daily_streak' && <><Flame className="w-3 h-3 text-orange-600" /><span className="text-orange-700">{tl('Streak')}</span></>}
+                                                                    {badge === 'most_helpful' && <><Heart className="w-3 h-3 text-blue-600" /><span className="text-blue-700">{tl('Helpful')}</span></>}
+                                                                    {badge === 'early_bird' && <><Zap className="w-3 h-3 text-yellow-600" /><span className="text-yellow-700">{tl('Early')}</span></>}
+                                                                    {badge === 'consistent_builder' && <><Target className="w-3 h-3 text-green-600" /><span className="text-green-700">{tl('Consistent')}</span></>}
                                                                 </div>
                                                             ))}
                                                             {badges.length > 3 && (
                                                                 <span className="px-2 py-1 bg-white/80 rounded-full text-xs font-semibold text-gray-600">
-                                                                    +{badges.length - 3} more
+                                                                    {tl('{count} more', { count: `+${badges.length - 3}` })}
                                                                 </span>
                                                             )}
                                                         </div>
@@ -393,7 +401,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                         className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
                                                     >
                                                         <Sparkles className="w-5 h-5" />
-                                                        <span>View Report</span>
+                                                        <span>{tl('View Report')}</span>
                                                     </button>
                                                 </motion.div>
                                             );
@@ -402,16 +410,16 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                 ) : (
                                     <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-12 text-center border-2 border-purple-200">
                                         <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                                        <h3 className="text-xl font-bold text-gray-900 mb-2">No Reports Yet</h3>
+                                        <h3 className="text-xl font-bold text-gray-900 mb-2">{tl('No Reports Yet')}</h3>
                                         <p className="text-gray-600 mb-6">
-                                            Complete a sprint and generate a report to see it here.
+                                            {tl('Complete a sprint and generate a report to see it here.')}
                                         </p>
                                         <Link
                                             href={route('sprints.index')}
                                             className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg"
                                         >
                                             <Plus className="w-5 h-5" />
-                                            <span>Discover Sprints</span>
+                                            <span>{tl('Discover Sprints')}</span>
                                         </Link>
                                     </div>
                                 )}
@@ -430,15 +438,15 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h2 className="text-xl font-bold text-gray-900 mb-1">
-                                            Recent Activity
+                                            {t('dashboard.recentActivity')}
                                         </h2>
-                                        <p className="text-sm text-gray-600">Your latest updates and progress</p>
+                                        <p className="text-sm text-gray-600">{tl('Your latest updates and progress')}</p>
                                     </div>
                                     <Link 
                                         href="/discover" 
                                         className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center space-x-1"
                                     >
-                                        <span>View all</span>
+                                        <span>{tl('View all')}</span>
                                         <ArrowRight className="w-4 h-4" />
                                     </Link>
                                 </div>
@@ -464,7 +472,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                             </span>
                                                             <span className="text-gray-400 text-sm">•</span>
                                                             <span className="text-gray-500 text-sm">
-                                                                posted in
+                                                                {tl('posted in')}
                                                             </span>
                                                             <span className="font-semibold text-green-600 text-sm truncate">
                                                                 {update.sprint?.title}
@@ -474,19 +482,19 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                             {update.content}
                                                         </p>
                                                         <div className="flex items-center space-x-4 mt-3 text-xs text-gray-500">
-                                                            <span>Day {update.day_number}</span>
+                                                            <span>{tl('Day {day}', { day: update.day_number })}</span>
                                                             <span>•</span>
-                                                            <span>{new Date(update.created_at).toLocaleDateString()}</span>
+                                                            <span>{formatDate(update.created_at)}</span>
                                                             {update.images && update.images.length > 0 && (
                                                                 <>
                                                                     <span>•</span>
-                                                                    <span>📸 {update.images.length} image{update.images.length > 1 ? 's' : ''}</span>
+                                                                    <span>{tl('{count} image{suffix}', { count: update.images.length, suffix: update.images.length > 1 ? 's' : '' })}</span>
                                                                 </>
                                                             )}
                                                             {update.links && update.links.length > 0 && (
                                                                 <>
                                                                     <span>•</span>
-                                                                    <span>🔗 {update.links.length} link{update.links.length > 1 ? 's' : ''}</span>
+                                                                    <span>{tl('{count} link{suffix}', { count: update.links.length, suffix: update.links.length > 1 ? 's' : '' })}</span>
                                                                 </>
                                                             )}
                                                         </div>
@@ -503,17 +511,17 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                             <MessageSquare className="w-8 h-8 text-gray-400" />
                                         </div>
                                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                            No updates yet
+                                            {t('dashboard.noUpdates')}
                                         </h3>
                                         <p className="text-sm text-gray-600 mb-6">
-                                            Join a sprint and start sharing your progress with the community
+                                            {t('dashboard.joinSprint')}
                                         </p>
                                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                             <Link
                                                 href="/discover"
                                                 className="inline-flex items-center space-x-2 px-5 py-2.5 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-colors"
                                             >
-                                                <span>Discover Sprints</span>
+                                                <span>{tl('Discover Sprints')}</span>
                                                 <ArrowRight className="w-4 h-4" />
                                             </Link>
                                             <Link
@@ -521,7 +529,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                                 className="inline-flex items-center space-x-2 px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors"
                                             >
                                                 <Plus className="w-4 h-4" />
-                                                <span>Start Sprint</span>
+                                                <span>{tl('Start Sprint')}</span>
                                             </Link>
                                         </div>
                                     </div>
@@ -547,8 +555,8 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                         <TrendingUp className="w-6 h-6 text-blue-600" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-gray-900 mb-1">Discover Sprints</h3>
-                                        <p className="text-sm text-gray-600">Find inspiring projects to join</p>
+                                        <h3 className="font-semibold text-gray-900 mb-1">{tl('Discover Sprints')}</h3>
+                                        <p className="text-sm text-gray-600">{tl('Find inspiring projects to join')}</p>
                                     </div>
                                 </div>
                             </Link>
@@ -562,8 +570,8 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                         <Users className="w-6 h-6 text-green-600" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-gray-900 mb-1">My Sprints</h3>
-                                        <p className="text-sm text-gray-600">Manage all your active projects</p>
+                                        <h3 className="font-semibold text-gray-900 mb-1">{tl('My Sprints')}</h3>
+                                        <p className="text-sm text-gray-600">{tl('Manage all your active projects')}</p>
                                     </div>
                                 </div>
                             </Link>
@@ -587,7 +595,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900">Sprint Report & Share Assets</h2>
+                            <h2 className="text-2xl font-bold text-gray-900">{tl('Sprint Report & Share Assets')}</h2>
                             <button
                                 onClick={() => setSelectedSprint(null)}
                                 className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"

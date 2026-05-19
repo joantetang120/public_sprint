@@ -4,8 +4,10 @@ import { Camera, User, Mail, MapPin, Globe, Save, ArrowLeft, Upload } from 'luci
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import { routeKey } from '@/lib/routeKey';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function EditNew({ auth }) {
+    const { tl } = useLanguage();
     const { data, setData, post, patch, processing, errors } = useForm({
         name: auth.user.name || '',
         email: auth.user.email || '',
@@ -56,17 +58,17 @@ export default function EditNew({ auth }) {
 
     return (
         <PublicSprintLayout>
-            <Head title="Edit Profile" />
+            <Head title={tl('Edit Profile')} />
 
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-black text-gray-900 dark:text-white">
-                            Edit Profile
+                            {tl('Edit Profile')}
                         </h1>
                         <p className="text-gray-600 dark:text-gray-400 mt-1">
-                            Update your profile information and settings
+                            {tl('Update your profile information and settings')}
                         </p>
                     </div>
                     <Link
@@ -74,7 +76,7 @@ export default function EditNew({ auth }) {
                         className="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        <span>Back to Profile</span>
+                        <span>{tl('Back to Profile')}</span>
                     </Link>
                 </div>
 
@@ -104,7 +106,7 @@ export default function EditNew({ auth }) {
                                 <div className="px-4 py-2 bg-white/90 dark:bg-dark-900/90 backdrop-blur-sm rounded-xl flex items-center space-x-2 hover:bg-white dark:hover:bg-dark-900 transition-colors">
                                     <Camera className="w-4 h-4 text-gray-900 dark:text-white" />
                                     <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                                        Change Cover
+                                        {tl('Change Cover')}
                                     </span>
                                 </div>
                             </label>
@@ -154,7 +156,7 @@ export default function EditNew({ auth }) {
                         className="bg-white dark:bg-dark-900 rounded-2xl border-2 border-gray-200 dark:border-dark-700 p-8"
                     >
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                            Profile Information
+                            {tl('Profile Information')}
                         </h2>
 
                         <div className="space-y-6">
@@ -162,14 +164,14 @@ export default function EditNew({ auth }) {
                             <div>
                                 <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                     <User className="w-4 h-4" />
-                                    <span>Name</span>
+                                    <span>{tl('Name')}</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
                                     className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-700 rounded-xl focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none text-gray-900 dark:text-white"
-                                    placeholder="Your name"
+                                    placeholder={tl('Your name')}
                                 />
                                 {errors.name && (
                                     <p className="text-sm text-red-600 dark:text-red-400 mt-1">
@@ -182,14 +184,14 @@ export default function EditNew({ auth }) {
                             <div>
                                 <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                     <Mail className="w-4 h-4" />
-                                    <span>Email</span>
+                                    <span>{tl('Email')}</span>
                                 </label>
                                 <input
                                     type="email"
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
                                     className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-700 rounded-xl focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none text-gray-900 dark:text-white"
-                                    placeholder="your@email.com"
+                                    placeholder={tl('your@email.com')}
                                 />
                                 {errors.email && (
                                     <p className="text-sm text-red-600 dark:text-red-400 mt-1">
@@ -201,14 +203,14 @@ export default function EditNew({ auth }) {
                             {/* Bio */}
                             <div>
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                                    Bio
+                                    {tl('Bio')}
                                 </label>
                                 <textarea
                                     value={data.bio}
                                     onChange={(e) => setData('bio', e.target.value)}
                                     rows="4"
                                     className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-700 rounded-xl focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none text-gray-900 dark:text-white resize-none"
-                                    placeholder="Tell us about yourself..."
+                                    placeholder={tl('Tell us about yourself...')}
                                     maxLength="500"
                                 />
                                 <div className="flex justify-between items-center mt-1">
@@ -227,14 +229,14 @@ export default function EditNew({ auth }) {
                             <div>
                                 <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                     <MapPin className="w-4 h-4" />
-                                    <span>Location</span>
+                                    <span>{tl('Location')}</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={data.location}
                                     onChange={(e) => setData('location', e.target.value)}
                                     className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-700 rounded-xl focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none text-gray-900 dark:text-white"
-                                    placeholder="City, Country"
+                                    placeholder={tl('City, Country')}
                                 />
                                 {errors.location && (
                                     <p className="text-sm text-red-600 dark:text-red-400 mt-1">
@@ -247,14 +249,14 @@ export default function EditNew({ auth }) {
                             <div>
                                 <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                     <Globe className="w-4 h-4" />
-                                    <span>Website</span>
+                                    <span>{tl('Website')}</span>
                                 </label>
                                 <input
                                     type="url"
                                     value={data.website}
                                     onChange={(e) => setData('website', e.target.value)}
                                     className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-700 rounded-xl focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none text-gray-900 dark:text-white"
-                                    placeholder="https://yourwebsite.com"
+                                    placeholder={tl('https://yourwebsite.com')}
                                 />
                                 {errors.website && (
                                     <p className="text-sm text-red-600 dark:text-red-400 mt-1">
@@ -276,7 +278,7 @@ export default function EditNew({ auth }) {
                             href={route('users.show', routeKey(auth.user))}
                             className="px-6 py-3 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
                         >
-                            Cancel
+                            {tl('Cancel')}
                         </Link>
                         <button
                             type="submit"
@@ -284,7 +286,7 @@ export default function EditNew({ auth }) {
                             className="flex items-center space-x-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-colors"
                         >
                             <Save className="w-5 h-5" />
-                            <span>{processing ? 'Saving...' : 'Save Changes'}</span>
+                            <span>{processing ? tl('Saving...') : tl('Save Changes')}</span>
                         </button>
                     </motion.div>
                 </form>

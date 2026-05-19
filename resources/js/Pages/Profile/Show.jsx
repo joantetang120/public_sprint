@@ -8,8 +8,10 @@ import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
 import { routeKey } from '@/lib/routeKey';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, followers = [], followingUsers = [] }) {
+    const { tl, formatDate } = useLanguage();
     const [following, setFollowing] = useState(isFollowing);
     const [showFollowersModal, setShowFollowersModal] = useState(false);
     const [showFollowingModal, setShowFollowingModal] = useState(false);
@@ -90,17 +92,17 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
     if (!profile.profile_public && !isOwnProfile) {
         return (
             <PublicSprintLayout>
-                <Head title={`${profile.name}'s Profile`} />
+                <Head title={`${profile.name} - ${tl('Profile')}`} />
                 <div className="max-w-2xl mx-auto py-12 px-4">
                     <div className="bg-white dark:bg-dark-900 rounded-2xl border-2 border-gray-200 dark:border-dark-700 p-12 text-center">
                         <div className="w-20 h-20 bg-gray-100 dark:bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Users className="w-10 h-10 text-gray-400" />
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                            This Profile is Private
+                            {tl('This Profile is Private')}
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400">
-                            {profile.name} has set their profile to private.
+                            {profile.name} {tl('has set their profile to private.')}
                         </p>
                     </div>
                 </div>
@@ -110,7 +112,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
 
     return (
         <PublicSprintLayout>
-            <Head title={`${profile.name}'s Profile`} />
+            <Head title={`${profile.name} - ${tl('Profile')}`} />
 
             <div className="space-y-6">
                 {/* Profile Header */}
@@ -159,14 +161,14 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                             className="px-6 py-3 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors flex items-center space-x-2"
                                         >
                                             <Edit className="w-5 h-5" />
-                                            <span>Edit Profile</span>
+                                            <span>{tl('Edit Profile')}</span>
                                         </Link>
                                         <button
                                             onClick={() => setShowLogoutModal(true)}
                                             className="px-6 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center space-x-2"
                                         >
                                             <LogOut className="w-5 h-5" />
-                                            <span>Logout</span>
+                                            <span>{tl('Logout')}</span>
                                         </button>
                                     </>
                                 ) : (
@@ -182,12 +184,12 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                             {following ? (
                                                 <>
                                                     <UserMinus className="w-5 h-5" />
-                                                    <span>Unfollow</span>
+                                                    <span>{tl('Unfollow')}</span>
                                                 </>
                                             ) : (
                                                 <>
                                                     <UserPlus className="w-5 h-5" />
-                                                    <span>Follow</span>
+                                                    <span>{tl('Follow')}</span>
                                                 </>
                                             )}
                                         </button>
@@ -226,7 +228,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                             )}
                             <div className="flex items-center space-x-1">
                                 <Calendar className="w-4 h-4" />
-                                <span>Joined {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                                <span>{tl('Joined {date}', { date: formatDate(profile.created_at, { month: 'long', year: 'numeric' }) })}</span>
                             </div>
                         </div>
 
@@ -237,14 +239,14 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                 className="hover:underline transition-all"
                             >
                                 <span className="font-bold text-gray-900 dark:text-white">{stats.followers_count}</span>
-                                <span className="text-gray-600 dark:text-gray-400 ml-1">Followers</span>
+                                <span className="text-gray-600 dark:text-gray-400 ml-1">{tl('Followers')}</span>
                             </button>
                             <button
                                 onClick={() => setShowFollowingModal(true)}
                                 className="hover:underline transition-all"
                             >
                                 <span className="font-bold text-gray-900 dark:text-white">{stats.following_count}</span>
-                                <span className="text-gray-600 dark:text-gray-400 ml-1">Following</span>
+                                <span className="text-gray-600 dark:text-gray-400 ml-1">{tl('Following')}</span>
                             </button>
                         </div>
                     </div>
@@ -264,7 +266,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                 <Target className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                             </div>
                         </div>
-                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Total Sprints</p>
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">{tl('Total Sprints')}</p>
                         <p className="text-3xl font-black text-gray-900 dark:text-white">
                             {stats.total_sprints}
                         </p>
@@ -281,7 +283,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                 <Zap className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                             </div>
                         </div>
-                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Current Streak</p>
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">{tl('Current Streak')}</p>
                         <p className="text-3xl font-black text-gray-900 dark:text-white">
                             {stats.current_streak} 🔥
                         </p>
@@ -298,7 +300,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                 <Trophy className="w-6 h-6 text-green-600 dark:text-green-400" />
                             </div>
                         </div>
-                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Completed</p>
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">{tl('Completed')}</p>
                         <p className="text-3xl font-black text-gray-900 dark:text-white">
                             {stats.sprints_completed}
                         </p>
@@ -315,7 +317,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                 <Heart className="w-6 h-6 text-red-600 dark:text-red-400" />
                             </div>
                         </div>
-                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Total Likes</p>
+                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">{tl('Total Likes')}</p>
                         <p className="text-3xl font-black text-gray-900 dark:text-white">
                             {stats.total_likes}
                         </p>
@@ -332,10 +334,10 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                 >
                     <div className="p-6 border-b-2 border-gray-200 dark:border-dark-700">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                            Recent Sprints
+                            {tl('Recent Sprints')}
                         </h2>
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                            Sprints {profile.name} is participating in
+                            {tl('Sprints {name} is participating in', { name: profile.name })}
                         </p>
                     </div>
 
@@ -356,9 +358,9 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                                 {sprint.description}
                                             </p>
                                             <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                                <span>Score: {sprint.pivot.score || 0}</span>
-                                                <span>Updates: {sprint.pivot.updates_posted || 0}</span>
-                                                <span>Likes: {sprint.pivot.reactions_received || 0}</span>
+                                                <span>{tl('Score')}: {sprint.pivot.score || 0}</span>
+                                                <span>{tl('Updates')}: {sprint.pivot.updates_posted || 0}</span>
+                                                <span>{tl('Likes')}: {sprint.pivot.reactions_received || 0}</span>
                                             </div>
                                         </div>
                                         <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -368,7 +370,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                                 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
                                                 : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
                                         }`}>
-                                            {sprint.status}
+                                            {tl(sprint.status)}
                                         </div>
                                     </div>
                                 </Link>
@@ -378,7 +380,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                         <div className="p-12 text-center">
                             <Target className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                             <p className="text-gray-500 dark:text-gray-400">
-                                No sprints yet
+                                {tl('No sprints yet')}
                             </p>
                         </div>
                     )}
@@ -398,7 +400,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                         >
                             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-dark-700">
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                                    Followers ({stats.followers_count})
+                                    {tl('Followers')} ({stats.followers_count})
                                 </h2>
                                 <button
                                     onClick={() => setShowFollowersModal(false)}
@@ -444,7 +446,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                                                     : 'bg-primary-600 hover:bg-primary-700 text-white'
                                                             }`}
                                                         >
-                                                            {isFollowingThisUser ? 'Following' : 'Follow'}
+                                                            {isFollowingThisUser ? tl('Following') : tl('Follow')}
                                                         </button>
                                                     )}
                                                 </div>
@@ -454,7 +456,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                 ) : (
                                     <div className="p-12 text-center">
                                         <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                                        <p className="text-gray-500 dark:text-gray-400">No followers yet</p>
+                                        <p className="text-gray-500 dark:text-gray-400">{tl('No followers yet')}</p>
                                     </div>
                                 )}
                             </div>
@@ -476,7 +478,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                         >
                             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-dark-700">
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                                    Following ({stats.following_count})
+                                    {tl('Following')} ({stats.following_count})
                                 </h2>
                                 <button
                                     onClick={() => setShowFollowingModal(false)}
@@ -522,7 +524,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                                                     : 'bg-primary-600 hover:bg-primary-700 text-white'
                                                             }`}
                                                         >
-                                                            {isFollowingThisUser ? 'Following' : 'Follow'}
+                                                            {isFollowingThisUser ? tl('Following') : tl('Follow')}
                                                         </button>
                                                     )}
                                                 </div>
@@ -532,7 +534,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                 ) : (
                                     <div className="p-12 text-center">
                                         <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                                        <p className="text-gray-500 dark:text-gray-400">Not following anyone yet</p>
+                                        <p className="text-gray-500 dark:text-gray-400">{tl('Not following anyone yet')}</p>
                                     </div>
                                 )}
                             </div>
@@ -555,14 +557,14 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                     <AlertTriangle className="w-8 h-8 text-white" />
                                 </div>
                                 <h3 className="text-2xl font-bold text-white text-center">
-                                    Confirm Logout
+                                    {tl('Confirm Logout')}
                                 </h3>
                             </div>
 
                             {/* Content */}
                             <div className="p-6">
                                 <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
-                                    Are you sure you want to logout? You'll need to sign in again to access your account.
+                                    {tl("Are you sure you want to logout? You'll need to sign in again to access your account.")}
                                 </p>
 
                                 {/* Actions */}
@@ -571,14 +573,14 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                         onClick={() => setShowLogoutModal(false)}
                                         className="flex-1 px-6 py-3 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
                                     >
-                                        Cancel
+                                        {tl('Cancel')}
                                     </button>
                                     <button
                                         onClick={handleLogout}
                                         className="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
                                     >
                                         <LogOut className="w-5 h-5" />
-                                        <span>Logout</span>
+                                        <span>{tl('Logout')}</span>
                                     </button>
                                 </div>
                             </div>

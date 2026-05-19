@@ -16,17 +16,18 @@ import {
     X,
 } from 'lucide-react';
 import { buildPrintableReportHtml, parseSprintReport } from '@/lib/sprintReport';
-
-const tabs = [
-    { id: 'overview', label: 'Overview', icon: Sparkles },
-    { id: 'linkedin', label: 'LinkedIn', icon: Briefcase },
-    { id: 'portfolio', label: 'Portfolio', icon: FileText },
-    { id: 'gallery', label: 'Gallery', icon: GalleryVerticalEnd },
-];
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
+    const { tl } = useLanguage();
     const [activeTab, setActiveTab] = useState('overview');
     const [copiedState, setCopiedState] = useState('');
+    const tabs = [
+        { id: 'overview', label: tl('Overview'), icon: Sparkles },
+        { id: 'linkedin', label: tl('LinkedIn'), icon: Briefcase },
+        { id: 'portfolio', label: tl('Portfolio'), icon: FileText },
+        { id: 'gallery', label: tl('Gallery'), icon: GalleryVerticalEnd },
+    ];
 
     const report = useMemo(() => parseSprintReport(summary, sprint), [summary, sprint]);
 
@@ -97,7 +98,7 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                         <div className="flex items-start justify-between gap-6">
                             <div className="max-w-3xl">
                                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-50">
-                                    Sprint Report
+                                    {tl('Sprint Report')}
                                 </div>
                                 <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
                                     {report.headline}
@@ -142,7 +143,7 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                     >
                                         <span className="flex items-center gap-2">
                                             <Clipboard className="h-4 w-4" />
-                                            Copy LinkedIn
+                                            {tl('Copy LinkedIn')}
                                         </span>
                                         {copiedState === 'linkedin' && <Check className="h-4 w-4 text-emerald-600" />}
                                     </button>
@@ -152,7 +153,7 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                     >
                                         <span className="flex items-center gap-2">
                                             <BookOpen className="h-4 w-4" />
-                                            Copy Portfolio
+                                            {tl('Copy Portfolio')}
                                         </span>
                                         {copiedState === 'portfolio' && <Check className="h-4 w-4 text-emerald-600" />}
                                     </button>
@@ -161,14 +162,14 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                         className="flex w-full items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
                                     >
                                         <Download className="h-4 w-4" />
-                                        Download Markdown
+                                        {tl('Download Markdown')}
                                     </button>
                                     <button
                                         onClick={printReport}
                                         className="flex w-full items-center gap-2 rounded-2xl bg-emerald-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
                                     >
                                         <Printer className="h-4 w-4" />
-                                        Print / Save PDF
+                                        {tl('Print / Save PDF')}
                                     </button>
                                 </div>
                             </div>
@@ -183,11 +184,11 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
 
                                     <section className="grid grid-cols-2 gap-4 lg:grid-cols-5">
                                         {[
-                                            ['Duration', `${report.metrics.duration_days} days`],
-                                            ['Updates', report.metrics.updates_posted],
-                                            ['Score', report.metrics.score],
-                                            ['Reactions', report.metrics.reactions_received],
-                                            ['Rank', report.metrics.rank_label],
+                                            [tl('Duration'), tl('{count} days', { count: report.metrics.duration_days })],
+                                            [tl('Updates'), report.metrics.updates_posted],
+                                            [tl('Score'), report.metrics.score],
+                                            [tl('Reactions'), report.metrics.reactions_received],
+                                            [tl('Rank'), report.metrics.rank_label],
                                         ].map(([label, value]) => (
                                             <div key={label} className="rounded-[24px] border border-stone-200 bg-white p-5 shadow-sm">
                                                 <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">{label}</div>
@@ -198,7 +199,7 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
 
                                     <div className="grid gap-6 xl:grid-cols-[1.05fr,0.95fr]">
                                         <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
-                                            <h3 className="text-sm font-black uppercase tracking-[0.24em] text-emerald-800">Accomplishments</h3>
+                                            <h3 className="text-sm font-black uppercase tracking-[0.24em] text-emerald-800">{tl('Accomplishments')}</h3>
                                             <div className="mt-5 space-y-4">
                                                 {report.accomplishments.map((item, index) => (
                                                     <div key={item} className="flex gap-4">
@@ -212,7 +213,7 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                         </section>
 
                                         <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
-                                            <h3 className="text-sm font-black uppercase tracking-[0.24em] text-emerald-800">Lessons</h3>
+                                            <h3 className="text-sm font-black uppercase tracking-[0.24em] text-emerald-800">{tl('Lessons')}</h3>
                                             <div className="mt-5 space-y-4">
                                                 {report.lessons.map((item) => (
                                                     <div key={item} className="rounded-2xl bg-stone-100 p-4 text-sm leading-7 text-stone-700">
@@ -224,12 +225,12 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                     </div>
 
                                     <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
-                                        <h3 className="text-sm font-black uppercase tracking-[0.24em] text-emerald-800">Timeline</h3>
+                                        <h3 className="text-sm font-black uppercase tracking-[0.24em] text-emerald-800">{tl('Timeline')}</h3>
                                         <div className="mt-5 space-y-5">
                                             {report.timeline.map((item) => (
                                                 <div key={`${item.title}-${item.day_number}`} className="rounded-3xl border border-stone-200 p-5">
                                                     <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
-                                                        {item.title} · Day {item.day_number}
+                                                        {item.title} · {tl('Day {day}', { day: item.day_number })}
                                                     </div>
                                                     <p className="mt-3 text-sm leading-7 text-stone-700">{item.summary}</p>
                                                 </div>
@@ -244,9 +245,9 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                     <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
                                         <div className="flex items-start justify-between gap-4">
                                             <div>
-                                                <h3 className="text-xl font-black text-stone-900">LinkedIn-ready post</h3>
+                                                <h3 className="text-xl font-black text-stone-900">{tl('LinkedIn-ready post')}</h3>
                                                 <p className="mt-2 text-sm text-stone-600">
-                                                    Copy this directly, then attach screenshots or add your own voice before posting.
+                                                    {tl('Copy this directly, then attach screenshots or add your own voice before posting.')}
                                                 </p>
                                             </div>
                                             <button
@@ -254,7 +255,7 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                                 className="inline-flex items-center gap-2 rounded-2xl bg-emerald-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
                                             >
                                                 {copiedState === 'linkedin-main' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
-                                                Copy
+                                                {tl('Copy')}
                                             </button>
                                         </div>
                                         <div className="mt-6 rounded-3xl bg-stone-100 p-6">
@@ -269,9 +270,9 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                     <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
                                         <div className="flex items-start justify-between gap-4">
                                             <div>
-                                                <h3 className="text-xl font-black text-stone-900">Portfolio / case study copy</h3>
+                                                <h3 className="text-xl font-black text-stone-900">{tl('Portfolio / case study copy')}</h3>
                                                 <p className="mt-2 text-sm text-stone-600">
-                                                    A longer format for your site, Notion page, or resume project appendix.
+                                                    {tl('A longer format for your site, Notion page, or resume project appendix.')}
                                                 </p>
                                             </div>
                                             <button
@@ -279,7 +280,7 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                                 className="inline-flex items-center gap-2 rounded-2xl bg-emerald-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
                                             >
                                                 {copiedState === 'portfolio-main' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
-                                                Copy
+                                                {tl('Copy')}
                                             </button>
                                         </div>
                                         <div className="mt-6 rounded-3xl bg-stone-100 p-6">
@@ -294,14 +295,17 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                     <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
                                         <div className="flex items-start justify-between gap-4">
                                             <div>
-                                                <h3 className="text-xl font-black text-stone-900">Report assets</h3>
+                                                <h3 className="text-xl font-black text-stone-900">{tl('Report assets')}</h3>
                                                 <p className="mt-2 text-sm text-stone-600">
                                                     Use these images as proof points in LinkedIn carousels, a PDF export, or your portfolio entry.
                                                 </p>
                                             </div>
                                             {report.resources?.length > 0 && (
                                                 <div className="rounded-2xl bg-stone-100 px-4 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
-                                                    {report.resources.length} linked resource{report.resources.length === 1 ? '' : 's'}
+                                                    {tl('{count} linked resource{suffix}', {
+                                                        count: report.resources.length,
+                                                        suffix: report.resources.length === 1 ? '' : 's',
+                                                    })}
                                                 </div>
                                             )}
                                         </div>
@@ -319,9 +323,9 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                                         </div>
                                                         <figcaption className="space-y-2 p-4">
                                                             <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
-                                                                <span>Day {item.day_number ?? '-'}</span>
+                                                                <span>{tl('Day {day}', { day: item.day_number ?? '-' })}</span>
                                                                 <a href={item.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-emerald-800">
-                                                                    Open
+                                                                    {tl('Open')}
                                                                     <ExternalLink className="h-3 w-3" />
                                                                 </a>
                                                             </div>
@@ -334,7 +338,7 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                             <div className="mt-6 rounded-3xl border border-dashed border-stone-300 bg-stone-100 p-10 text-center">
                                                 <ImageIcon className="mx-auto h-10 w-10 text-stone-400" />
                                                 <p className="mt-4 text-sm text-stone-600">
-                                                    No images were attached to this sprint, but the written report is still ready to export.
+                                                    {tl('No images were attached to this sprint, but the written report is still ready to export.')}
                                                 </p>
                                             </div>
                                         )}
@@ -343,7 +347,7 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                             <div className="mt-6 rounded-3xl bg-stone-100 p-5">
                                                 <div className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-[0.24em] text-stone-600">
                                                     <Link2 className="h-4 w-4" />
-                                                    Resources
+                                                    {tl('Resources')}
                                                 </div>
                                                 <div className="space-y-3">
                                                     {report.resources.map((resource) => (

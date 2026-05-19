@@ -2,9 +2,11 @@ import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { Users, Calendar, TrendingUp, Lock, Clock } from 'lucide-react';
 import UserAvatar from '@/Components/UserAvatar';
+import { useLanguage } from '@/Contexts/LanguageContext';
 import { routeKey } from '@/lib/routeKey';
 
 export default function SprintCard({ sprint }) {
+    const { tl, formatDate } = useLanguage();
     const getDaysRemaining = () => {
         const end = new Date(sprint.ends_at);
         const now = new Date();
@@ -36,12 +38,12 @@ export default function SprintCard({ sprint }) {
                     <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
                             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor()}`}>
-                                {sprint.status}
+                                {tl(sprint.status)}
                             </span>
                             {sprint.is_private && (
                                 <span className="flex items-center space-x-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-semibold">
                                     <Lock className="w-3 h-3" />
-                                    <span>Private</span>
+                                    <span>{tl('Private')}</span>
                                 </span>
                             )}
                         </div>
@@ -71,7 +73,7 @@ export default function SprintCard({ sprint }) {
                         ))}
                         {sprint.tags.length > 3 && (
                             <span className="px-2 py-1 text-gray-500 dark:text-gray-400 text-xs font-medium">
-                                +{sprint.tags.length - 3} more
+                                +{sprint.tags.length - 3} {tl('more')}
                             </span>
                         )}
                     </div>
@@ -97,7 +99,7 @@ export default function SprintCard({ sprint }) {
                     {sprint.status === 'active' && (
                         <div className="flex items-center space-x-1 text-sm font-semibold text-primary-600 dark:text-primary-400">
                             <Clock className="w-4 h-4" />
-                            <span>{getDaysRemaining()}d left</span>
+                            <span>{tl('{days}d left', { days: getDaysRemaining() })}</span>
                         </div>
                     )}
                 </div>
@@ -119,7 +121,7 @@ export default function SprintCard({ sprint }) {
                         {sprint.creator?.name}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Created {new Date(sprint.created_at).toLocaleDateString()}
+                        {tl('Created {date}', { date: formatDate(sprint.created_at) })}
                     </p>
                 </div>
             </Link>

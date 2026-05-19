@@ -6,8 +6,10 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function Create({ auth, tags }) {
+    const { tl } = useLanguage();
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         description: '',
@@ -72,7 +74,7 @@ export default function Create({ auth, tags }) {
 
     return (
         <PublicSprintLayout>
-            <Head title="Create New Sprint" />
+            <Head title={tl('Create New Sprint')} />
 
             <div className="min-h-screen bg-gray-50 py-8">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -6,10 +6,13 @@ import {
     Zap, TrendingUp, MessageSquare, UserPlus, Search, Settings
 } from 'lucide-react';
 import UserAvatar from '@/Components/UserAvatar';
+import LanguageSwitcher from '@/Components/LanguageSwitcher';
+import { useLanguage } from '@/Contexts/LanguageContext';
 import { routeKey } from '@/lib/routeKey';
 
 export default function PublicSprintLayout({ children }) {
     const { auth } = usePage().props;
+    const { t, tl } = useLanguage();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([]);
@@ -58,11 +61,11 @@ export default function PublicSprintLayout({ children }) {
     };
 
     const navigation = [
-        { name: 'Home', href: route('dashboard'), icon: Home },
-        { name: 'Discover', href: route('discover'), icon: Compass },
-        { name: 'Sprints', href: route('sprints.index'), icon: TrendingUp },
-        { name: 'Profile', href: auth.user ? route('users.show', routeKey(auth.user)) : route('login'), icon: User },
-        ...(auth.user ? [{ name: 'Settings', href: route('settings.index'), icon: Settings }] : []),
+        { name: t('common.home'), href: route('dashboard'), icon: Home },
+        { name: t('common.discover'), href: route('discover'), icon: Compass },
+        { name: t('common.sprints'), href: route('sprints.index'), icon: TrendingUp },
+        { name: t('common.profile'), href: auth.user ? route('users.show', routeKey(auth.user)) : route('login'), icon: User },
+        ...(auth.user ? [{ name: t('common.settings'), href: route('settings.index'), icon: Settings }] : []),
     ];
 
     return (
@@ -100,6 +103,8 @@ export default function PublicSprintLayout({ children }) {
 
                         {/* Actions */}
                         <div className="flex items-center space-x-3">
+                            <LanguageSwitcher compact className="hidden md:flex" />
+
                             {/* Search Button */}
                             <Link
                                 href={route('discover')}
@@ -114,7 +119,7 @@ export default function PublicSprintLayout({ children }) {
                                 className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm hover:shadow-md"
                             >
                                 <PlusCircle className="w-5 h-5" />
-                                <span>Create Sprint</span>
+                                <span>{t('nav.createSprint')}</span>
                             </Link>
 
                             {/* Notifications */}
@@ -148,13 +153,13 @@ export default function PublicSprintLayout({ children }) {
                                         href={route('login')}
                                         className="px-4 py-2 text-gray-700 hover:text-green-600 font-medium transition-colors"
                                     >
-                                        Sign in
+                                        {t('common.login')}
                                     </Link>
                                     <Link
                                         href={route('register')}
                                         className="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm hover:shadow-md"
                                     >
-                                        Get Started
+                                        {t('common.register')}
                                     </Link>
                                 </div>
                             )}
@@ -180,6 +185,9 @@ export default function PublicSprintLayout({ children }) {
                             className="md:hidden border-t border-gray-200 bg-white"
                         >
                             <div className="px-4 py-4 space-y-2">
+                                <div className="px-1 pb-2">
+                                    <LanguageSwitcher />
+                                </div>
                                 {navigation.map((item) => (
                                     <Link
                                         key={item.name}
@@ -197,7 +205,7 @@ export default function PublicSprintLayout({ children }) {
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
                                     <PlusCircle className="w-5 h-5" />
-                                    <span>Create Sprint</span>
+                                    <span>{t('nav.createSprint')}</span>
                                 </Link>
                             </div>
                         </motion.div>
@@ -230,9 +238,9 @@ export default function PublicSprintLayout({ children }) {
                             />
                         </div>
                         <div className="flex items-center space-x-6 text-sm text-gray-600">
-                            <Link href="/about" className="hover:text-green-600 transition-colors">About</Link>
-                            <Link href="/privacy" className="hover:text-green-600 transition-colors">Privacy</Link>
-                            <Link href="/terms" className="hover:text-green-600 transition-colors">Terms</Link>
+                            <Link href="/about" className="hover:text-green-600 transition-colors">{tl('About')}</Link>
+                            <Link href="/privacy" className="hover:text-green-600 transition-colors">{tl('Privacy')}</Link>
+                            <Link href="/terms" className="hover:text-green-600 transition-colors">{tl('Terms')}</Link>
                             <span>© 2024 PublicSprint</span>
                         </div>
                     </div>
