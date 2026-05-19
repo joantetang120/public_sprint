@@ -5,6 +5,7 @@ import {
     ArrowTopRightOnSquareIcon,
     BoltIcon,
     CalendarDaysIcon,
+    EllipsisHorizontalIcon,
     EnvelopeIcon,
     ExclamationTriangleIcon,
     GlobeAltIcon,
@@ -40,6 +41,7 @@ export default function Show({
     const [showFollowersModal, setShowFollowersModal] = useState(false);
     const [showFollowingModal, setShowFollowingModal] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [showActionMenu, setShowActionMenu] = useState(false);
     const [localFollowing, setLocalFollowing] = useState({});
 
     const handleFollow = () => {
@@ -140,7 +142,7 @@ export default function Show({
                     animate={{ opacity: 1, y: 0 }}
                     className="ps-feed-card overflow-hidden"
                 >
-                    <div className="ps-card-cover min-h-[220px] px-6 py-6 sm:px-8">
+                    <div className="ps-card-cover min-h-[260px] px-6 py-6 sm:px-8">
                         {profile.cover_image && (
                             <img
                                 src={`/storage/${profile.cover_image}`}
@@ -148,7 +150,7 @@ export default function Show({
                                 className="absolute inset-0 h-full w-full object-cover"
                             />
                         )}
-                        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="relative z-10 flex min-h-[212px] flex-col gap-5">
                             <div className="max-w-xl">
                                 <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/12 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white backdrop-blur-sm">
                                     <SparklesIcon className="h-4 w-4 text-[#b7f34a]" />
@@ -157,54 +159,115 @@ export default function Show({
                                 <ActivityPulseStrip compact />
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-3">
-                                {isOwnProfile ? (
-                                    <>
-                                        <Link href={route('profile.edit')} className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-[#17211d] shadow-sm transition hover:bg-[#f3ffcf]">
-                                            <PencilSquareIcon className="h-5 w-5" />
-                                            <span>{tl('Edit Profile')}</span>
-                                        </Link>
-                                        <button
-                                            onClick={() => setShowLogoutModal(true)}
-                                            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"
-                                        >
-                                            <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                                            <span>{tl('Logout')}</span>
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button
-                                            onClick={handleFollow}
-                                            className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-black transition ${
-                                                following
-                                                    ? 'border border-white/20 bg-white/10 text-white hover:bg-white/20'
-                                                    : 'bg-[#b7f34a] text-[#17211d] hover:bg-[#c5fb62]'
-                                            }`}
-                                        >
-                                            {following ? <UserMinusIcon className="h-5 w-5" /> : <UserPlusIcon className="h-5 w-5" />}
-                                            <span>{following ? tl('Unfollow') : tl('Follow')}</span>
-                                        </button>
-                                        {profile.show_email && profile.email && (
-                                            <a
-                                                href={`mailto:${profile.email}`}
+                            <div className="mt-auto flex w-full items-center justify-end gap-3 lg:self-end">
+                                <div className="relative sm:hidden">
+                                    <button
+                                        onClick={() => setShowActionMenu((open) => !open)}
+                                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/12 text-white backdrop-blur-sm transition hover:bg-white/20"
+                                    >
+                                        <EllipsisHorizontalIcon className="h-6 w-6" />
+                                    </button>
+
+                                    {showActionMenu && (
+                                        <div className="absolute bottom-full right-0 z-20 mb-2 min-w-[12rem] overflow-hidden rounded-2xl border border-black/10 bg-white p-2 shadow-2xl">
+                                            {isOwnProfile ? (
+                                                <>
+                                                    <Link
+                                                        href={route('profile.edit')}
+                                                        onClick={() => setShowActionMenu(false)}
+                                                        className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-[#17211d] transition hover:bg-[#f5f3ea]"
+                                                    >
+                                                        <PencilSquareIcon className="h-5 w-5" />
+                                                        <span>{tl('Edit Profile')}</span>
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowActionMenu(false);
+                                                            setShowLogoutModal(true);
+                                                        }}
+                                                        className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-bold text-[#17211d] transition hover:bg-[#f5f3ea]"
+                                                    >
+                                                        <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                                                        <span>{tl('Logout')}</span>
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowActionMenu(false);
+                                                            handleFollow();
+                                                        }}
+                                                        className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-bold text-[#17211d] transition hover:bg-[#f5f3ea]"
+                                                    >
+                                                        {following ? <UserMinusIcon className="h-5 w-5" /> : <UserPlusIcon className="h-5 w-5" />}
+                                                        <span>{following ? tl('Unfollow') : tl('Follow')}</span>
+                                                    </button>
+                                                    {profile.show_email && profile.email && (
+                                                        <a
+                                                            href={`mailto:${profile.email}`}
+                                                            onClick={() => setShowActionMenu(false)}
+                                                            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-[#17211d] transition hover:bg-[#f5f3ea]"
+                                                        >
+                                                            <EnvelopeIcon className="h-5 w-5" />
+                                                            <span>{tl('Email')}</span>
+                                                        </a>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="ml-auto hidden flex-wrap items-center gap-3 sm:flex">
+                                    {isOwnProfile ? (
+                                        <>
+                                            <Link href={route('profile.edit')} className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-[#17211d] shadow-sm transition hover:bg-[#f3ffcf]">
+                                                <PencilSquareIcon className="h-5 w-5" />
+                                                <span>{tl('Edit Profile')}</span>
+                                            </Link>
+                                            <button
+                                                onClick={() => setShowLogoutModal(true)}
                                                 className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"
                                             >
-                                                <EnvelopeIcon className="h-5 w-5" />
-                                                <span>{tl('Email')}</span>
-                                            </a>
-                                        )}
-                                    </>
-                                )}
+                                                <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                                                <span>{tl('Logout')}</span>
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button
+                                                onClick={handleFollow}
+                                                className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-black transition ${
+                                                    following
+                                                        ? 'border border-white/20 bg-white/10 text-white hover:bg-white/20'
+                                                        : 'bg-[#b7f34a] text-[#17211d] hover:bg-[#c5fb62]'
+                                                }`}
+                                            >
+                                                {following ? <UserMinusIcon className="h-5 w-5" /> : <UserPlusIcon className="h-5 w-5" />}
+                                                <span>{following ? tl('Unfollow') : tl('Follow')}</span>
+                                            </button>
+                                            {profile.show_email && profile.email && (
+                                                <a
+                                                    href={`mailto:${profile.email}`}
+                                                    className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"
+                                                >
+                                                    <EnvelopeIcon className="h-5 w-5" />
+                                                    <span>{tl('Email')}</span>
+                                                </a>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="bg-white px-6 pb-6 pt-5 sm:px-8">
                         <div className="-mt-20 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-                                <UserAvatar user={profile} size="2xl" className="shadow-2xl" />
-                                <div className="space-y-2 pb-2">
+                            <div className="flex flex-col gap-4 items-start">
+                                <UserAvatar user={profile} size="2xl" className="self-start shadow-2xl" />
+                                <div className="space-y-2 pl-1">
                                     <h1 className="font-display text-3xl font-black text-[#17211d] sm:text-4xl">
                                         {profile.name}
                                     </h1>
