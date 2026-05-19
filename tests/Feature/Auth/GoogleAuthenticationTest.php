@@ -38,7 +38,7 @@ class GoogleAuthenticationTest extends TestCase
         $response = $this->get(route('auth.google.callback'));
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('users.show', User::where('email', 'builder@example.com')->first()));
         $this->assertDatabaseHas('users', [
             'email' => 'builder@example.com',
             'google_id' => 'google-user-123',
@@ -65,7 +65,7 @@ class GoogleAuthenticationTest extends TestCase
         $response = $this->get(route('auth.google.callback'));
 
         $this->assertAuthenticatedAs($user->fresh());
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('users.show', $user));
         $this->assertSame('google-user-999', $user->fresh()->google_id);
         $this->assertNotNull($user->fresh()->email_verified_at);
     }
@@ -79,6 +79,28 @@ class GoogleAuthenticationTest extends TestCase
 
         $response->assertRedirect(route('login'));
         $response->assertSessionHasErrors('google');
+    }
+
+    public function test_google_callback_ignores_notification_count_as_the_intended_destination(): void
+    {
+        config()->set('services.google.client_id', 'test-client-id');
+        config()->set('services.google.client_secret', 'test-client-secret');
+
+        Socialite::fake('google', $this->fakeGoogleUser([
+            'id' => 'google-user-321',
+            'name' => 'Intent Builder',
+            'email' => 'intent@example.com',
+        ]));
+
+        $this->withSession([
+            'url.intended' => route('notifications.unread'),
+        ]);
+
+        $response = $this->get(route('auth.google.callback'));
+
+        $user = User::where('email', 'intent@example.com')->firstOrFail();
+
+        $response->assertRedirect(route('users.show', $user));
     }
 
     private function fakeGoogleUser(array $attributes): SocialiteUser
