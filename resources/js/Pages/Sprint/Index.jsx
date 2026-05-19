@@ -1,9 +1,19 @@
 import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Plus, Filter, Grid, List, Calendar, TrendingUp, Zap, Users, Clock } from 'lucide-react';
+import {
+    BoltIcon as Zap,
+    CalendarDaysIcon as Calendar,
+    ClockIcon as Clock,
+    PlusIcon as Plus,
+    Squares2X2Icon as Grid,
+    ListBulletIcon as List,
+    UserGroupIcon as Users,
+    ArrowTrendingUpIcon as TrendingUp,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import SprintCard from '@/Components/SprintCard';
+import ActivityPulseStrip from '@/Components/ActivityPulseStrip';
 import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function Index({ auth, sprints }) {
@@ -22,36 +32,35 @@ export default function Index({ auth, sprints }) {
         <PublicSprintLayout>
             <Head title={tl('My Sprints')} />
 
-            <div className="min-h-screen bg-gray-50 py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen py-2">
                     <div className="space-y-8">
                         {/* Header */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
+                            className="ps-hero-band flex flex-col gap-6 p-7 lg:flex-row lg:items-center lg:justify-between"
                         >
-                            <div className="text-center lg:text-left">
-                                <div className="inline-flex items-center space-x-2 px-4 py-2 bg-green-50 rounded-full mb-4 border border-green-200">
-                                    <Zap className="w-4 h-4 text-green-600" />
-                                    <span className="text-sm font-semibold text-green-700">
+                            <div className="relative z-10 text-center lg:text-left">
+                                <div className="mb-4 inline-flex items-center space-x-2 rounded-full border border-white/15 bg-white/12 px-4 py-2 backdrop-blur-sm">
+                                    <Zap className="h-4 w-4 text-[#b7f34a]" />
+                                    <span className="text-sm font-semibold text-white">
                                         {tl('Your builder journey')}
                                     </span>
                                 </div>
-                                <h1 className="text-4xl font-bold text-gray-900 mb-3">
+                                <h1 className="mb-3 font-display text-4xl font-black text-white">
                                     {tl('My Sprints')}
                                 </h1>
-                                <p className="text-lg text-gray-600 max-w-2xl">
+                                <p className="max-w-2xl text-lg text-white/74">
                                     {tl('Track and manage all your active projects and sprints')}
                                 </p>
                             </div>
-                            <Link
-                                href={route('sprints.create')}
-                                className="flex items-center space-x-2 px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm hover:shadow-md"
-                            >
-                                <Plus className="w-5 h-5" />
-                                <span>{tl('New Sprint')}</span>
-                            </Link>
+                            <div className="relative z-10 w-full max-w-sm space-y-3">
+                                <ActivityPulseStrip />
+                                <Link href={route('sprints.create')} className="ps-command-button w-full">
+                                    <Plus className="h-5 w-5" />
+                                    <span>{tl('New Sprint')}</span>
+                                </Link>
+                            </div>
                         </motion.div>
 
                         {/* Quick Stats */}
@@ -166,7 +175,10 @@ export default function Index({ auth, sprints }) {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: 0.05 * index }}
                                         >
-                                            <SprintCard sprint={sprint} />
+                                            <SprintCard
+                                                sprint={sprint}
+                                                showManagementMenu={Boolean(sprint.can_manage_before_start)}
+                                            />
                                         </motion.div>
                                     ))
                                 }
@@ -176,7 +188,7 @@ export default function Index({ auth, sprints }) {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.3 }}
-                                className="text-center py-16 bg-white rounded-xl border border-gray-200"
+                                className="ps-empty-state py-16"
                             >
                                 <div className="max-w-md mx-auto">
                                     <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gray-100 flex items-center justify-center">
@@ -232,7 +244,6 @@ export default function Index({ auth, sprints }) {
                             </motion.div>
                         )}
                     </div>
-                </div>
             </div>
         </PublicSprintLayout>
     );

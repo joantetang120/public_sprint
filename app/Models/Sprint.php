@@ -133,6 +133,18 @@ class Sprint extends Model
         return auth()->check() && $this->isCreator(auth()->id());
     }
 
+    public function hasOnlyCreatorParticipant(): bool
+    {
+        return (int) $this->participants_count <= 1;
+    }
+
+    public function canBeManagedBeforeStartBy($userId): bool
+    {
+        return $this->isCreator($userId)
+            && $this->hasOnlyCreatorParticipant()
+            && now()->isBefore($this->starts_at);
+    }
+
     /**
      * Calculate status based on dates
      */

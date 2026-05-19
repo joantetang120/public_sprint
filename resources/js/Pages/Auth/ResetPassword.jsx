@@ -1,6 +1,17 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Zap, Mail, Lock, ArrowRight, Eye, EyeOff, Users, Rocket, Star, Shield } from 'lucide-react';
+import {
+    ArrowRightIcon as ArrowRight,
+    BoltIcon as Zap,
+    EnvelopeIcon as Mail,
+    EyeIcon as Eye,
+    EyeSlashIcon as EyeOff,
+    LockClosedIcon as Lock,
+    RocketLaunchIcon as Rocket,
+    ShieldCheckIcon as Shield,
+    StarIcon as Star,
+    UserGroupIcon as Users,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 export default function ResetPassword({ token, email }) {

@@ -1,4 +1,4 @@
-import { Globe } from 'lucide-react';
+import { GlobeAltIcon as Globe } from '@heroicons/react/24/outline';
 import { router } from '@inertiajs/react';
 import { useLanguage } from '@/Contexts/LanguageContext';
 

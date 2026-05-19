@@ -1,6 +1,15 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Zap, Mail, ArrowRight, ArrowLeft, CheckCircle2, Users, Rocket, Star } from 'lucide-react';
+import {
+    ArrowLeftIcon as ArrowLeft,
+    ArrowRightIcon as ArrowRight,
+    BoltIcon as Zap,
+    CheckCircleIcon as CheckCircle2,
+    EnvelopeIcon as Mail,
+    RocketLaunchIcon as Rocket,
+    StarIcon as Star,
+    UserGroupIcon as Users,
+} from '@heroicons/react/24/outline';
 
 export default function ForgotPassword({ status }) {
     const { data, setData, post, processing, errors } = useForm({

@@ -1,20 +1,20 @@
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    BookOpen,
-    Briefcase,
-    Check,
-    Clipboard,
-    Download,
-    ExternalLink,
-    FileText,
-    GalleryVerticalEnd,
-    Image as ImageIcon,
-    Link2,
-    Printer,
-    Sparkles,
-    X,
-} from 'lucide-react';
+    ArrowTopRightOnSquareIcon as ExternalLink,
+    BookOpenIcon as BookOpen,
+    BriefcaseIcon as Briefcase,
+    CheckIcon as Check,
+    ClipboardDocumentIcon as Clipboard,
+    DocumentArrowDownIcon as Download,
+    DocumentTextIcon as FileText,
+    LinkIcon as Link2,
+    PhotoIcon as GalleryVerticalEnd,
+    PhotoIcon as ImageIcon,
+    PrinterIcon as Printer,
+    SparklesIcon as Sparkles,
+    XMarkIcon as X,
+} from '@heroicons/react/24/outline';
 import { buildPrintableReportHtml, parseSprintReport } from '@/lib/sprintReport';
 import { useLanguage } from '@/Contexts/LanguageContext';
 

@@ -16,12 +16,20 @@ class SprintController extends Controller
     public function index()
     {
         $sprints = Sprint::with(['creator', 'tags', 'participants'])
-            ->where('user_id', auth()->id())
-            ->orWhereHas('participants', function($query) {
-                $query->where('user_id', auth()->id());
+            ->where(function ($query) {
+                $query->where('user_id', auth()->id())
+                    ->orWhereHas('participants', function ($participantQuery) {
+                        $participantQuery->where('user_id', auth()->id());
+                    });
             })
             ->latest()
             ->paginate(12);
+
+        $sprints->through(function (Sprint $sprint) {
+            $sprint->setAttribute('can_manage_before_start', $sprint->canBeManagedBeforeStartBy(auth()->id()));
+
+            return $sprint;
+        });
 
         return Inertia::render('Sprint/Index', [
             'sprints' => $sprints,
@@ -185,17 +193,22 @@ class SprintController extends Controller
         ]);
     }
 
+    public function edit(Sprint $sprint)
+    {
+        $this->ensureSprintCanBeManaged($sprint);
+
+        $tags = SprintTag::orderBy('name')->get();
+        $sprint->load('tags');
+
+        return Inertia::render('Sprint/Edit', [
+            'sprint' => $sprint,
+            'tags' => $tags,
+        ]);
+    }
+
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'duration_days' => 'required|integer|in:3,7,14,21,30',
-            'is_private' => 'boolean',
-            'starts_at' => 'required|date|after:now',
-            'tags' => 'array',
-            'tags.*' => 'string|max:50',
-        ]);
+        $validated = $this->validateSprint($request);
 
         DB::beginTransaction();
         try {
@@ -236,6 +249,62 @@ class SprintController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Failed to create sprint.']);
+        }
+    }
+
+    public function update(Request $request, Sprint $sprint)
+    {
+        $this->ensureSprintCanBeManaged($sprint);
+        $validated = $this->validateSprint($request);
+
+        DB::beginTransaction();
+        try {
+            $sprint->update([
+                'title' => $validated['title'],
+                'description' => $validated['description'] ?? null,
+                'duration_days' => $validated['duration_days'],
+                'is_private' => $validated['is_private'] ?? false,
+                'starts_at' => $validated['starts_at'],
+                'ends_at' => now()->parse($validated['starts_at'])->addDays($validated['duration_days']),
+            ]);
+
+            $this->syncSprintTags($sprint, $validated['tags'] ?? []);
+
+            DB::commit();
+
+            return redirect()->route('sprints.index')
+                ->with('success', 'Sprint updated successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->withErrors(['error' => 'Failed to update sprint.']);
+        }
+    }
+
+    public function destroy(Sprint $sprint)
+    {
+        $this->ensureSprintCanBeManaged($sprint);
+
+        DB::beginTransaction();
+        try {
+            $sprint->load('tags');
+
+            foreach ($sprint->tags as $tag) {
+                if ($tag->usage_count > 0) {
+                    $tag->decrement('usage_count');
+                }
+            }
+
+            $sprint->delete();
+
+            DB::commit();
+
+            return redirect()->route('sprints.index')
+                ->with('success', 'Sprint deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->withErrors(['error' => 'Failed to delete sprint.']);
         }
     }
 
@@ -359,5 +428,63 @@ class SprintController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Sprint report generated successfully!');
+    }
+
+    private function validateSprint(Request $request): array
+    {
+        return $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'duration_days' => 'required|integer|in:3,7,14,21,30',
+            'is_private' => 'boolean',
+            'starts_at' => 'required|date|after:now',
+            'tags' => 'array',
+            'tags.*' => 'string|max:50',
+        ]);
+    }
+
+    private function ensureSprintCanBeManaged(Sprint $sprint): void
+    {
+        abort_unless(
+            $sprint->canBeManagedBeforeStartBy(auth()->id()),
+            403,
+            'This sprint can no longer be edited or deleted.'
+        );
+    }
+
+    private function syncSprintTags(Sprint $sprint, array $tagNames): void
+    {
+        $sprint->loadMissing('tags');
+
+        $currentTagIds = $sprint->tags->pluck('id');
+        $newTagIds = collect($tagNames)
+            ->filter()
+            ->unique()
+            ->map(function ($tagName) {
+                $tag = SprintTag::firstOrCreate(
+                    ['name' => $tagName],
+                    ['slug' => \Str::slug($tagName)]
+                );
+
+                return $tag->id;
+            })
+            ->values();
+
+        $tagIdsToDetach = $currentTagIds->diff($newTagIds);
+        $tagIdsToAttach = $newTagIds->diff($currentTagIds);
+
+        if ($tagIdsToDetach->isNotEmpty()) {
+            SprintTag::whereIn('id', $tagIdsToDetach)->get()->each(function (SprintTag $tag) {
+                if ($tag->usage_count > 0) {
+                    $tag->decrement('usage_count');
+                }
+            });
+        }
+
+        if ($tagIdsToAttach->isNotEmpty()) {
+            SprintTag::whereIn('id', $tagIdsToAttach)->increment('usage_count');
+        }
+
+        $sprint->tags()->sync($newTagIds->all());
     }
 }

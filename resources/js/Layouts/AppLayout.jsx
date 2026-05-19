@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Home, Compass, PlusCircle, Bell, User, Menu, X, 
-    Sun, Moon, Zap, TrendingUp, Users 
-} from 'lucide-react';
+import {
+    BellAlertIcon as Bell,
+    BoltIcon as Zap,
+    Bars3Icon as Menu,
+    MapIcon as Compass,
+    HomeIcon as Home,
+    MoonIcon as Moon,
+    PlusCircleIcon as PlusCircle,
+    SunIcon as Sun,
+    UserCircleIcon as User,
+    UserGroupIcon as Users,
+    XMarkIcon as X,
+    ArrowTrendingUpIcon as TrendingUp,
+} from '@heroicons/react/24/outline';
 
 export default function AppLayout({ children }) {
     const { auth } = usePage().props;

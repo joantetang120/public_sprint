@@ -1,6 +1,15 @@
 import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Zap, Hash, Sparkles, Search, Filter, Plus, Calendar } from 'lucide-react';
+import {
+    ArrowTrendingUpIcon as TrendingUp,
+    BoltIcon as Zap,
+    CalendarDaysIcon as Calendar,
+    FunnelIcon as Filter,
+    HashtagIcon as Hash,
+    MagnifyingGlassIcon as Search,
+    PlusIcon as Plus,
+    SparklesIcon as Sparkles,
+} from '@heroicons/react/24/outline';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import SprintCard from '@/Components/SprintCard';
 import { useState } from 'react';

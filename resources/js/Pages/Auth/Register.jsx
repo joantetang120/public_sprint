@@ -1,6 +1,18 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Zap, Mail, Lock, User, ArrowRight, Eye, EyeOff, CheckCircle2, Users, Rocket, Star } from 'lucide-react';
+import {
+    ArrowRightIcon as ArrowRight,
+    BoltIcon as Zap,
+    CheckCircleIcon as CheckCircle2,
+    EnvelopeIcon as Mail,
+    EyeIcon as Eye,
+    EyeSlashIcon as EyeOff,
+    LockClosedIcon as Lock,
+    RocketLaunchIcon as Rocket,
+    StarIcon as Star,
+    UserGroupIcon as Users,
+    UserIcon as User,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import LanguageSwitcher from '@/Components/LanguageSwitcher';
 import { useLanguage } from '@/Contexts/LanguageContext';

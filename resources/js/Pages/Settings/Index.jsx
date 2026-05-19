@@ -1,11 +1,27 @@
 import { Head, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { 
-    Settings as SettingsIcon, Bell, Lock, User, Palette, Globe, 
-    Mail, MessageSquare, Heart, Trophy, Eye, EyeOff, Save, Trash2,
-    Sun, Moon, Monitor, Check, AlertTriangle
-} from 'lucide-react';
+import {
+    BellAlertIcon as Bell,
+    BookmarkSquareIcon as Save,
+    CheckIcon as Check,
+    ChatBubbleOvalLeftEllipsisIcon as MessageSquare,
+    Cog6ToothIcon as SettingsIcon,
+    ComputerDesktopIcon as Monitor,
+    EnvelopeIcon as Mail,
+    ExclamationTriangleIcon as AlertTriangle,
+    EyeIcon as Eye,
+    EyeSlashIcon as EyeOff,
+    GlobeAltIcon as Globe,
+    HeartIcon as Heart,
+    LockClosedIcon as Lock,
+    MoonIcon as Moon,
+    PaintBrushIcon as Palette,
+    SunIcon as Sun,
+    TrashIcon as Trash2,
+    TrophyIcon as Trophy,
+    UserCircleIcon as User,
+} from '@heroicons/react/24/outline';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import { useLanguage } from '@/Contexts/LanguageContext';
 
