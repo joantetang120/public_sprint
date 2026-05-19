@@ -11,6 +11,7 @@ import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
 import JoinWithMeLink from '@/Components/JoinWithMeLink';
 import AISprintSummary from '@/Components/AISprintSummary';
+import { routeKey } from '@/lib/routeKey';
 
 export default function Show({ auth, sprint, isParticipant, leaderboard, completionStats }) {
     const [activeTab, setActiveTab] = useState('updates');
@@ -23,6 +24,10 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
     const [selectedImage, setSelectedImage] = useState(null);
     const [showShareModal, setShowShareModal] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
+
+    const getUserRouteKey = (user) => routeKey(user);
+    const getSprintRouteKey = (value = sprint) => routeKey(value) ?? value;
+    const getUpdateRouteKey = (value) => routeKey(value) ?? value;
 
     const getDaysRemaining = () => {
         const end = new Date(sprint.ends_at);
@@ -103,7 +108,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
     };
 
     const handleJoin = () => {
-        router.post(`/sprints/${sprint.id}/join`);
+        router.post(route('sprints.join', getSprintRouteKey()));
     };
 
     const handleLeave = () => {
@@ -111,17 +116,17 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
     };
 
     const confirmLeave = () => {
-        router.post(`/sprints/${sprint.id}/leave`);
+        router.post(route('sprints.leave', getSprintRouteKey()));
         setShowLeaveModal(false);
     };
 
-    const handleReaction = (updateId) => {
+    const handleReaction = (update) => {
         if (!auth.user) {
             router.visit('/login');
             return;
         }
 
-        const update = sprint.updates.find(u => u.id === updateId);
+        const updateId = update.id;
         const hasReacted = update?.reactions?.some(r => r.user_id === auth.user.id);
         
         setLocalReactions(prev => ({
@@ -134,7 +139,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
             }
         }));
 
-        router.post(`/updates/${updateId}/react`, {}, {
+        router.post(route('updates.react', getUpdateRouteKey(update)), {}, {
             preserveScroll: true,
             onError: (errors) => {
                 setLocalReactions(prev => {
@@ -153,17 +158,18 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
         }));
     };
 
-    const handleCommentSubmit = async (updateId) => {
+    const handleCommentSubmit = async (update) => {
         if (!auth.user) {
             router.visit('/login');
             return;
         }
 
+        const updateId = update.id;
         const content = commentText[updateId]?.trim();
         if (!content) return;
 
         try {
-            await router.post(`/updates/${updateId}/comments`, {
+            await router.post(route('comments.store', { update: getUpdateRouteKey(update) }), {
                 content: content
             }, {
                 preserveScroll: true,
@@ -175,7 +181,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
         }
     };
 
-    const handleReply = async (updateId, commentId) => {
+    const handleReply = async (update, commentId) => {
         if (!auth.user) {
             router.visit('/login');
             return;
@@ -185,7 +191,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
         if (!content) return;
 
         try {
-            await router.post(route('comments.store', { update: updateId }), {
+            await router.post(route('comments.store', { update: getUpdateRouteKey(update) }), {
                 content: content,
                 parent_id: commentId
             }, {
@@ -220,7 +226,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
 
     // Safe route generation functions
     const getUpdateCreateRoute = () => {
-        return `/sprints/${sprint.id}/updates/create`;
+        return route('updates.create', getSprintRouteKey());
     };
 
     const getRegisterRoute = () => {
@@ -555,7 +561,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                 size="md"
                                                             />
                                                             <div>
-                                                                <Link href={`/users/${update.user?.id}`} className="font-semibold text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                                <Link href={route('users.show', getUserRouteKey(update.user))} className="font-semibold text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
                                                                     {update.user?.name}
                                                                 </Link>
                                                                 <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -679,7 +685,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                             
                                                             return (
                                                                 <button 
-                                                                    onClick={() => handleReaction(update.id)}
+                                                                    onClick={() => handleReaction(update)}
                                                                     className={`flex items-center space-x-1 transition-all ${
                                                                         hasReacted
                                                                             ? 'text-red-600'
@@ -726,7 +732,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                         />
                                                                         <div className="flex justify-end mt-1">
                                                                             <button
-                                                                                onClick={() => handleCommentSubmit(update.id)}
+                                                                                onClick={() => handleCommentSubmit(update)}
                                                                                 disabled={!commentText[update.id]?.trim()}
                                                                                 className="px-3 py-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded text-xs font-medium transition-colors"
                                                                             >
@@ -749,7 +755,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                             <div className="flex-1">
                                                                                 <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
                                                                                     <div className="flex items-center space-x-2 mb-1">
-                                                                                        <Link href={`/users/${comment.user?.id}`} className="font-medium text-xs text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                                                        <Link href={route('users.show', getUserRouteKey(comment.user))} className="font-medium text-xs text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
                                                                                             {comment.user?.name}
                                                                                         </Link>
                                                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -793,7 +799,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                     onKeyDown={(e) => {
                                                                         if (e.key === 'Enter' && !e.shiftKey) {
                                                                             e.preventDefault();
-                                                                            handleReply(update.id, comment.id);
+                                                                            handleReply(update, comment.id);
                                                                         }
                                                                     }}
                                                                                                     />
@@ -805,7 +811,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                             Cancel
                                                                         </button>
                                                                         <button
-                                                                            onClick={() => handleReply(update.id, comment.id)}
+                                                                            onClick={() => handleReply(update, comment.id)}
                                                                             disabled={!replyText[comment.id]?.trim()}
                                                                             className="px-3 py-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded text-xs font-medium transition-colors"
                                                                         >
@@ -829,7 +835,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                     <div className="flex-1">
                                                                         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
                                                                             <div className="flex items-center space-x-2 mb-1">
-                                                                                <Link href={`/users/${reply.user?.id}`} className="font-medium text-xs text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                                                <Link href={route('users.show', getUserRouteKey(reply.user))} className="font-medium text-xs text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
                                                                                     {reply.user?.name}
                                                                                 </Link>
                                                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -895,7 +901,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                         size="md"
                                                     />
                                                     <div className="flex-1">
-                                                        <Link href={`/users/${participant.id}`} className="font-semibold text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                        <Link href={route('users.show', getUserRouteKey(participant))} className="font-semibold text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
                                                             {participant.name}
                                                         </Link>
                                                         <div className="text-xs text-gray-600 dark:text-gray-400">
@@ -933,7 +939,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                 <Medal className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                                                             </div>
                                                         </div>
-                                                        <Link href={`/users/${leaderboard[1].id}`} className="font-bold text-sm text-gray-900 dark:text-white mt-2 block hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                        <Link href={route('users.show', getUserRouteKey(leaderboard[1]))} className="font-bold text-sm text-gray-900 dark:text-white mt-2 block hover:text-green-600 dark:hover:text-green-400 transition-colors">
                                                             {leaderboard[1].name}
                                                         </Link>
                                                         <div className="text-2xl font-black text-gray-600 dark:text-gray-300 mt-1">{leaderboard[1].pivot?.score || 0}</div>
@@ -955,7 +961,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                 <Crown className="w-5 h-5 text-yellow-900" />
                                                             </div>
                                                         </div>
-                                                        <Link href={`/users/${leaderboard[0].id}`} className="font-bold text-base text-gray-900 dark:text-white mt-2 block hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                        <Link href={route('users.show', getUserRouteKey(leaderboard[0]))} className="font-bold text-base text-gray-900 dark:text-white mt-2 block hover:text-green-600 dark:hover:text-green-400 transition-colors">
                                                             {leaderboard[0].name}
                                                         </Link>
                                                         <div className="text-3xl font-black text-yellow-600 dark:text-yellow-400 mt-1">{leaderboard[0].pivot?.score || 0}</div>
@@ -977,7 +983,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                 <Award className="w-4 h-4 text-orange-600 dark:text-orange-300" />
                                                             </div>
                                                         </div>
-                                                        <Link href={`/users/${leaderboard[2].id}`} className="font-bold text-sm text-gray-900 dark:text-white mt-2 block hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                        <Link href={route('users.show', getUserRouteKey(leaderboard[2]))} className="font-bold text-sm text-gray-900 dark:text-white mt-2 block hover:text-green-600 dark:hover:text-green-400 transition-colors">
                                                             {leaderboard[2].name}
                                                         </Link>
                                                         <div className="text-2xl font-black text-orange-600 dark:text-orange-400 mt-1">{leaderboard[2].pivot?.score || 0}</div>
@@ -1015,7 +1021,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                     />
                                                                     <div className="flex-1 min-w-0">
                                                                         <div className="flex items-center space-x-2">
-                                                                            <Link href={`/users/${user.id}`} className="font-semibold text-gray-900 dark:text-white text-sm hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                                            <Link href={route('users.show', getUserRouteKey(user))} className="font-semibold text-gray-900 dark:text-white text-sm hover:text-green-600 dark:hover:text-green-400 transition-colors">
                                                                                 {user.name}
                                                                             </Link>
                                                                             {badges.length > 0 && (
@@ -1126,7 +1132,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                         size="sm"
                                                     />
                                                     <div className="flex-1 min-w-0">
-                                                        <Link href={`/users/${user.id}`} className="font-medium text-gray-900 dark:text-white text-xs truncate hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                        <Link href={route('users.show', getUserRouteKey(user))} className="font-medium text-gray-900 dark:text-white text-xs truncate hover:text-green-600 dark:hover:text-green-400 transition-colors">
                                                             {user.name}
                                                         </Link>
                                                     </div>

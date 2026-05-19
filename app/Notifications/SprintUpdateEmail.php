@@ -35,7 +35,7 @@ class SprintUpdateEmail extends Notification
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line($this->author->name . ' posted a new update in "' . $this->sprint->title . '".')
             ->line('Update preview: "' . $preview . '"')
-            ->action('View Sprint', route('sprints.show', $this->sprint->id))
+            ->action('View Sprint', route('sprints.show', $this->sprint))
             ->line('You can manage these emails from your notification settings.');
     }
 }

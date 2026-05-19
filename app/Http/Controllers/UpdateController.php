@@ -73,20 +73,20 @@ class UpdateController extends Controller
     {
         // Check if user is participant
         if (!$sprint->participants()->where('user_id', auth()->id())->exists()) {
-            return redirect()->route('sprints.show', $sprint->id)
+            return redirect()->route('sprints.show', $sprint)
                 ->with('error', 'You must be a participant to post updates.');
         }
 
         // TEMPORARILY DISABLED FOR TESTING
         // // Check if sprint has started
         // if ($sprint->status === 'upcoming' || now()->isBefore($sprint->starts_at)) {
-        //     return redirect()->route('sprints.show', $sprint->id)
+        //     return redirect()->route('sprints.show', $sprint)
         //         ->with('error', 'You can only post updates after the sprint has started.');
         // }
 
         // // Check if sprint has ended
         // if ($sprint->status === 'completed' || now()->isAfter($sprint->ends_at)) {
-        //     return redirect()->route('sprints.show', $sprint->id)
+        //     return redirect()->route('sprints.show', $sprint)
         //         ->with('error', 'This sprint has ended. You can no longer post updates.');
         // }
 
@@ -233,7 +233,7 @@ class UpdateController extends Controller
                 NotificationService::sprintUpdate($sprint, auth()->user(), $update);
             }
 
-            return redirect()->route('sprints.show', $sprint->id)
+            return redirect()->route('sprints.show', $sprint)
                 ->with('success', $update->is_draft ? 'Draft saved!' : 'Update posted! 🎉');
         } catch (\Exception $e) {
             \Log::error('Failed to create update', [

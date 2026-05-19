@@ -26,14 +26,14 @@ export default function Index({ auth, notifications }) {
     const getNotificationLink = (notification) => {
         const data = notification.data;
         
-        if (data.sprint_id && data.update_id) {
-            return route('sprints.show', data.sprint_id);
+        if ((data.sprint_ulid || data.sprint_id) && (data.update_ulid || data.update_id)) {
+            return route('sprints.show', data.sprint_ulid || data.sprint_id);
         }
-        if (data.follower_id) {
-            return route('users.show', data.follower_id);
+        if (data.follower_ulid || data.follower_id) {
+            return route('users.show', data.follower_ulid || data.follower_id);
         }
-        if (data.sprint_id) {
-            return route('sprints.show', data.sprint_id);
+        if (data.sprint_ulid || data.sprint_id) {
+            return route('sprints.show', data.sprint_ulid || data.sprint_id);
         }
         return null;
     };

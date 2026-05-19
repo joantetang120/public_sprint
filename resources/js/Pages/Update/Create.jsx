@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Send, Image as ImageIcon, Link2, X, Calendar, Users } from 'lucide-react';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
+import { routeKey } from '@/lib/routeKey';
 
 export default function Create({ auth, sprint }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -19,7 +20,7 @@ export default function Create({ auth, sprint }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('updates.store', sprint.id), {
+        post(route('updates.store', routeKey(sprint)), {
             forceFormData: true,
             onSuccess: () => {
                 // Will redirect to sprint detail page
@@ -85,7 +86,7 @@ export default function Create({ auth, sprint }) {
                         className="mb-8"
                     >
                         <Link
-                            href={route('sprints.show', sprint.id)}
+                            href={route('sprints.show', routeKey(sprint))}
                             className="inline-flex items-center space-x-2 text-gray-600 hover:text-green-600 font-medium mb-6 transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
@@ -343,7 +344,7 @@ export default function Create({ auth, sprint }) {
                                     <span>{processing ? 'Posting...' : 'Post Update'}</span>
                                 </button>
                                 <Link
-                                    href={route('sprints.show', sprint.id)}
+                                    href={route('sprints.show', routeKey(sprint))}
                                     className="px-8 py-3 bg-white/10 text-white rounded-lg font-semibold hover:bg-white/20 transition-colors"
                                 >
                                     Cancel
@@ -374,7 +375,7 @@ export default function Create({ auth, sprint }) {
                                 This sprint is currently {sprint.computed_status}. You can only post updates to active sprints.
                             </p>
                             <Link
-                                href={route('sprints.show', sprint.id)}
+                                href={route('sprints.show', routeKey(sprint))}
                                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             >
                                 Back to Sprint

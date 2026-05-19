@@ -20,6 +20,7 @@ class NotificationService
         $notificationData = array_merge($data ?? [], [
             'message' => $message,
             'actor_id' => $actor?->id,
+            'actor_ulid' => $actor?->ulid,
         ]);
 
         \DB::table('notifications')->insert([
@@ -40,7 +41,10 @@ class NotificationService
             'new_follower',
             "{$follower->name} started following you",
             $follower,
-            ['follower_id' => $follower->id]
+            [
+                'follower_id' => $follower->id,
+                'follower_ulid' => $follower->ulid,
+            ]
         );
     }
 
@@ -54,8 +58,10 @@ class NotificationService
                 $commenter,
                 [
                     'update_id' => $update->id,
+                    'update_ulid' => $update->ulid,
                     'comment_id' => $comment->id,
                     'sprint_id' => $update->sprint_id,
+                    'sprint_ulid' => $update->sprint->ulid,
                 ]
             );
 
@@ -76,6 +82,8 @@ class NotificationService
                 [
                     'update_id' => $update->id,
                     'sprint_id' => $update->sprint_id,
+                    'update_ulid' => $update->ulid,
+                    'sprint_ulid' => $update->sprint->ulid,
                 ]
             );
 
@@ -92,7 +100,10 @@ class NotificationService
             'sprint_milestone',
             "Sprint '{$sprint->title}' {$milestone}",
             null,
-            ['sprint_id' => $sprint->id]
+            [
+                'sprint_id' => $sprint->id,
+                'sprint_ulid' => $sprint->ulid,
+            ]
         );
     }
 
@@ -104,7 +115,10 @@ class NotificationService
                 'new_participant',
                 "{$participant->name} joined your sprint '{$sprint->title}'",
                 $participant,
-                ['sprint_id' => $sprint->id]
+                [
+                    'sprint_id' => $sprint->id,
+                    'sprint_ulid' => $sprint->ulid,
+                ]
             );
         }
     }
