@@ -80,6 +80,7 @@ class ProfileController extends Controller
     {
         return [
             'id' => $user->id,
+            'ulid' => $user->ulid,
             'name' => $user->name,
             'email' => $canShowEmail ? $user->email : null,
             'avatar' => $user->avatar,
@@ -163,7 +164,7 @@ class ProfileController extends Controller
         $user->save();
 
         return redirect()
-            ->route('users.show', $user->id)
+            ->route('users.show', $user)
             ->with('success', 'Profile updated successfully!');
     }
 

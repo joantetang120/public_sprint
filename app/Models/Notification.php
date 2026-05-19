@@ -11,6 +11,10 @@ class Notification extends DatabaseNotification
     
     public function getActorAttribute()
     {
+        if (isset($this->data['actor_ulid'])) {
+            return User::where('ulid', $this->data['actor_ulid'])->first();
+        }
+
         if (isset($this->data['actor_id'])) {
             return User::find($this->data['actor_id']);
         }

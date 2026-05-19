@@ -29,7 +29,7 @@ class ReactionActivityEmail extends Notification
             ->subject($this->reactor->name . ' reacted to your update')
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line($this->reactor->name . ' liked one of your sprint updates.')
-            ->action('View Update', route('sprints.show', $this->update->sprint_id))
+            ->action('View Update', route('sprints.show', $this->update->sprint))
             ->line('You can manage these emails from your notification settings.');
     }
 }

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link2, Check, Copy, Twitter, Linkedin, Facebook } from 'lucide-react';
+import { routeKey } from '@/lib/routeKey';
 
 export default function JoinWithMeLink({ sprint, user }) {
     const [linkCopied, setLinkCopied] = useState(false);
 
     const getJoinUrl = () => {
         const baseUrl = window.location.origin;
-        return `${baseUrl}/sprints/${sprint.id}?ref=${user.id}`;
+        return `${baseUrl}/sprints/${routeKey(sprint)}?ref=${routeKey(user)}`;
     };
 
     const handleCopyLink = async () => {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUlid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,9 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Update extends Model
 {
-    use HasFactory;
+    use HasFactory, HasPublicUlid;
 
     protected $fillable = [
+        'ulid',
         'sprint_id',
         'user_id',
         'day_number',

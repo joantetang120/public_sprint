@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Camera, User, Mail, MapPin, Globe, Save, ArrowLeft, Upload } from 'lucide-react';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
+import { routeKey } from '@/lib/routeKey';
 
 export default function EditNew({ auth }) {
     const { data, setData, post, patch, processing, errors } = useForm({
@@ -69,7 +70,7 @@ export default function EditNew({ auth }) {
                         </p>
                     </div>
                     <Link
-                        href={route('users.show', auth.user.id)}
+                        href={route('users.show', routeKey(auth.user))}
                         className="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />
@@ -272,7 +273,7 @@ export default function EditNew({ auth }) {
                         className="flex justify-end space-x-4"
                     >
                         <Link
-                            href={route('users.show', auth.user.id)}
+                            href={route('users.show', routeKey(auth.user))}
                             className="px-6 py-3 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
                         >
                             Cancel

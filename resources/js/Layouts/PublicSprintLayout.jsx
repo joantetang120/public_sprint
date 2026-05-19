@@ -6,6 +6,7 @@ import {
     Zap, TrendingUp, MessageSquare, UserPlus, Search, Settings
 } from 'lucide-react';
 import UserAvatar from '@/Components/UserAvatar';
+import { routeKey } from '@/lib/routeKey';
 
 export default function PublicSprintLayout({ children }) {
     const { auth } = usePage().props;
@@ -60,7 +61,7 @@ export default function PublicSprintLayout({ children }) {
         { name: 'Home', href: route('dashboard'), icon: Home },
         { name: 'Discover', href: route('discover'), icon: Compass },
         { name: 'Sprints', href: route('sprints.index'), icon: TrendingUp },
-        { name: 'Profile', href: auth.user ? route('users.show', auth.user.id) : route('login'), icon: User },
+        { name: 'Profile', href: auth.user ? route('users.show', routeKey(auth.user)) : route('login'), icon: User },
         ...(auth.user ? [{ name: 'Settings', href: route('settings.index'), icon: Settings }] : []),
     ];
 
@@ -136,7 +137,7 @@ export default function PublicSprintLayout({ children }) {
                             {/* User Avatar / Login */}
                             {auth.user ? (
                                 <Link
-                                    href={route('users.show', auth.user.id)}
+                                    href={route('users.show', routeKey(auth.user))}
                                     className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
                                 >
                                     <UserAvatar user={auth.user} className="w-8 h-8" />

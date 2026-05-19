@@ -27,7 +27,7 @@ class SprintCompletedEmail extends Notification
             ->subject('Sprint completed: ' . $this->sprint->title)
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line('Your sprint "' . $this->sprint->title . '" has now been marked as completed.')
-            ->action('View Sprint', route('sprints.show', $this->sprint->id))
+            ->action('View Sprint', route('sprints.show', $this->sprint))
             ->line('You can manage these emails from your notification settings.');
     }
 }

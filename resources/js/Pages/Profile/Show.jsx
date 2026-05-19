@@ -7,6 +7,7 @@ import {
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
+import { routeKey } from '@/lib/routeKey';
 
 export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, followers = [], followingUsers = [] }) {
     const [following, setFollowing] = useState(isFollowing);
@@ -26,7 +27,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
         // Optimistic update
         setFollowing(!following);
 
-        router.post(route(endpoint, profile.id), {}, {
+        router.post(route(endpoint, profile.ulid ?? profile.id), {}, {
             preserveScroll: true,
             preserveState: true,
             onError: () => {
@@ -36,7 +37,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
         });
     };
 
-    const handleFollowUser = (userId, isCurrentlyFollowing) => {
+    const handleFollowUser = (userId, userRouteKey, isCurrentlyFollowing) => {
         if (!auth.user) {
             router.visit(route('login'));
             return;
@@ -50,7 +51,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
             [userId]: !isCurrentlyFollowing
         }));
 
-        router.post(route(endpoint, userId), {}, {
+        router.post(route(endpoint, userRouteKey), {}, {
             preserveScroll: true,
             preserveState: true,
             onError: () => {
@@ -343,7 +344,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                             {profile.sprints.map((sprint) => (
                                 <Link
                                     key={sprint.id}
-                                    href={route('sprints.show', sprint.id)}
+                                    href={route('sprints.show', routeKey(sprint))}
                                     className="block p-6 hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors"
                                 >
                                     <div className="flex items-center justify-between">
@@ -415,11 +416,11 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                             
                                             return (
                                                 <div key={follower.id} className="flex items-center space-x-3 p-4 hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors">
-                                                    <Link href={route('users.show', follower.id)}>
+                                                    <Link href={route('users.show', routeKey(follower))}>
                                                         <UserAvatar user={follower} size="lg" />
                                                     </Link>
                                                     <Link 
-                                                        href={route('users.show', follower.id)}
+                                                        href={route('users.show', routeKey(follower))}
                                                         className="flex-1 min-w-0"
                                                     >
                                                         <p className="font-bold text-gray-900 dark:text-white truncate hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
@@ -435,7 +436,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                handleFollowUser(follower.id, isFollowingThisUser);
+                                                                handleFollowUser(follower.id, routeKey(follower), isFollowingThisUser);
                                                             }}
                                                             className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
                                                                 isFollowingThisUser
@@ -493,11 +494,11 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                             
                                             return (
                                                 <div key={user.id} className="flex items-center space-x-3 p-4 hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors">
-                                                    <Link href={route('users.show', user.id)}>
+                                                    <Link href={route('users.show', routeKey(user))}>
                                                         <UserAvatar user={user} size="lg" />
                                                     </Link>
                                                     <Link 
-                                                        href={route('users.show', user.id)}
+                                                        href={route('users.show', routeKey(user))}
                                                         className="flex-1 min-w-0"
                                                     >
                                                         <p className="font-bold text-gray-900 dark:text-white truncate hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
@@ -513,7 +514,7 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                handleFollowUser(user.id, isFollowingThisUser);
+                                                                handleFollowUser(user.id, routeKey(user), isFollowingThisUser);
                                                             }}
                                                             className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
                                                                 isFollowingThisUser

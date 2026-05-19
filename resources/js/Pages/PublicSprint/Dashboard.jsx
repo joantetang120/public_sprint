@@ -7,6 +7,7 @@ import UserAvatar from '@/Components/UserAvatar';
 import SprintProgressCard from '@/Components/SprintProgressCard';
 import AISprintSummary from '@/Components/AISprintSummary';
 import { getSprintReportPreview, hasSprintReport } from '@/lib/sprintReport';
+import { routeKey } from '@/lib/routeKey';
 
 export default function Dashboard({ auth, updates = [], stats = {}, completedSprints = [] }) {
     const [selectedSprint, setSelectedSprint] = useState(null);
@@ -206,7 +207,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                         return (
                                             <Link
                                                 key={sprint.id}
-                                                href={route('sprints.show', sprint.id)}
+                                                href={route('sprints.show', routeKey(sprint))}
                                             >
                                                 <motion.div
                                                     initial={{ opacity: 0, y: 20 }}
@@ -448,7 +449,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                                     {updates.map((update, i) => (
                                         <Link
                                             key={update.id}
-                                            href={route('sprints.show', update.sprint_id)}
+                                            href={route('sprints.show', routeKey(update.sprint) ?? update.sprint_id)}
                                         >
                                             <div className="p-6 hover:bg-gray-50 transition-colors cursor-pointer">
                                                 <div className="flex items-start space-x-4">

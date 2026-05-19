@@ -35,7 +35,7 @@ class CommentActivityEmail extends Notification
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line($this->commenter->name . ' commented on your sprint update.')
             ->line('Comment preview: "' . $preview . '"')
-            ->action('View Update', route('sprints.show', $this->update->sprint_id))
+            ->action('View Update', route('sprints.show', $this->update->sprint))
             ->line('You can manage these emails from your notification settings.');
     }
 }

@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { Users, Calendar, TrendingUp, Lock, Clock } from 'lucide-react';
 import UserAvatar from '@/Components/UserAvatar';
+import { routeKey } from '@/lib/routeKey';
 
 export default function SprintCard({ sprint }) {
     const getDaysRemaining = () => {
@@ -29,7 +30,7 @@ export default function SprintCard({ sprint }) {
             whileHover={{ y: -4 }}
             className="glass-card p-6 card-hover"
         >
-            <Link href={route('sprints.show', sprint.id)}>
+            <Link href={route('sprints.show', routeKey(sprint))}>
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -105,7 +106,7 @@ export default function SprintCard({ sprint }) {
             
             {/* Creator - Outside main Link to prevent nested links */}
             <Link 
-                href={route('users.show', sprint.creator?.id)}
+                href={route('users.show', routeKey(sprint.creator))}
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center space-x-2 mt-4 pt-4 border-t border-gray-200 dark:border-dark-700 hover:bg-gray-50 dark:hover:bg-dark-800 -mx-6 px-6 -mb-6 pb-6 rounded-b-2xl transition-colors"
             >
