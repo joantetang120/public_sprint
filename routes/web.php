@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\UpdateController;
+use App\Http\Controllers\LanguageController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,6 +26,7 @@ Route::get('/health', function () {
 
 Route::get('/discover', [SprintController::class, 'discover'])->name('discover');
 Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread');
+Route::post('/language', [LanguageController::class, 'update'])->name('language.update');
 
 // Serve update images
 Route::get('/storage/updates/{filename}', function ($filename) {

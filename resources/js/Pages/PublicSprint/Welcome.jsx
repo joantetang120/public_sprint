@@ -2,8 +2,11 @@ import { Link, Head } from '@inertiajs/react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { Zap, ArrowRight, Play, CheckCircle2, Timer, Target, Star, Quote, ChevronLeft, ChevronRight, Check, Users, Rocket, TrendingUp, Sparkles, MessageCircle, Calendar, Trophy } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import LanguageSwitcher from '@/Components/LanguageSwitcher';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function Welcome({ canLogin, canRegister }) {
+    const { tl } = useLanguage();
     const { scrollYProgress } = useScroll();
     const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
     const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -60,7 +63,7 @@ export default function Welcome({ canLogin, canRegister }) {
 
     return (
         <>
-            <Head title="Ship your side project in 7 days" />
+            <Head title={tl('Ship your side project in 7 days')} />
             
             <div className="min-h-screen bg-white overflow-hidden">
                 {/* Clean background */}
@@ -97,6 +100,7 @@ export default function Welcome({ canLogin, canRegister }) {
 
                             {canLogin && (
                                 <div className="flex items-center space-x-3">
+                                    <LanguageSwitcher compact />
                                     <Link
                                         href={route('login')}
                                         className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-green-600 transition-colors duration-200"

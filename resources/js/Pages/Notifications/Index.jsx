@@ -4,8 +4,10 @@ import { Bell, Heart, MessageSquare, UserPlus, Zap, Check, Trash2, CheckCheck } 
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function Index({ auth, notifications }) {
+    const { tl, formatDateTime } = useLanguage();
     const [localNotifications, setLocalNotifications] = useState(notifications.data || []);
 
     const getNotificationIcon = (type) => {
@@ -83,18 +85,20 @@ export default function Index({ auth, notifications }) {
 
     return (
         <PublicSprintLayout>
-            <Head title="Notifications" />
+            <Head title={tl('Notifications')} />
 
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-black text-gray-900 dark:text-white">
-                            Notifications
+                            {tl('Notifications')}
                         </h1>
                         {unreadCount > 0 && (
                             <p className="text-gray-600 dark:text-gray-400 mt-1">
-                                You have {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
+                                {unreadCount === 1
+                                    ? tl('You have {count} unread notification', { count: unreadCount })
+                                    : tl('You have {count} unread notifications', { count: unreadCount })}
                             </p>
                         )}
                     </div>
@@ -104,7 +108,7 @@ export default function Index({ auth, notifications }) {
                             className="flex items-center space-x-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold transition-colors"
                         >
                             <CheckCheck className="w-5 h-5" />
-                            <span>Mark All Read</span>
+                            <span>{tl('Mark All Read')}</span>
                         </button>
                     )}
                 </div>
@@ -145,7 +149,7 @@ export default function Index({ auth, notifications }) {
                                                 {notification.data?.message}
                                             </p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                {new Date(notification.created_at).toLocaleString()}
+                                                {formatDateTime(notification.created_at)}
                                             </p>
                                         </div>
 
@@ -158,7 +162,7 @@ export default function Index({ auth, notifications }) {
                                                         markAsRead(notification.id);
                                                     }}
                                                     className="p-2 hover:bg-gray-200 dark:hover:bg-dark-700 rounded-lg transition-colors"
-                                                    title="Mark as read"
+                                                    title={tl('Mark as read')}
                                                 >
                                                     <Check className="w-4 h-4 text-primary-600" />
                                                 </button>
@@ -169,7 +173,7 @@ export default function Index({ auth, notifications }) {
                                                     deleteNotification(notification.id);
                                                 }}
                                                 className="p-2 hover:bg-gray-200 dark:hover:bg-dark-700 rounded-lg transition-colors"
-                                                title="Delete"
+                                                title={tl('Delete')}
                                             >
                                                 <Trash2 className="w-4 h-4 text-red-600" />
                                             </button>
@@ -187,10 +191,10 @@ export default function Index({ auth, notifications }) {
                     >
                         <Bell className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                            No notifications yet
+                            {tl('No notifications yet')}
                         </h3>
                         <p className="text-gray-600 dark:text-gray-400">
-                            When you get notifications, they'll show up here
+                            {tl("When you get notifications, they'll show up here")}
                         </p>
                     </motion.div>
                 )}

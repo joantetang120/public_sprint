@@ -2,9 +2,12 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { Zap, Mail, Lock, User, ArrowRight, Eye, EyeOff, CheckCircle2, Users, Rocket, Star } from 'lucide-react';
 import { useState } from 'react';
+import LanguageSwitcher from '@/Components/LanguageSwitcher';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function Register({ stats }) {
     const { props } = usePage();
+    const { tl } = useLanguage();
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -32,7 +35,7 @@ export default function Register({ stats }) {
 
     return (
         <>
-            <Head title="Join PublicSprint Community" />
+            <Head title={tl('Join PublicSprint Community')} />
             
             <div className="min-h-screen flex bg-white">
                 {/* Left Side - Community Branding */}
@@ -129,6 +132,10 @@ export default function Register({ stats }) {
                 {/* Right Side - Form */}
                 <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-gray-50">
                     <div className="w-full max-w-md">
+                        <div className="mb-4 flex justify-end">
+                            <LanguageSwitcher compact />
+                        </div>
+
                         {/* Mobile Logo */}
                         <Link href="/" className="lg:hidden flex items-center space-x-3 mb-8 justify-center">
                             <img 

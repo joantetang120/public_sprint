@@ -11,9 +11,11 @@ import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
 import JoinWithMeLink from '@/Components/JoinWithMeLink';
 import AISprintSummary from '@/Components/AISprintSummary';
+import { useLanguage } from '@/Contexts/LanguageContext';
 import { routeKey } from '@/lib/routeKey';
 
 export default function Show({ auth, sprint, isParticipant, leaderboard, completionStats }) {
+    const { tl, formatDate: formatLocaleDate } = useLanguage();
     const [activeTab, setActiveTab] = useState('updates');
     const [showLeaveModal, setShowLeaveModal] = useState(false);
     const [localReactions, setLocalReactions] = useState({});
@@ -44,7 +46,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
 
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
+        return formatLocaleDate(dateString, options);
     };
 
     const getSprintUrl = () => {
@@ -65,7 +67,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
     const handleShare = (platform) => {
         const url = encodeURIComponent(getSprintUrl());
         const title = encodeURIComponent(sprint.title);
-        const text = encodeURIComponent(`Check out this sprint: ${sprint.title}`);
+        const text = encodeURIComponent(tl('Check out this sprint: {title}', { title: sprint.title }));
         
         const shareUrls = {
             twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
@@ -85,7 +87,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
             try {
                 await navigator.share({
                     title: sprint.title,
-                    text: `Check out this sprint: ${sprint.title}`,
+                    text: tl('Check out this sprint: {title}', { title: sprint.title }),
                     url: getSprintUrl(),
                 });
             } catch (err) {
@@ -261,7 +263,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                 sprint.computed_status === 'upcoming' ? 'bg-yellow-500' : 'bg-gray-400'
                                             }`} />
                                             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 capitalize">
-                                                {sprint.computed_status} Sprint
+                                                {tl('{status} Sprint', { status: tl(sprint.computed_status) })}
                                             </span>
                                             <span className="text-gray-300 dark:text-gray-600">•</span>
                                             <div className="flex items-center space-x-2">
@@ -269,17 +271,17 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                     user={sprint.creator}
                                                     size="sm"
                                                 />
-                                                <span className="text-sm text-gray-600 dark:text-gray-400">by {sprint.creator.name}</span>
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">{tl('by {name}', { name: sprint.creator.name })}</span>
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <button 
                                                 onClick={() => setShowShareModal(true)}
                                                 className="flex items-center space-x-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700"
-                                                title="Share sprint"
+                                                title={tl('Share sprint')}
                                             >
                                                 <Share2 className="w-4 h-4" />
-                                                <span className="text-sm font-semibold hidden sm:inline">Share</span>
+                                                <span className="text-sm font-semibold hidden sm:inline">{tl('Share')}</span>
                                             </button>
                                         </div>
                                     </div>
@@ -294,7 +296,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                     <div className="space-y-4">
                                         <div>
                                             <div className="flex justify-between text-sm mb-2">
-                                                <span className="font-semibold text-gray-700 dark:text-gray-300">Sprint Progress</span>
+                                                <span className="font-semibold text-gray-700 dark:text-gray-300">{tl('Sprint Progress')}</span>
                                                 <span className="font-bold text-green-600">{Math.round(getProgress())}%</span>
                                             </div>
                                             <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -308,19 +310,19 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                             <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                                 <div className="text-xl font-bold text-gray-900 dark:text-white">{sprint.duration_days}</div>
-                                                <div className="text-sm text-gray-600 dark:text-gray-400">Days</div>
+                                                <div className="text-sm text-gray-600 dark:text-gray-400">{tl('Days')}</div>
                                             </div>
                                             <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                                 <div className="text-xl font-bold text-gray-900 dark:text-white">{sprint.participants_count || 0}</div>
-                                                <div className="text-sm text-gray-600 dark:text-gray-400">Builders</div>
+                                                <div className="text-sm text-gray-600 dark:text-gray-400">{tl('Builders')}</div>
                                             </div>
                                             <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                                 <div className="text-xl font-bold text-gray-900 dark:text-white">{sprint.updates?.length || 0}</div>
-                                                <div className="text-sm text-gray-600 dark:text-gray-400">Updates</div>
+                                                <div className="text-sm text-gray-600 dark:text-gray-400">{tl('Updates')}</div>
                                             </div>
                                             <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                                 <div className="text-xl font-bold text-gray-900 dark:text-white">{getDaysRemaining()}</div>
-                                                <div className="text-sm text-gray-600 dark:text-gray-400">Days Left</div>
+                                                <div className="text-sm text-gray-600 dark:text-gray-400">{tl('Days Left')}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -357,7 +359,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                     {sprint.computed_status === 'completed' ? (
                                                         <div className="w-full text-center px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg font-medium text-sm flex items-center justify-center space-x-2">
                                                             <CheckCircle2 className="w-4 h-4" />
-                                                            <span>Sprint Completed</span>
+                                                            <span>{tl('Sprint Completed')}</span>
                                                         </div>
                                                     ) : isSprintActive() ? (
                                                         <Link
@@ -365,11 +367,11 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                             className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm text-sm"
                                                         >
                                                             <Plus className="w-4 h-4" />
-                                                            <span>Post Update</span>
+                                                            <span>{tl('Post Update')}</span>
                                                         </Link>
                                                     ) : (
                                                         <div className="w-full text-center px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg font-medium text-sm">
-                                                            Starts on {formatDate(sprint.starts_at)}
+                                                            {tl('Starts on {date}', { date: formatDate(sprint.starts_at) })}
                                                         </div>
                                                     )}
                                                     {sprint.computed_status !== 'completed' && (
@@ -377,14 +379,14 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                             onClick={handleLeave}
                                                             className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
                                                         >
-                                                            Leave Sprint
+                                                            {tl('Leave Sprint')}
                                                         </button>
                                                     )}
                                                 </div>
                                             ) : sprint.computed_status === 'completed' ? (
                                                 <div className="w-full text-center px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg font-medium text-sm flex items-center justify-center space-x-2">
                                                     <CheckCircle2 className="w-4 h-4" />
-                                                    <span>Sprint Completed</span>
+                                                    <span>{tl('Sprint Completed')}</span>
                                                 </div>
                                             ) : (
                                                 <button
@@ -392,7 +394,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                     className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm text-sm"
                                                 >
                                                     <Rocket className="w-4 h-4" />
-                                                    <span>Join Sprint</span>
+                                                    <span>{tl('Join Sprint')}</span>
                                                 </button>
                                             )
                                         ) : (
@@ -400,7 +402,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                 href={getRegisterRoute()}
                                                 className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm text-sm"
                                             >
-                                                <span>Sign up to Join</span>
+                                                <span>{tl('Sign up to Join')}</span>
                                             </Link>
                                         )}
                                     </div>
@@ -408,21 +410,21 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                     {/* Quick Info */}
                                     <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 space-y-2">
                                         <div className="flex items-center justify-between text-xs">
-                                            <span className="text-gray-600 dark:text-gray-400">Starts</span>
+                                            <span className="text-gray-600 dark:text-gray-400">{tl('Starts')}</span>
                                             <span className="font-semibold text-gray-900 dark:text-white">
                                                 {new Date(sprint.starts_at).toLocaleDateString()}
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between text-xs">
-                                            <span className="text-gray-600 dark:text-gray-400">Ends</span>
+                                            <span className="text-gray-600 dark:text-gray-400">{tl('Ends')}</span>
                                             <span className="font-semibold text-gray-900 dark:text-white">
                                                 {new Date(sprint.ends_at).toLocaleDateString()}
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between text-xs">
-                                            <span className="text-gray-600 dark:text-gray-400">Visibility</span>
+                                            <span className="text-gray-600 dark:text-gray-400">{tl('Visibility')}</span>
                                             <span className="font-semibold text-gray-900 dark:text-white capitalize">
-                                                {sprint.is_private ? 'Private' : 'Public'}
+                                                {sprint.is_private ? tl('Private') : tl('Public')}
                                             </span>
                                         </div>
                                     </div>
@@ -443,20 +445,20 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                         <Trophy className="w-8 h-8 text-white" />
                                     </div>
                                 </div>
-                                <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">Sprint Completed! 🎉</h2>
+                                <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">{tl('Sprint Completed! 🎉')}</h2>
                                 <p className="text-green-100 text-center mb-6 max-w-2xl mx-auto">
-                                    Congratulations! This sprint has been successfully completed. Here's a summary of the achievements.
+                                    {tl("Congratulations! This sprint has been successfully completed. Here's a summary of the achievements.")}
                                 </p>
 
                                 {/* Stats Grid */}
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
                                         <div className="text-3xl font-black mb-1">{completionStats.total_updates}</div>
-                                        <div className="text-sm text-green-100">Total Updates</div>
+                                        <div className="text-sm text-green-100">{tl('Total Updates')}</div>
                                     </div>
                                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
                                         <div className="text-3xl font-black mb-1">{completionStats.active_participants}</div>
-                                        <div className="text-sm text-green-100">Active Builders</div>
+                                        <div className="text-sm text-green-100">{tl('Active Builders')}</div>
                                     </div>
                                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
                                         <div className="text-3xl font-black mb-1">{completionStats.total_reactions}</div>
@@ -464,7 +466,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                     </div>
                                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
                                         <div className="text-3xl font-black mb-1">{completionStats.completion_rate}%</div>
-                                        <div className="text-sm text-green-100">Completion Rate</div>
+                                        <div className="text-sm text-green-100">{tl('Completion Rate')}</div>
                                     </div>
                                 </div>
 
@@ -474,13 +476,13 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
                                             <div className="flex items-center space-x-2 mb-2">
                                                 <Crown className="w-5 h-5 text-yellow-300" />
-                                                <span className="font-semibold text-sm">Top Contributor</span>
+                                                <span className="font-semibold text-sm">{tl('Top Contributor')}</span>
                                             </div>
                                             <div className="flex items-center space-x-2">
                                                 <UserAvatar user={completionStats.top_contributor} size="sm" />
                                                 <div>
                                                     <div className="font-bold text-sm">{completionStats.top_contributor.name}</div>
-                                                    <div className="text-xs text-green-100">{completionStats.top_contributor.pivot?.score || 0} points</div>
+                                        <div className="text-xs text-green-100">{tl('{score} points', { score: completionStats.top_contributor.pivot?.score || 0 })}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -489,13 +491,13 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
                                             <div className="flex items-center space-x-2 mb-2">
                                                 <Zap className="w-5 h-5 text-yellow-300" />
-                                                <span className="font-semibold text-sm">Most Active</span>
+                                                <span className="font-semibold text-sm">{tl('Most Active')}</span>
                                             </div>
                                             <div className="flex items-center space-x-2">
                                                 <UserAvatar user={completionStats.most_active} size="sm" />
                                                 <div>
                                                     <div className="font-bold text-sm">{completionStats.most_active.name}</div>
-                                                    <div className="text-xs text-green-100">{completionStats.most_active.pivot?.updates_posted || 0} updates</div>
+                                                    <div className="text-xs text-green-100">{tl('{count} updates', { count: completionStats.most_active.pivot?.updates_posted || 0 })}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -532,7 +534,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
                                         }`}
                                     >
-                                        {tab}
+                                        {tl(tab.charAt(0).toUpperCase() + tab.slice(1))}
                                     </button>
                                 ))}
                             </div>
@@ -565,12 +567,12 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                     {update.user?.name}
                                                                 </Link>
                                                                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    Day {update.day_number} • {new Date(update.created_at).toLocaleDateString()}
+                                                                    {tl('Day {day}', { day: update.day_number })} • {formatLocaleDate(update.created_at)}
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs font-semibold">
-                                                            Day {update.day_number}
+                                                            {tl('Day {day}', { day: update.day_number })}
                                                         </span>
                                                     </div>
 
@@ -726,7 +728,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                         <textarea
                                                                             value={commentText[update.id] || ''}
                                                                             onChange={(e) => setCommentText(prev => ({ ...prev, [update.id]: e.target.value }))}
-                                                                            placeholder="Add a comment..."
+                                                                            placeholder={tl('Add a comment...')}
                                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                                                                             rows="2"
                                                                         />
@@ -736,7 +738,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                                 disabled={!commentText[update.id]?.trim()}
                                                                                 className="px-3 py-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded text-xs font-medium transition-colors"
                                                                             >
-                                                                                Comment
+                                                                                {tl('Comment')}
                                                                             </button>
                                                                         </div>
                                                                     </div>
@@ -771,7 +773,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                                             className="text-gray-500 hover:text-green-600 transition-colors flex items-center"
                                                                                         >
                                                                                             <Reply className="w-3 h-3 mr-1" />
-                                                                                            Reply
+                                                                                            {tl('Reply')}
                                                                                         </button>
                                                                                         <span className="text-gray-500">
                                                                                             {comment.replies_count || 0} {comment.replies_count === 1 ? 'reply' : 'replies'}
@@ -793,7 +795,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                                                             ...prev,
                                                                                                             [comment.id]: e.target.value
                                                                                                         }))}
-                                                                                                        placeholder="Write a reply..."
+                                                                                                        placeholder={tl('Write a reply...')}
                                                                                                         className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none focus:ring-1 focus:ring-green-500 focus:border-transparent"
                                                                                                         rows="2"
                                                                     onKeyDown={(e) => {
@@ -815,7 +817,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                             disabled={!replyText[comment.id]?.trim()}
                                                                             className="px-3 py-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded text-xs font-medium transition-colors"
                                                                         >
-                                                                            Reply
+                                                                            {tl('Reply')}
                                                                         </button>
                                                                     </div>
                                                                 </div>
@@ -865,10 +867,10 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                             <div className="text-center py-8 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
                                                 <Sparkles className="w-8 h-8 mx-auto mb-3 text-gray-400" />
                                                 <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
-                                                    No updates yet
+                                                    {tl('No updates yet')}
                                                 </h3>
                                                 <p className="text-gray-600 dark:text-gray-400 mb-3 text-sm">
-                                                    Be the first to share your progress!
+                                                    {tl('Be the first to share your progress!')}
                                                 </p>
                                                 {isParticipant && (
                                                     <Link
@@ -876,7 +878,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                         className="inline-flex items-center space-x-1 px-3 py-1.5 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors text-sm"
                                                     >
                                                         <Plus className="w-3 h-3" />
-                                                        <span>Post Update</span>
+                                                        <span>{tl('Post Update')}</span>
                                                     </Link>
                                                 )}
                                             </div>
@@ -905,12 +907,12 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                             {participant.name}
                                                         </Link>
                                                         <div className="text-xs text-gray-600 dark:text-gray-400">
-                                                            Joined {new Date(participant.pivot.joined_at).toLocaleDateString()}
+                                                            {tl('Joined {date}', { date: formatLocaleDate(participant.pivot.joined_at) })}
                                                         </div>
                                                     </div>
                                                     {participant.id === sprint.user_id && (
                                                         <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded text-xs font-medium">
-                                                            Creator
+                                                            {tl('Creator')}
                                                         </span>
                                                     )}
                                                 </div>
@@ -943,7 +945,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                             {leaderboard[1].name}
                                                         </Link>
                                                         <div className="text-2xl font-black text-gray-600 dark:text-gray-300 mt-1">{leaderboard[1].pivot?.score || 0}</div>
-                                                        <div className="text-xs text-gray-500 dark:text-gray-400">points</div>
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400">{tl('points')}</div>
                                                     </motion.div>
                                                 )}
 
@@ -965,7 +967,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                             {leaderboard[0].name}
                                                         </Link>
                                                         <div className="text-3xl font-black text-yellow-600 dark:text-yellow-400 mt-1">{leaderboard[0].pivot?.score || 0}</div>
-                                                        <div className="text-xs text-gray-600 dark:text-gray-400">points</div>
+                                                        <div className="text-xs text-gray-600 dark:text-gray-400">{tl('points')}</div>
                                                     </motion.div>
                                                 )}
 
@@ -987,7 +989,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                             {leaderboard[2].name}
                                                         </Link>
                                                         <div className="text-2xl font-black text-orange-600 dark:text-orange-400 mt-1">{leaderboard[2].pivot?.score || 0}</div>
-                                                        <div className="text-xs text-gray-500 dark:text-gray-400">points</div>
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400">{tl('points')}</div>
                                                     </motion.div>
                                                 )}
                                             </div>
@@ -996,7 +998,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                         {/* Rest of Leaderboard */}
                                         {leaderboard && leaderboard.length > 3 && (
                                             <div className="space-y-2">
-                                                <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-3">Other Participants</h3>
+                                                <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-3">{tl('Other Participants')}</h3>
                                                 {leaderboard.slice(3).map((user, i) => {
                                                     const actualRank = i + 4;
                                                     const badges = user.pivot?.badges ? JSON.parse(user.pivot.badges) : [];
@@ -1027,17 +1029,17 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                             {badges.length > 0 && (
                                                                                 <div className="flex items-center space-x-1">
                                                                                     {badges.includes('top_contributor') && (
-                                                                                        <div className="w-5 h-5 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center" title="Top Contributor">
+                                                                                        <div className="w-5 h-5 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center" title={tl('Top Contributor')}>
                                                                                             <Star className="w-3 h-3 text-purple-600 dark:text-purple-400" />
                                                                                         </div>
                                                                                     )}
                                                                                     {badges.includes('daily_streak') && (
-                                                                                        <div className="w-5 h-5 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center" title="Daily Streak">
+                                                                                        <div className="w-5 h-5 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center" title={tl('Daily Streak')}>
                                                                                             <Flame className="w-3 h-3 text-orange-600 dark:text-orange-400" />
                                                                                         </div>
                                                                                     )}
                                                                                     {badges.includes('most_helpful') && (
-                                                                                        <div className="w-5 h-5 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center" title="Most Helpful">
+                                                                                        <div className="w-5 h-5 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center" title={tl('Most Helpful')}>
                                                                                             <Heart className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                                                                                         </div>
                                                                                     )}
@@ -1046,22 +1048,22 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                         </div>
                                                                         <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-2 text-xs">
                                                                             <div>
-                                                                                <div className="text-gray-500 dark:text-gray-400">Updates</div>
+                                                                                <div className="text-gray-500 dark:text-gray-400">{tl('Updates')}</div>
                                                                                 <div className="font-semibold text-gray-900 dark:text-white">{user.pivot?.updates_posted || 0}</div>
                                                                             </div>
                                                                             <div>
-                                                                                <div className="text-gray-500 dark:text-gray-400">Likes</div>
+                                                                                <div className="text-gray-500 dark:text-gray-400">{tl('Likes')}</div>
                                                                                 <div className="font-semibold text-gray-900 dark:text-white">{user.pivot?.reactions_received || 0}</div>
                                                                             </div>
                                                                             <div>
-                                                                                <div className="text-gray-500 dark:text-gray-400">Comments</div>
+                                                                                <div className="text-gray-500 dark:text-gray-400">{tl('Comments')}</div>
                                                                                 <div className="font-semibold text-gray-900 dark:text-white">{user.pivot?.comments_made || 0}</div>
                                                                             </div>
                                                                         </div>
                                                                         {completionRate > 0 && (
                                                                             <div className="mt-2">
                                                                                 <div className="flex items-center justify-between text-xs mb-1">
-                                                                                    <span className="text-gray-500 dark:text-gray-400">Completion</span>
+                                                                                    <span className="text-gray-500 dark:text-gray-400">{tl('Completion')}</span>
                                                                                     <span className="font-semibold text-gray-900 dark:text-white">{completionRate}%</span>
                                                                                 </div>
                                                                                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
@@ -1076,7 +1078,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                 </div>
                                                                 <div className="text-right ml-4">
                                                                     <div className="text-xl font-bold text-green-600 dark:text-green-400">{user.pivot?.score || 0}</div>
-                                                                    <div className="text-xs text-gray-500 dark:text-gray-400">points</div>
+                                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{tl('points')}</div>
                                                                 </div>
                                                             </div>
                                                         </motion.div>
@@ -1115,7 +1117,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                 {/* Top Contributors */}
                                 {leaderboard && leaderboard.length > 0 && (
                                     <div className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800">
-                                        <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">Top Builders</h3>
+                                        <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">{tl('Top Builders')}</h3>
                                         <div className="space-y-2">
                                             {leaderboard.slice(0, 5).map((user, i) => (
                                                 <div key={user.id} className="flex items-center space-x-2">
@@ -1145,18 +1147,18 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
 
                                 {/* Sprint Stats */}
                                 <div className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">Sprint Activity</h3>
+                                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">{tl('Sprint Activity')}</h3>
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-xs">
-                                            <span className="text-gray-600 dark:text-gray-400">Total Updates</span>
+                                            <span className="text-gray-600 dark:text-gray-400">{tl('Total Updates')}</span>
                                             <span className="font-semibold text-gray-900 dark:text-white">{sprint.updates?.length || 0}</span>
                                         </div>
                                         <div className="flex justify-between text-xs">
-                                            <span className="text-gray-600 dark:text-gray-400">Active Builders</span>
+                                            <span className="text-gray-600 dark:text-gray-400">{tl('Active Builders')}</span>
                                             <span className="font-semibold text-gray-900 dark:text-white">{sprint.participants_count || 0}</span>
                                         </div>
                                         <div className="flex justify-between text-xs">
-                                            <span className="text-gray-600 dark:text-gray-400">Completion</span>
+                                            <span className="text-gray-600 dark:text-gray-400">{tl('Completion')}</span>
                                             <span className="font-semibold text-green-600">{Math.round(getProgress())}%</span>
                                         </div>
                                     </div>
@@ -1177,22 +1179,22 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                     >
                         <div className="text-center">
                             <Flag className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Leave Sprint?</h3>
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{tl('Leave Sprint?')}</h3>
                             <p className="text-gray-600 dark:text-gray-400 mb-6">
-                                You'll lose your progress in <span className="font-semibold">{sprint.title}</span>
+                                {tl("You'll lose your progress in")} <span className="font-semibold">{sprint.title}</span>
                             </p>
                             <div className="flex space-x-3">
                                 <button
                                     onClick={() => setShowLeaveModal(false)}
                                     className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
                                 >
-                                    Cancel
+                                    {tl('Cancel')}
                                 </button>
                                 <button
                                     onClick={confirmLeave}
                                     className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600"
                                 >
-                                    Leave
+                                    {tl('Leave')}
                                 </button>
                             </div>
                         </div>
@@ -1224,8 +1226,8 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                         <Share2 className="w-5 h-5 text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Share Sprint</h3>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Spread the word!</p>
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">{tl('Share Sprint')}</h3>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{tl('Spread the word!')}</p>
                                     </div>
                                 </div>
                                 <button 
@@ -1239,7 +1241,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                             {/* Copy Link Section */}
                             <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
                                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
-                                    Sprint Link
+                                    {tl('Sprint Link')}
                                 </label>
                                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                     <input 
@@ -1259,12 +1261,12 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                         {linkCopied ? (
                                             <>
                                                 <Check className="w-4 h-4" />
-                                                <span>Copied!</span>
+                                                <span>{tl('Copied!')}</span>
                                             </>
                                         ) : (
                                             <>
                                                 <Copy className="w-4 h-4" />
-                                                <span>Copy Link</span>
+                                                <span>{tl('Copy Link')}</span>
                                             </>
                                         )}
                                     </button>
@@ -1274,7 +1276,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                             {/* Social Share Buttons */}
                             <div>
                                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
-                                    Share on Social Media
+                                    {tl('Share on Social Media')}
                                 </label>
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
@@ -1318,7 +1320,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                 {/* Pro Tip */}
                                 <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200 dark:border-green-800">
                                     <p className="text-xs text-gray-700 dark:text-gray-300">
-                                        💡 <strong>Tip:</strong> Share this sprint to invite others to join and build in public together!
+                                        {tl('Tip: Share this sprint to invite others to join and build in public together!')}
                                     </p>
                                 </div>
                             </div>
@@ -1348,17 +1350,17 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                             <button 
                                 onClick={() => setSelectedImage(null)}
                                 className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
-                                aria-label="Close preview"
+                                aria-label={tl('Close preview')}
                             >
                                 <X className="w-6 h-6" />
                             </button>
                             <img 
                                 src={selectedImage} 
-                                alt="Preview" 
+                                alt={tl('Preview')} 
                                 className="max-w-full max-h-[80vh] object-contain rounded-lg"
                             />
                             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-                                Click outside to close
+                                {tl('Click outside to close')}
                             </div>
                         </motion.div>
                     </motion.div>

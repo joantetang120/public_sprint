@@ -15,19 +15,20 @@ import {
 } from 'lucide-react';
 import AISummaryModal from './AISummaryModal';
 import { getSprintReportPreview, parseSprintReport } from '@/lib/sprintReport';
-
-const styles = [
-    { value: 'professional', label: 'Professional', description: 'Clean for LinkedIn and public sharing', icon: Briefcase },
-    { value: 'casual', label: 'Builder Story', description: 'Warmer and more personal', icon: Sparkles },
-    { value: 'technical', label: 'Technical', description: 'Sharper, more execution-focused', icon: LayoutTemplate },
-];
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = false }) {
+    const { tl } = useLanguage();
     const [summary, setSummary] = useState(aiSummary);
     const [isGenerating, setIsGenerating] = useState(false);
     const [copied, setCopied] = useState(false);
     const [selectedStyle, setSelectedStyle] = useState('professional');
     const [showModal, setShowModal] = useState(false);
+    const styles = [
+        { value: 'professional', label: tl('Professional'), description: tl('Clean for LinkedIn and public sharing'), icon: Briefcase },
+        { value: 'casual', label: tl('Builder Story'), description: tl('Warmer and more personal'), icon: Sparkles },
+        { value: 'technical', label: tl('Technical'), description: tl('Sharper, more execution-focused'), icon: LayoutTemplate },
+    ];
 
     useEffect(() => {
         setSummary(aiSummary);
@@ -50,7 +51,7 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                 },
                 onError: () => {
                     setIsGenerating(false);
-                    alert('Failed to generate report. Please try again.');
+                    alert(tl('Failed to generate report. Please try again.'));
                 },
             }
         );
@@ -91,11 +92,11 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                         <div className="max-w-2xl">
                             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-50">
-                                Free structured report
+                                {tl('Free structured report')}
                             </div>
-                            <h3 className="mt-4 text-3xl font-black tracking-tight text-white">End-of-sprint report</h3>
+                            <h3 className="mt-4 text-3xl font-black tracking-tight text-white">{tl('End-of-sprint report')}</h3>
                             <p className="mt-3 text-sm leading-6 text-emerald-50/82 sm:text-base">
-                                Turn your sprint history into a polished recap with a cleaner overview, exportable copy, and a gallery of progress shots.
+                                {tl('Turn your sprint history into a polished recap with a cleaner overview, exportable copy, and a gallery of progress shots.')}
                             </p>
                         </div>
 
@@ -108,14 +109,14 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                                     }`}
                                 >
                                     {copied ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
-                                    Copy LinkedIn
+                                    {tl('Copy LinkedIn')}
                                 </button>
                                 <button
                                     onClick={handleDownload}
                                     className="inline-flex items-center gap-2 rounded-2xl bg-white/12 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/18"
                                 >
                                     <FileDown className="h-4 w-4" />
-                                    Download
+                                    {tl('Download')}
                                 </button>
                             </div>
                         )}
@@ -129,7 +130,7 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                                 <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">Overview</div>
+                                            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">{tl('Overview')}</div>
                                             <h4 className="mt-2 text-2xl font-black text-stone-900">{report.headline}</h4>
                                         </div>
                                         <button
@@ -137,20 +138,20 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                                             className="inline-flex items-center gap-2 rounded-2xl bg-emerald-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
                                         >
                                             <Eye className="h-4 w-4" />
-                                            Open full report
+                                            {tl('Open full report')}
                                         </button>
                                     </div>
                                     <p className="mt-5 text-sm leading-8 text-stone-700">{previewText}</p>
                                 </section>
 
                                 <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
-                                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">At a glance</div>
+                                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">{tl('At a glance')}</div>
                                     <div className="mt-5 grid grid-cols-2 gap-4">
                                         {[
-                                            ['Updates', report.metrics.updates_posted],
-                                            ['Score', report.metrics.score],
-                                            ['Reactions', report.metrics.reactions_received],
-                                            ['Images', report.metrics.images_count],
+                                            [tl('Updates'), report.metrics.updates_posted],
+                                            [tl('Score'), report.metrics.score],
+                                            [tl('Reactions'), report.metrics.reactions_received],
+                                            [tl('Images'), report.metrics.images_count],
                                         ].map(([label, value]) => (
                                             <div key={label} className="rounded-2xl bg-stone-100 p-4">
                                                 <div className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">{label}</div>
@@ -165,25 +166,25 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                                 <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
                                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
                                         <BookText className="h-4 w-4" />
-                                        Export formats
+                                        {tl('Export formats')}
                                     </div>
                                     <div className="mt-5 space-y-4">
                                         <div className="rounded-2xl bg-stone-100 p-4">
-                                            <div className="font-bold text-stone-900">LinkedIn post</div>
+                                            <div className="font-bold text-stone-900">{tl('LinkedIn post')}</div>
                                             <p className="mt-2 text-sm leading-7 text-stone-600">
-                                                Ready-to-copy public post with metrics, story, and hashtags.
+                                                {tl('Ready-to-copy public post with metrics, story, and hashtags.')}
                                             </p>
                                         </div>
                                         <div className="rounded-2xl bg-stone-100 p-4">
-                                            <div className="font-bold text-stone-900">Portfolio copy</div>
+                                            <div className="font-bold text-stone-900">{tl('Portfolio copy')}</div>
                                             <p className="mt-2 text-sm leading-7 text-stone-600">
-                                                Longer case-study style text for your site, Notion page, or project archive.
+                                                {tl('Longer case-study style text for your site, Notion page, or project archive.')}
                                             </p>
                                         </div>
                                         <div className="rounded-2xl bg-stone-100 p-4">
-                                            <div className="font-bold text-stone-900">Printable report</div>
+                                            <div className="font-bold text-stone-900">{tl('Printable report')}</div>
                                             <p className="mt-2 text-sm leading-7 text-stone-600">
-                                                Open the full report and save it as a PDF with the image gallery included.
+                                                {tl('Open the full report and save it as a PDF with the image gallery included.')}
                                             </p>
                                         </div>
                                     </div>
@@ -192,16 +193,16 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                                 <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
                                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
                                         <GalleryVerticalEnd className="h-4 w-4" />
-                                        What gets included
+                                        {tl('What gets included')}
                                     </div>
                                     <div className="mt-5 grid gap-4 sm:grid-cols-2">
                                         {[
-                                            'A clean written overview of your sprint',
-                                            'Top accomplishments pulled from your updates',
-                                            'A timeline of key milestones',
-                                            'Any images attached during the sprint',
-                                            'Any resource links shared along the way',
-                                            'Copy tailored for sharing outside the app',
+                                            tl('A clean written overview of your sprint'),
+                                            tl('Top accomplishments pulled from your updates'),
+                                            tl('A timeline of key milestones'),
+                                            tl('Any images attached during the sprint'),
+                                            tl('Any resource links shared along the way'),
+                                            tl('Copy tailored for sharing outside the app'),
                                         ].map((item) => (
                                             <div key={item} className="flex items-start gap-3 rounded-2xl bg-stone-100 p-4">
                                                 <div className="mt-1 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-emerald-700" />
@@ -216,9 +217,9 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                                 <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
                                     <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                                         <div>
-                                            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">Regenerate tone</div>
+                                            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">{tl('Regenerate tone')}</div>
                                             <p className="mt-2 text-sm leading-7 text-stone-600">
-                                                Keep the same report structure and switch the writing tone.
+                                                {tl('Keep the same report structure and switch the writing tone.')}
                                             </p>
                                         </div>
                                         <button
@@ -227,7 +228,7 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                                             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-950 px-5 py-4 text-sm font-semibold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-60"
                                         >
                                             <RefreshCcw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                                            {isGenerating ? 'Regenerating report...' : 'Regenerate report'}
+                                            {isGenerating ? tl('Regenerating report...') : tl('Regenerate report')}
                                         </button>
                                     </div>
 
@@ -258,10 +259,10 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                             <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
                                 <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
                                     <div className="max-w-2xl">
-                                        <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">Generate your first report</div>
-                                        <h4 className="mt-3 text-2xl font-black text-stone-900">Build a clean, shareable sprint recap for free</h4>
+                                        <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">{tl('Generate your first report')}</div>
+                                        <h4 className="mt-3 text-2xl font-black text-stone-900">{tl('Build a clean, shareable sprint recap for free')}</h4>
                                         <p className="mt-4 text-sm leading-8 text-stone-600">
-                                            We will turn your updates, metrics, attached images, and resource links into a structured end-of-sprint report with LinkedIn copy, portfolio text, and a printable PDF layout.
+                                            {tl('We will turn your updates, metrics, attached images, and resource links into a structured end-of-sprint report with LinkedIn copy, portfolio text, and a printable PDF layout.')}
                                         </p>
                                     </div>
                                     <button
@@ -270,14 +271,14 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-950 px-6 py-4 text-sm font-semibold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         <Sparkles className={`h-5 w-5 ${isGenerating ? 'animate-spin' : ''}`} />
-                                        {isGenerating ? 'Generating report...' : 'Generate report'}
+                                        {isGenerating ? tl('Generating report...') : tl('Generate report')}
                                         {!isGenerating && <ArrowRight className="h-4 w-4" />}
                                     </button>
                                 </div>
                             </section>
 
                             <section className="rounded-[24px] border border-stone-200 bg-white p-6 shadow-sm">
-                                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">Choose a tone</div>
+                                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">{tl('Choose a tone')}</div>
                                 <div className="mt-5 grid gap-3 md:grid-cols-3">
                                     {styles.map((style) => (
                                         <button

@@ -4,8 +4,10 @@ import { ArrowLeft, Send, Image as ImageIcon, Link2, X, Calendar, Users } from '
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import { routeKey } from '@/lib/routeKey';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function Create({ auth, sprint }) {
+    const { tl } = useLanguage();
     const { data, setData, post, processing, errors } = useForm({
         content: '',
         day_number: sprint.current_day || 1,
@@ -75,7 +77,7 @@ export default function Create({ auth, sprint }) {
 
     return (
         <PublicSprintLayout>
-            <Head title={`Post Update - ${sprint.title}`} />
+            <Head title={`${tl('Post Update')} - ${sprint.title}`} />
 
             <div className="min-h-screen bg-gray-50 py-8">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">

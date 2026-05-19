@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link2, Check, Copy, Twitter, Linkedin, Facebook } from 'lucide-react';
+import { useLanguage } from '@/Contexts/LanguageContext';
 import { routeKey } from '@/lib/routeKey';
 
 export default function JoinWithMeLink({ sprint, user }) {
+    const { tl } = useLanguage();
     const [linkCopied, setLinkCopied] = useState(false);
 
     const getJoinUrl = () => {
@@ -42,15 +44,15 @@ export default function JoinWithMeLink({ sprint, user }) {
                     <Link2 className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                    <h3 className="font-bold text-gray-900 dark:text-white">Join with Me</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Invite others to this sprint</p>
+                    <h3 className="font-bold text-gray-900 dark:text-white">{tl('Join with Me')}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{tl('Invite others to this sprint')}</p>
                 </div>
             </div>
 
             {/* Copy Link */}
             <div className="mb-4">
                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
-                    Your Referral Link
+                    {tl('Your Referral Link')}
                 </label>
                 <div className="flex items-center space-x-2">
                     <input 
@@ -70,12 +72,12 @@ export default function JoinWithMeLink({ sprint, user }) {
                         {linkCopied ? (
                             <>
                                 <Check className="w-4 h-4" />
-                                <span>Copied!</span>
+                                <span>{tl('Copied!')}</span>
                             </>
                         ) : (
                             <>
                                 <Copy className="w-4 h-4" />
-                                <span>Copy</span>
+                                <span>{tl('Copy')}</span>
                             </>
                         )}
                     </button>
@@ -85,7 +87,7 @@ export default function JoinWithMeLink({ sprint, user }) {
             {/* Social Share Buttons */}
             <div>
                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
-                    Share On
+                    {tl('Share On')}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                     <button
@@ -114,7 +116,7 @@ export default function JoinWithMeLink({ sprint, user }) {
 
             <div className="mt-4 p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                 <p className="text-xs text-blue-800 dark:text-blue-200">
-                    💡 <strong>Tip:</strong> People who join through your link will see you invited them. Great for building together!
+                    {tl('💡 Tip: People who join through your link will see you invited them. Great for building together!')}
                 </p>
             </div>
         </div>
