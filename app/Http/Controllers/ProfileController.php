@@ -39,10 +39,10 @@ class ProfileController extends Controller
             ]);
         }
 
-        $user->load(['sprints' => function($query) {
+        $user->load(['sprints' => function ($query) {
             $query->withPivot('score', 'updates_posted', 'reactions_received')
-                  ->orderByPivot('created_at', 'desc')
-                  ->take(10);
+                ->orderByPivot('created_at', 'desc')
+                ->take(10);
         }]);
 
         $stats = $isOwnProfile || $user->show_stats
@@ -57,7 +57,6 @@ class ProfileController extends Controller
             ]
             : $this->hiddenStats();
 
-        // Get followers and following lists
         $canShowConnections = $isOwnProfile || $user->show_stats;
         $followers = $canShowConnections ? $user->followers()->get() : [];
         $followingUsers = $canShowConnections ? $user->following()->get() : [];
@@ -124,65 +123,47 @@ class ProfileController extends Controller
      * Update the user's full profile with images.
      */
     public function updateFull(Request $request): RedirectResponse
-{
-    \Log::info('updateFull called', [
-        'has_avatar'      => $request->hasFile('avatar'),
-        'has_cover_image' => $request->hasFile('cover_image'),
-    ]);
+    {
+        $user = $request->user();
 
-    $validated = $request->validate([
-        // same rules…
-    ]);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'bio' => 'nullable|string|max:500',
+            'location' => 'nullable|string|max:255',
+            'website' => 'nullable|url|max:255',
+            'avatar' => 'nullable|image|max:2048',
+            'cover_image' => 'nullable|image|max:5120',
+        ]);
 
-    $user = $request->user();
-
-    try {
         if ($request->hasFile('avatar')) {
-            \Log::info('Processing avatar upload');
-
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                \Log::info('Deleting old avatar', ['path' => $user->avatar]);
                 Storage::disk('public')->delete($user->avatar);
             }
 
-            $path = $request->file('avatar')->store('avatars', 'public');
-            \Log::info('Stored new avatar', ['path' => $path]);
-
-            $validated['avatar'] = $path;
+            $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
         if ($request->hasFile('cover_image')) {
-            \Log::info('Processing cover_image upload');
-
             if ($user->cover_image && Storage::disk('public')->exists($user->cover_image)) {
-                \Log::info('Deleting old cover', ['path' => $user->cover_image]);
                 Storage::disk('public')->delete($user->cover_image);
             }
 
-            $path = $request->file('cover_image')->store('covers', 'public');
-            \Log::info('Stored new cover_image', ['path' => $path]);
-
-            $validated['cover_image'] = $path;
+            $validated['cover_image'] = $request->file('cover_image')->store('covers', 'public');
         }
 
-        $user->update($validated);
-        \Log::info('User updated successfully');
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
 
         return redirect()
             ->route('users.show', $user->id)
             ->with('success', 'Profile updated successfully!');
-    } catch (\Throwable $e) {
-        \Log::error('updateFull failed', [
-            'message' => $e->getMessage(),
-            'file'    => $e->getFile(),
-            'line'    => $e->getLine(),
-            'trace'   => $e->getTraceAsString(),
-        ]);
-
-        // Re-throw so we still get a 500, but now with logs
-        throw $e;
     }
-}
 
     /**
      * Update the user's profile information.
@@ -227,17 +208,15 @@ class ProfileController extends Controller
     public function uploadAvatar(Request $request): RedirectResponse
     {
         $request->validate([
-            'avatar' => 'required|image|max:2048', // 2MB max
+            'avatar' => 'required|image|max:2048',
         ]);
 
         $user = $request->user();
 
-        // Delete old avatar if exists
         if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
             Storage::disk('public')->delete($user->avatar);
         }
 
-        // Store new avatar
         $path = $request->file('avatar')->store('avatars', 'public');
         $user->update(['avatar' => $path]);
 
@@ -259,8 +238,7 @@ class ProfileController extends Controller
             $follower->following()->attach($user->id);
             $follower->increment('following_count');
             $user->increment('followers_count');
-            
-            // Create notification
+
             NotificationService::newFollower($user, $follower);
         }
 
