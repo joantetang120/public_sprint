@@ -18,6 +18,7 @@ import {
     HeartIcon as Heart,
     LinkIcon as Link2,
     PlusIcon as Plus,
+    PencilSquareIcon as PencilSquare,
     RocketLaunchIcon as Rocket,
     ShareIcon as Share2,
     SparklesIcon as Sparkles,
@@ -47,6 +48,10 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
     const [commentText, setCommentText] = useState({});
     const [replyingTo, setReplyingTo] = useState({});
     const [replyText, setReplyText] = useState({});
+    const [openCommentMenuId, setOpenCommentMenuId] = useState(null);
+    const [editingCommentId, setEditingCommentId] = useState(null);
+    const [editingCommentText, setEditingCommentText] = useState('');
+    const [actionToast, setActionToast] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
     const [showShareModal, setShowShareModal] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
@@ -71,6 +76,82 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         return formatLocaleDate(dateString, options);
+    };
+
+    const triggerActionToast = (message) => {
+        setActionToast(message);
+        window.clearTimeout(window.__publicSprintToastTimer);
+        window.__publicSprintToastTimer = window.setTimeout(() => {
+            setActionToast(null);
+        }, 2200);
+    };
+
+    const canEditComment = (comment) => {
+        if (!auth.user || auth.user.id !== comment.user_id) {
+            return false;
+        }
+
+        return (Date.now() - new Date(comment.created_at).getTime()) < 3 * 60 * 1000;
+    };
+
+    const canDeleteComment = (comment) => {
+        if (!auth.user || auth.user.id !== comment.user_id) {
+            return false;
+        }
+
+        if (comment.parent_id) {
+            return true;
+        }
+
+        return !((comment.replies_count || 0) > 0 || (comment.replies && comment.replies.length > 0));
+    };
+
+    const hasCommentActions = (comment) => canEditComment(comment) || canDeleteComment(comment);
+
+    const startEditingComment = (comment) => {
+        setOpenCommentMenuId(null);
+        setEditingCommentId(comment.id);
+        setEditingCommentText(comment.content);
+    };
+
+    const cancelEditingComment = () => {
+        setEditingCommentId(null);
+        setEditingCommentText('');
+    };
+
+    const saveEditedComment = (comment) => {
+        const content = editingCommentText.trim();
+
+        if (!content) {
+            return;
+        }
+
+        router.put(route('comments.update', comment.id), {
+            content,
+        }, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                cancelEditingComment();
+                triggerActionToast(tl('Comment updated.'));
+            },
+        });
+    };
+
+    const deleteComment = (comment) => {
+        setOpenCommentMenuId(null);
+
+        router.delete(route('comments.destroy', comment.id), {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                if (editingCommentId === comment.id) {
+                    cancelEditingComment();
+                }
+
+                triggerActionToast(tl(comment.parent_id ? 'Reply deleted.' : 'Comment deleted.'));
+            },
+        });
     };
 
     const getSprintUrl = () => {
@@ -745,7 +826,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                         <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
                                                             {/* Comment Input */}
                                                             {auth.user && (
-                                                                <div className="flex space-x-2">
+                                                                <div className="flex items-start space-x-2">
                                                                     <UserAvatar 
                                                                         user={auth.user}
                                                                         size="sm"
@@ -775,41 +856,104 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                             {update.comments && update.comments.length > 0 && (
                                                                 <div className="space-y-2">
                                                                     {update.comments.filter(c => !c.parent_id).map((comment) => (
-                                                                        <div key={comment.id} className="flex space-x-2">
+                                                                        <div key={comment.id} className="flex items-start space-x-2">
                                                                             <UserAvatar 
                                                                                 user={comment.user}
                                                                                 size="sm"
                                                                             />
                                                                             <div className="flex-1">
                                                                                 <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
-                                                                                    <div className="flex items-center space-x-2 mb-1">
-                                                                                        <Link href={route('users.show', getUserRouteKey(comment.user))} className="font-medium text-xs text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
-                                                                                            {comment.user?.name}
-                                                                                        </Link>
-                                                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                                            {new Date(comment.created_at).toLocaleDateString()}
-                                                                                        </span>
+                                                                                    <div className="mb-1 flex items-start gap-2">
+                                                                                        <div className="flex min-w-0 flex-1 items-center space-x-2">
+                                                                                            <Link href={route('users.show', getUserRouteKey(comment.user))} className="truncate font-medium text-xs text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                                                                {comment.user?.name}
+                                                                                            </Link>
+                                                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                                                {new Date(comment.created_at).toLocaleDateString()}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        {hasCommentActions(comment) && (
+                                                                                            <div className="relative">
+                                                                                                <button
+                                                                                                    onClick={() => setOpenCommentMenuId((current) => current === comment.id ? null : comment.id)}
+                                                                                                    className="rounded-full p-1 text-gray-400 transition hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                                                                                                >
+                                                                                                    <MoreVertical className="h-4 w-4" />
+                                                                                                </button>
+                                                                                                {openCommentMenuId === comment.id && (
+                                                                                                    <div className="absolute right-0 top-full z-20 mt-1 min-w-[8.5rem] overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                                                                                                        {canEditComment(comment) && (
+                                                                                                            <button
+                                                                                                                onClick={() => startEditingComment(comment)}
+                                                                                                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+                                                                                                            >
+                                                                                                                <PencilSquare className="h-4 w-4" />
+                                                                                                                <span>{tl('Edit')}</span>
+                                                                                                            </button>
+                                                                                                        )}
+                                                                                                        {canDeleteComment(comment) && (
+                                                                                                            <button
+                                                                                                                onClick={() => deleteComment(comment)}
+                                                                                                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950/30"
+                                                                                                            >
+                                                                                                                <Trash2 className="h-4 w-4" />
+                                                                                                                <span>{tl('Delete')}</span>
+                                                                                                            </button>
+                                                                                                        )}
+                                                                                                    </div>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        )}
                                                                                     </div>
-                                                                                    <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">
-                                                                                        {comment.content}
-                                                                                    </p>
-                                                                                    <div className="flex items-center space-x-3 text-xs">
-                                                                                        <button 
-                                                                                            onClick={() => toggleReply(comment.id)}
-                                                                                            className="text-gray-500 hover:text-green-600 transition-colors flex items-center"
-                                                                                        >
-                                                                                            <Reply className="w-3 h-3 mr-1" />
-                                                                                            {tl('Reply')}
-                                                                                        </button>
-                                                                                        <span className="text-gray-500">
-                                                                                            {comment.replies_count || 0} {comment.replies_count === 1 ? 'reply' : 'replies'}
-                                                                                        </span>
-                                                                                    </div>
+                                                                                    {editingCommentId === comment.id ? (
+                                                                                        <div className="space-y-2">
+                                                                                            <textarea
+                                                                                                value={editingCommentText}
+                                                                                                onChange={(e) => setEditingCommentText(e.target.value)}
+                                                                                                className="w-full resize-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900 focus:border-transparent focus:ring-1 focus:ring-green-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                                                                                rows="3"
+                                                                                            />
+                                                                                            <div className="flex justify-end gap-2">
+                                                                                                <button
+                                                                                                    onClick={cancelEditingComment}
+                                                                                                    className="px-2 py-1 text-xs text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded"
+                                                                                                >
+                                                                                                    {tl('Cancel')}
+                                                                                                </button>
+                                                                                                <button
+                                                                                                    onClick={() => saveEditedComment(comment)}
+                                                                                                    disabled={!editingCommentText.trim()}
+                                                                                                    className="inline-flex items-center gap-1 rounded bg-green-500 px-3 py-1 text-xs font-medium text-white transition hover:bg-green-600 disabled:bg-gray-400"
+                                                                                                >
+                                                                                                    <Check className="h-3.5 w-3.5" />
+                                                                                                    <span>{tl('Save')}</span>
+                                                                                                </button>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <>
+                                                                                            <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">
+                                                                                                {comment.content}
+                                                                                            </p>
+                                                                                            <div className="flex items-center space-x-3 text-xs">
+                                                                                                <button 
+                                                                                                    onClick={() => toggleReply(comment.id)}
+                                                                                                    className="text-gray-500 hover:text-green-600 transition-colors flex items-center"
+                                                                                                >
+                                                                                                    <Reply className="w-3 h-3 mr-1" />
+                                                                                                    {tl('Reply')}
+                                                                                                </button>
+                                                                                                <span className="text-gray-500">
+                                                                                                    {comment.replies_count || 0} {comment.replies_count === 1 ? tl('reply') : tl('replies')}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    )}
 
                                                                                     {/* Reply Input */}
                                                                                     {replyingTo[comment.id] && (
                                                                                         <div className="mt-2 pl-2 border-l-2 border-gray-200 dark:border-gray-700">
-                                                                                            <div className="flex space-x-2 mt-2">
+                                                                                            <div className="mt-2 flex items-start space-x-2">
                                                                                                 <UserAvatar 
                                                                                                     user={auth.user}
                                                                                                     size="xs"
@@ -855,24 +999,85 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                     {comment.replies && comment.replies.length > 0 && (
                                                         <div className="mt-2 space-y-2 pl-4 border-l-2 border-gray-100 dark:border-gray-700">
                                                             {comment.replies.map(reply => (
-                                                                <div key={reply.id} className="flex space-x-2">
+                                                                <div key={reply.id} className="flex items-start space-x-2">
                                                                     <UserAvatar 
                                                                         user={reply.user}
                                                                         size="xs"
                                                                     />
                                                                     <div className="flex-1">
                                                                         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
-                                                                            <div className="flex items-center space-x-2 mb-1">
-                                                                                <Link href={route('users.show', getUserRouteKey(reply.user))} className="font-medium text-xs text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
-                                                                                    {reply.user?.name}
-                                                                                </Link>
-                                                                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                                    {new Date(reply.created_at).toLocaleDateString()}
-                                                                                </span>
+                                                                            <div className="mb-1 flex items-start gap-2">
+                                                                                <div className="flex min-w-0 flex-1 items-center space-x-2">
+                                                                                    <Link href={route('users.show', getUserRouteKey(reply.user))} className="truncate font-medium text-xs text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                                                                        {reply.user?.name}
+                                                                                    </Link>
+                                                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                                        {new Date(reply.created_at).toLocaleDateString()}
+                                                                                    </span>
+                                                                                </div>
+                                                                                {hasCommentActions(reply) && (
+                                                                                    <div className="relative">
+                                                                                        <button
+                                                                                            onClick={() => setOpenCommentMenuId((current) => current === reply.id ? null : reply.id)}
+                                                                                            className="rounded-full p-1 text-gray-400 transition hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                                                                                        >
+                                                                                            <MoreVertical className="h-4 w-4" />
+                                                                                        </button>
+                                                                                        {openCommentMenuId === reply.id && (
+                                                                                            <div className="absolute right-0 top-full z-20 mt-1 min-w-[8.5rem] overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                                                                                                {canEditComment(reply) && (
+                                                                                                    <button
+                                                                                                        onClick={() => startEditingComment(reply)}
+                                                                                                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+                                                                                                    >
+                                                                                                        <PencilSquare className="h-4 w-4" />
+                                                                                                        <span>{tl('Edit')}</span>
+                                                                                                    </button>
+                                                                                                )}
+                                                                                                {canDeleteComment(reply) && (
+                                                                                                    <button
+                                                                                                        onClick={() => deleteComment(reply)}
+                                                                                                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950/30"
+                                                                                                    >
+                                                                                                        <Trash2 className="h-4 w-4" />
+                                                                                                        <span>{tl('Delete')}</span>
+                                                                                                    </button>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </div>
+                                                                                )}
                                                                             </div>
-                                                                            <p className="text-xs text-gray-700 dark:text-gray-300">
-                                                                                {reply.content}
-                                                                            </p>
+                                                                            {editingCommentId === reply.id ? (
+                                                                                <div className="space-y-2">
+                                                                                    <textarea
+                                                                                        value={editingCommentText}
+                                                                                        onChange={(e) => setEditingCommentText(e.target.value)}
+                                                                                        className="w-full resize-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900 focus:border-transparent focus:ring-1 focus:ring-green-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                                                                        rows="3"
+                                                                                    />
+                                                                                    <div className="flex justify-end gap-2">
+                                                                                        <button
+                                                                                            onClick={cancelEditingComment}
+                                                                                            className="px-2 py-1 text-xs text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded"
+                                                                                        >
+                                                                                            {tl('Cancel')}
+                                                                                        </button>
+                                                                                        <button
+                                                                                            onClick={() => saveEditedComment(reply)}
+                                                                                            disabled={!editingCommentText.trim()}
+                                                                                            className="inline-flex items-center gap-1 rounded bg-green-500 px-3 py-1 text-xs font-medium text-white transition hover:bg-green-600 disabled:bg-gray-400"
+                                                                                        >
+                                                                                            <Check className="h-3.5 w-3.5" />
+                                                                                            <span>{tl('Save')}</span>
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <p className="text-xs text-gray-700 dark:text-gray-300">
+                                                                                    {reply.content}
+                                                                                </p>
+                                                                            )}
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -1358,6 +1563,19 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                 </div>
                             </div>
                         </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {actionToast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 16 }}
+                        className="fixed bottom-5 right-5 z-50 rounded-full bg-[#17211d] px-4 py-2 text-sm font-semibold text-white shadow-2xl"
+                    >
+                        {actionToast}
                     </motion.div>
                 )}
             </AnimatePresence>

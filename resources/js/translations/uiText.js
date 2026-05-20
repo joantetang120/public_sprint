@@ -492,5 +492,13 @@ export const uiText = {
         'Be the first to share your progress!': 'Sois le premier a partager ta progression !',
         'Starts on {date}': 'Commence le {date}',
         'Publications will open when the sprint starts.': 'Les publications seront disponibles quand le sprint commencera.',
+        'Edit': 'Modifier',
+        'Delete': 'Supprimer',
+        'Save': 'Enregistrer',
+        'Comment updated.': 'Commentaire modifie.',
+        'Comment deleted.': 'Commentaire supprime.',
+        'Reply deleted.': 'Reponse supprimee.',
+        'reply': 'reponse',
+        'replies': 'reponses',
     },
 };

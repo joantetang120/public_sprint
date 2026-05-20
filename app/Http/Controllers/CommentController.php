@@ -11,6 +11,26 @@ use Illuminate\Validation\Rule;
 
 class CommentController extends Controller
 {
+    private function canEdit(Comment $comment): bool
+    {
+        return $comment->user_id === auth()->id()
+            && $comment->created_at
+            && $comment->created_at->gt(now()->subMinutes(3));
+    }
+
+    private function canDelete(Comment $comment): bool
+    {
+        if ($comment->user_id !== auth()->id()) {
+            return false;
+        }
+
+        if ($comment->parent_id) {
+            return true;
+        }
+
+        return !$comment->replies()->exists();
+    }
+
     public function store(Request $request, Update $update)
     {
         $validated = $request->validate([
@@ -38,7 +58,7 @@ class CommentController extends Controller
 
     public function update(Request $request, Comment $comment)
     {
-        if ($comment->user_id !== auth()->id()) {
+        if (!$this->canEdit($comment)) {
             abort(403);
         }
 
@@ -53,7 +73,7 @@ class CommentController extends Controller
 
     public function destroy(Comment $comment)
     {
-        if ($comment->user_id !== auth()->id()) {
+        if (!$this->canDelete($comment)) {
             abort(403);
         }
 
