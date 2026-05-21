@@ -16,7 +16,7 @@ export default function UserAvatar({ user, size = 'md', className = '' }) {
     };
 
     return (
-        <span className={`relative inline-flex shrink-0 rounded-full bg-[linear-gradient(135deg,#b7f34a,#63b3ff,#ff8066)] p-[2px] ${className}`}>
+        <span className={`relative inline-flex shrink-0 self-start rounded-full bg-[linear-gradient(135deg,#b7f34a,#63b3ff,#ff8066)] p-[2px] ${className}`}>
             <img
                 src={getAvatarUrl()}
                 alt={user?.name || 'User'}

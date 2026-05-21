@@ -249,8 +249,8 @@ export default function Index({ query = '', results }) {
                                             href={route('users.show', routeKey(user))}
                                             className="block rounded-3xl border border-black/10 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                                         >
-                                            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                                                <UserAvatar user={user} size="xl" />
+                                            <div className="flex items-start flex-col gap-4 sm:flex-row sm:items-start">
+                                                <UserAvatar user={user} size="xl" className="self-start" />
                                                 <div className="min-w-0 flex-1 space-y-3">
                                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                                         <div>
