@@ -3,6 +3,7 @@
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\UpdateController;
@@ -25,6 +26,7 @@ Route::get('/health', function () {
 
 
 Route::get('/discover', [SprintController::class, 'discover'])->name('discover');
+Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread');
 Route::post('/language', [LanguageController::class, 'update'])->name('language.update');
 
