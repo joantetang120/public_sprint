@@ -111,7 +111,7 @@ export default function PublicSprintLayout({ children }) {
                         <LanguageSwitcher compact className="hidden md:flex" />
 
                         <Link
-                            href={route('discover')}
+                            href={route('search.index')}
                             className="grid h-10 w-10 place-items-center rounded-full border border-black/10 bg-white/70 text-[#17211d] transition hover:bg-[#b7f34a]"
                             title={tl('Search')}
                         >
@@ -172,6 +172,14 @@ export default function PublicSprintLayout({ children }) {
                         >
                             <div className="space-y-2 px-4 py-4">
                                 <LanguageSwitcher />
+                                <Link
+                                    href={route('search.index')}
+                                    className="flex items-center gap-3 rounded-lg px-4 py-3 font-bold text-[#66736d]"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <MagnifyingGlassIcon className="h-5 w-5" />
+                                    <span>{tl('Search')}</span>
+                                </Link>
                                 {navigation.map((item) => (
                                     <Link
                                         key={item.name}
