@@ -44,6 +44,15 @@ class GoogleAuthenticationTest extends TestCase
             'google_id' => 'google-user-123',
         ]);
         $this->assertNotNull(User::where('email', 'builder@example.com')->value('email_verified_at'));
+        $user = User::where('email', 'builder@example.com')->firstOrFail();
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $user->id,
+            'type' => 'welcome',
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $user->id,
+            'type' => 'google_password_setup',
+        ]);
     }
 
     public function test_google_callback_links_an_existing_email_account(): void
@@ -68,6 +77,14 @@ class GoogleAuthenticationTest extends TestCase
         $response->assertRedirect(route('users.show', $user));
         $this->assertSame('google-user-999', $user->fresh()->google_id);
         $this->assertNotNull($user->fresh()->email_verified_at);
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $user->id,
+            'type' => 'welcome',
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $user->id,
+            'type' => 'google_password_setup',
+        ]);
     }
 
     public function test_google_redirect_shows_a_friendly_error_when_secret_is_missing(): void
@@ -101,6 +118,27 @@ class GoogleAuthenticationTest extends TestCase
         $user = User::where('email', 'intent@example.com')->firstOrFail();
 
         $response->assertRedirect(route('users.show', $user));
+    }
+
+    public function test_google_notifications_are_not_duplicated_on_later_logins(): void
+    {
+        config()->set('services.google.client_id', 'test-client-id');
+        config()->set('services.google.client_secret', 'test-client-secret');
+
+        Socialite::fake('google', $this->fakeGoogleUser([
+            'id' => 'google-user-654',
+            'name' => 'Repeat Builder',
+            'email' => 'repeat@example.com',
+        ]));
+
+        $this->get(route('auth.google.callback'));
+        auth()->logout();
+        $this->get(route('auth.google.callback'));
+
+        $user = User::where('email', 'repeat@example.com')->firstOrFail();
+
+        $this->assertSame(1, \DB::table('notifications')->where('notifiable_id', $user->id)->where('type', 'welcome')->count());
+        $this->assertSame(1, \DB::table('notifications')->where('notifiable_id', $user->id)->where('type', 'google_password_setup')->count());
     }
 
     private function fakeGoogleUser(array $attributes): SocialiteUser

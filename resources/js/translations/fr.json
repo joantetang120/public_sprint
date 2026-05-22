@@ -122,6 +122,7 @@
       "bio": "Bio",
       "bioPlaceholder": "Parlez-nous de vous...",
       "changePassword": "Changer le Mot de Passe",
+      "googlePasswordHint": "Vous vous connectez avec Google. Vous pouvez definir un mot de passe ici sans saisir le mot de passe actuel.",
       "currentPassword": "Mot de Passe Actuel",
       "newPassword": "Nouveau Mot de Passe",
       "confirmPassword": "Confirmer le Mot de Passe",

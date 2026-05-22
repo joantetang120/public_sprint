@@ -122,6 +122,7 @@
       "bio": "Bio",
       "bioPlaceholder": "Tell us about yourself...",
       "changePassword": "Change Password",
+      "googlePasswordHint": "You're signed in with Google. You can set a password here without entering a current password.",
       "currentPassword": "Current Password",
       "newPassword": "New Password",
       "confirmPassword": "Confirm New Password",

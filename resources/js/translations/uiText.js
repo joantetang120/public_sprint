@@ -515,5 +515,7 @@ export const uiText = {
         '{count} publication{suffix}': '{count} publication{suffix}',
         'Starts {date}': 'Commence {date}',
         'Visible profile': 'Profil visible',
+        'Welcome to PublicSprint! Start or join a sprint and share your progress in public.': 'Bienvenue sur PublicSprint ! Cree ou rejoins un sprint et partage ta progression en public.',
+        'You signed up with Google. Set a password in Settings if you want to log in without Google too.': 'Tu t es inscrit avec Google. Definis un mot de passe dans Parametres si tu veux aussi te connecter sans Google.',
     },
 };

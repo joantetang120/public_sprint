@@ -34,6 +34,51 @@ class NotificationService
         ]);
     }
 
+    public static function ensureFirstLoginNotifications(User $user): void
+    {
+        self::welcome($user);
+
+        if (!empty($user->google_id)) {
+            self::googlePasswordSetupReminder($user);
+        }
+    }
+
+    public static function welcome(User $user): void
+    {
+        if (self::notificationExists($user, 'welcome')) {
+            return;
+        }
+
+        self::create(
+            $user,
+            'welcome',
+            'Welcome to PublicSprint! Start or join a sprint and share your progress in public.',
+            null,
+            [
+                'translation_key' => 'Welcome to PublicSprint! Start or join a sprint and share your progress in public.',
+                'target' => 'dashboard',
+            ]
+        );
+    }
+
+    public static function googlePasswordSetupReminder(User $user): void
+    {
+        if (self::notificationExists($user, 'google_password_setup')) {
+            return;
+        }
+
+        self::create(
+            $user,
+            'google_password_setup',
+            'You signed up with Google. Set a password in Settings if you want to log in without Google too.',
+            null,
+            [
+                'translation_key' => 'You signed up with Google. Set a password in Settings if you want to log in without Google too.',
+                'target' => 'settings',
+            ]
+        );
+    }
+
     public static function newFollower(User $user, User $follower): void
     {
         self::create(
@@ -145,5 +190,14 @@ class NotificationService
                 $participant->notify(new SprintCompletedEmail($sprint));
             }
         }
+    }
+
+    private static function notificationExists(User $user, string $type): bool
+    {
+        return \DB::table('notifications')
+            ->where('notifiable_type', User::class)
+            ->where('notifiable_id', $user->id)
+            ->where('type', $type)
+            ->exists();
     }
 }
