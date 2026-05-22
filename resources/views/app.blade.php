@@ -5,6 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <link rel="icon" type="image/jpeg" href="{{ asset('logo/minilogowhite.jpg') }}">
+        <link rel="shortcut icon" href="{{ asset('logo/minilogowhite.jpg') }}">
+        <link rel="apple-touch-icon" href="{{ asset('logo/minilogowhite.jpg') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

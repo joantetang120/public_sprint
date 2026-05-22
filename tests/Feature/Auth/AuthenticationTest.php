@@ -28,6 +28,32 @@ class AuthenticationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $user->id,
+            'type' => 'welcome',
+        ]);
+    }
+
+    public function test_welcome_notification_is_only_created_once_for_normal_login(): void
+    {
+        $user = User::factory()->create();
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        auth()->logout();
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertSame(1, \DB::table('notifications')
+            ->where('notifiable_id', $user->id)
+            ->where('type', 'welcome')
+            ->count());
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void

@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\PasswordReset;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,47 +22,54 @@ class NewPasswordController extends Controller
     {
         return Inertia::render('Auth/ResetPassword', [
             'email' => $request->email,
-            'token' => $request->route('token'),
+            'status' => session('status'),
         ]);
     }
 
     /**
-     * Handle an incoming new password request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * Handle an incoming password reset using a 6-digit verification code.
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'token' => 'required',
+        $validated = $request->validate([
             'email' => 'required|email',
+            'code' => 'required|digits:6',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $validated['email'])
+            ->first();
 
-                event(new PasswordReset($user));
-            }
-        );
-
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
-        if ($status == Password::PASSWORD_RESET) {
-            return redirect()->route('login')->with('status', __($status));
+        if (! $record) {
+            return back()->withErrors([
+                'code' => 'No verification code was found for this email.',
+            ]);
         }
 
-        throw ValidationException::withMessages([
-            'email' => [trans($status)],
-        ]);
+        if (Carbon::parse($record->created_at)->lt(now()->subMinutes(15))) {
+            DB::table('password_reset_tokens')->where('email', $validated['email'])->delete();
+
+            return back()->withErrors([
+                'code' => 'This verification code has expired. Request a new one.',
+            ]);
+        }
+
+        if (! Hash::check($validated['code'], $record->token)) {
+            return back()->withErrors([
+                'code' => 'The verification code is invalid.',
+            ]);
+        }
+
+        $user = \App\Models\User::where('email', $validated['email'])->firstOrFail();
+
+        $user->forceFill([
+            'password' => Hash::make($validated['password']),
+            'remember_token' => Str::random(60),
+        ])->save();
+
+        DB::table('password_reset_tokens')->where('email', $validated['email'])->delete();
+
+        return redirect()->route('login')->with('status', 'Your password has been reset successfully.');
     }
 }

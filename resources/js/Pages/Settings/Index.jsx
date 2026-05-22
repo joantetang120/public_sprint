@@ -360,6 +360,11 @@ export default function Settings({ auth, user }) {
 
                                             <div className="pt-4 border-t border-gray-200">
                                                 <h3 className="text-lg font-bold text-gray-900 mb-4">{t('settings.account.changePassword')}</h3>
+                                                {user.google_id && (
+                                                    <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                                                        {t('settings.account.googlePasswordHint')}
+                                                    </div>
+                                                )}
                                                 
                                                 <div className="space-y-4">
                                                     <div>

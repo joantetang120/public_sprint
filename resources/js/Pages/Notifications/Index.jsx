@@ -7,6 +7,8 @@ import {
     CheckIcon as Check,
     CheckCircleIcon as CheckCheck,
     HeartIcon as Heart,
+    LockClosedIcon as Lock,
+    SparklesIcon as Sparkles,
     TrashIcon as Trash2,
     UserPlusIcon as UserPlus,
 } from '@heroicons/react/24/outline';
@@ -29,14 +31,34 @@ export default function Index({ auth, notifications }) {
                 return <Heart className="w-5 h-5 text-red-600" />;
             case 'sprint_milestone':
                 return <Zap className="w-5 h-5 text-yellow-600" />;
+            case 'welcome':
+                return <Sparkles className="w-5 h-5 text-green-600" />;
+            case 'google_password_setup':
+                return <Lock className="w-5 h-5 text-indigo-600" />;
             default:
                 return <Bell className="w-5 h-5 text-gray-600" />;
         }
     };
 
+    const getNotificationMessage = (notification) => {
+        const data = notification.data || {};
+
+        if (data.translation_key) {
+            return tl(data.translation_key, data.translation_params || {});
+        }
+
+        return data.message;
+    };
+
     const getNotificationLink = (notification) => {
         const data = notification.data;
         
+        if (data.target === 'settings') {
+            return route('settings.index');
+        }
+        if (data.target === 'dashboard') {
+            return route('dashboard');
+        }
         if ((data.sprint_ulid || data.sprint_id) && (data.update_ulid || data.update_id)) {
             return route('sprints.show', data.sprint_ulid || data.sprint_id);
         }
@@ -155,7 +177,7 @@ export default function Index({ auth, notifications }) {
                                             onClick={() => handleNotificationClick(notification)}
                                         >
                                             <p className={`text-sm ${isUnread ? 'font-semibold' : ''} text-gray-900 dark:text-white`}>
-                                                {notification.data?.message}
+                                                {getNotificationMessage(notification)}
                                             </p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                 {formatDateTime(notification.created_at)}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -63,6 +64,7 @@ class GoogleAuthController extends Controller
 
         Auth::login($user);
         request()->session()->regenerate();
+        NotificationService::ensureFirstLoginNotifications($user);
 
         return redirect()->route('users.show', $user);
     }

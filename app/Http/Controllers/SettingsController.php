@@ -77,8 +77,8 @@ class SettingsController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . auth()->id(),
             'bio' => 'nullable|string|max:500',
-            'current_password' => 'nullable|required_with:new_password',
-            'new_password' => ['nullable', 'confirmed', Password::min(8)],
+            'current_password' => 'nullable|string',
+            'new_password' => ['nullable', 'confirmed', Password::defaults()],
         ]);
 
         $user = auth()->user();
@@ -91,10 +91,19 @@ class SettingsController extends Controller
         }
 
         // Update password if provided
-        if ($request->filled('current_password')) {
-            if (!Hash::check($request->current_password, $user->password)) {
+        if ($request->filled('new_password')) {
+            $requiresCurrentPassword = empty($user->google_id);
+
+            if ($requiresCurrentPassword && !$request->filled('current_password')) {
+                return back()->withErrors([
+                    'current_password' => 'Current password is required to change your password.',
+                ]);
+            }
+
+            if ($request->filled('current_password') && !Hash::check($request->current_password, $user->password)) {
                 return back()->withErrors(['current_password' => 'Current password is incorrect.']);
             }
+
             $user->password = Hash::make($validated['new_password']);
         }
 

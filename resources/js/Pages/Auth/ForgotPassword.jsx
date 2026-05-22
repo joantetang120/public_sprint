@@ -62,7 +62,7 @@ export default function ForgotPassword({ status }) {
                                 We've got you! 🔑
                             </h1>
                             <p className="text-lg text-white/90 leading-relaxed mb-8">
-                                We'll send you a secure link to get back to building with the community.
+                                We'll send you a 6-digit verification code to get you back into your account.
                             </p>
                             
                             {/* Community Stats */}
@@ -117,7 +117,7 @@ export default function ForgotPassword({ status }) {
                                     Reset your password
                                 </h2>
                                 <p className="text-gray-600">
-                                    Enter your email and we'll send you a secure reset link.
+                                    Enter your email and we'll send you a 6-digit verification code.
                                 </p>
                             </div>
 
@@ -161,7 +161,7 @@ export default function ForgotPassword({ status }) {
                                     disabled={processing}
                                     className="group w-full px-6 py-4 bg-green-500 text-white rounded-lg font-semibold text-base hover:bg-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-sm hover:shadow-md"
                                 >
-                                    <span>{processing ? 'Sending reset link...' : 'Send reset link'}</span>
+                                    <span>{processing ? 'Sending verification code...' : 'Send verification code'}</span>
                                     {!processing && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                                 </button>
 
@@ -183,7 +183,7 @@ export default function ForgotPassword({ status }) {
                                     </div>
                                     <div className="flex items-center space-x-1">
                                         <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        <span>Instant delivery</span>
+                                        <span>6-digit code</span>
                                     </div>
                                 </div>
                             </div>
