@@ -1,1 +1,0 @@
-import{j as m}from"./app-DB_fE74T.js";function a({className:o="",disabled:t,children:n,...r}){return m.jsx("button",{...r,className:`ps-command-button ${t&&"opacity-25"} `+o,disabled:t,children:n})}export{a as P};

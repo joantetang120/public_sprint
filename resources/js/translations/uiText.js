@@ -498,6 +498,8 @@ export const uiText = {
         'Comment updated.': 'Commentaire modifie.',
         'Comment deleted.': 'Commentaire supprime.',
         'Reply deleted.': 'Reponse supprimee.',
+        'Delete publication': 'Supprimer la publication',
+        'Publication deleted.': 'Publication supprimee.',
         'reply': 'reponse',
         'replies': 'reponses',
         'Global Search': 'Recherche globale',
