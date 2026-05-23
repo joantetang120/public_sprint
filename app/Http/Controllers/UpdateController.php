@@ -13,6 +13,15 @@ use Inertia\Inertia;
 
 class UpdateController extends Controller
 {
+    private function getCurrentSprintDay(Sprint $sprint): int
+    {
+        $startDay = $sprint->starts_at->copy()->startOfDay();
+        $today = now()->startOfDay();
+        $daysPassed = $startDay->diffInDays($today) + 1;
+
+        return (int) max(1, min($daysPassed, $sprint->duration_days));
+    }
+
     public function index()
     {
         $user = auth()->user();
@@ -90,8 +99,7 @@ class UpdateController extends Controller
         }
 
         // Calculate current day
-        $daysPassed = now()->diffInDays($sprint->starts_at) + 1;
-        $sprint->current_day = (int) max(1, min($daysPassed, $sprint->duration_days));
+        $sprint->current_day = $this->getCurrentSprintDay($sprint);
 
         return Inertia::render('Update/Create', [
             'sprint' => $sprint->load('creator'),
@@ -121,9 +129,11 @@ class UpdateController extends Controller
             'images.*' => 'image|max:5120', // 5MB each
             'links' => 'nullable|array',
             'links.*' => 'url|max:500',
-            'day_number' => 'required|integer|min:1',
+            'day_number' => 'nullable|integer|min:1',
             'is_draft' => 'boolean',
         ]);
+
+        $currentSprintDay = $this->getCurrentSprintDay($sprint);
 
         // TEMPORARILY DISABLED FOR TESTING - Allow multiple updates per day
         // // Check if update for this day already exists
@@ -200,7 +210,7 @@ class UpdateController extends Controller
             $update = Update::create([
                 'sprint_id' => $sprint->id,
                 'user_id' => auth()->id(),
-                'day_number' => $validated['day_number'],
+                'day_number' => $currentSprintDay,
                 'content' => $validated['content'],
                 'image' => $imagePath,
                 'images' => !empty($imageUrls) ? $imageUrls : null,
