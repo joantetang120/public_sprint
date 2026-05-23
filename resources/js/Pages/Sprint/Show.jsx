@@ -49,6 +49,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
     const [replyingTo, setReplyingTo] = useState({});
     const [replyText, setReplyText] = useState({});
     const [openCommentMenuId, setOpenCommentMenuId] = useState(null);
+    const [openUpdateMenuId, setOpenUpdateMenuId] = useState(null);
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editingCommentText, setEditingCommentText] = useState('');
     const [actionToast, setActionToast] = useState(null);
@@ -106,7 +107,21 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
         return !((comment.replies_count || 0) > 0 || (comment.replies && comment.replies.length > 0));
     };
 
+    const canDeleteUpdate = (update) => auth.user && auth.user.id === update.user_id;
+
     const hasCommentActions = (comment) => canEditComment(comment) || canDeleteComment(comment);
+
+    const deleteUpdate = (update) => {
+        setOpenUpdateMenuId(null);
+
+        router.delete(route('updates.destroy', getUpdateRouteKey(update)), {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                triggerActionToast(tl('Publication deleted.'));
+            },
+        });
+    };
 
     const startEditingComment = (comment) => {
         setOpenCommentMenuId(null);
@@ -678,9 +693,32 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs font-semibold">
-                                                            {tl('Day {day}', { day: update.day_number })}
-                                                        </span>
+                                                        <div className="flex items-start gap-2">
+                                                            <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs font-semibold">
+                                                                {tl('Day {day}', { day: update.day_number })}
+                                                            </span>
+                                                            {canDeleteUpdate(update) && (
+                                                                <div className="relative">
+                                                                    <button
+                                                                        onClick={() => setOpenUpdateMenuId((current) => current === update.id ? null : update.id)}
+                                                                        className="rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                                                                    >
+                                                                        <MoreVertical className="h-4 w-4" />
+                                                                    </button>
+                                                                    {openUpdateMenuId === update.id && (
+                                                                        <div className="absolute right-0 top-full z-20 mt-1 min-w-[10rem] overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                                                                            <button
+                                                                                onClick={() => deleteUpdate(update)}
+                                                                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950/30"
+                                                                            >
+                                                                                <Trash2 className="h-4 w-4" />
+                                                                                <span>{tl('Delete publication')}</span>
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
 
                                                     {/* Publication Content */}
