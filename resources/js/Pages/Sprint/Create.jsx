@@ -22,7 +22,20 @@ export default function Create({ tags = [] }) {
         tags: [],
     });
 
-    const durations = [3, 7, 14, 21, 30];
+    const PRESET_DURATIONS = [3, 7, 14, 21, 30];
+    const [customActive, setCustomActive] = useState(false);
+
+    const selectPreset = (d) => {
+        setCustomActive(false);
+        setData('duration_days', d);
+    };
+
+    const activateCustom = () => {
+        setCustomActive(true);
+        if (PRESET_DURATIONS.includes(data.duration_days)) {
+            setData('duration_days', '');
+        }
+    };
 
     useEffect(() => {
         const tomorrow = new Date();
@@ -127,21 +140,50 @@ export default function Create({ tags = [] }) {
                                 <div>
                                     <label className="mb-3 block text-sm font-bold text-stone-900">{tl('Duration')}</label>
                                     <div className="grid grid-cols-3 gap-3">
-                                        {durations.map((duration) => (
+                                        {PRESET_DURATIONS.map((d) => (
                                             <button
-                                                key={duration}
+                                                key={d}
                                                 type="button"
-                                                onClick={() => setData('duration_days', duration)}
+                                                onClick={() => selectPreset(d)}
                                                 className={`rounded-xl border px-4 py-3 text-sm font-bold transition ${
-                                                    data.duration_days === duration
+                                                    !customActive && data.duration_days === d
                                                         ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
                                                         : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
                                                 }`}
                                             >
-                                                {duration}d
+                                                {d}d
                                             </button>
                                         ))}
+                                        <button
+                                            type="button"
+                                            onClick={activateCustom}
+                                            className={`rounded-xl border px-4 py-3 text-sm font-bold transition ${
+                                                customActive
+                                                    ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                                                    : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                                            }`}
+                                        >
+                                            {tl('Custom')}
+                                        </button>
                                     </div>
+                                    {customActive && (
+                                        <div className="mt-3 flex items-center gap-3">
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                max={365}
+                                                value={data.duration_days}
+                                                onChange={(e) => {
+                                                    const v = parseInt(e.target.value, 10);
+                                                    setData('duration_days', isNaN(v) ? '' : Math.min(365, Math.max(1, v)));
+                                                }}
+                                                className="w-28 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-center font-bold text-stone-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                                placeholder="e.g. 45"
+                                                autoFocus
+                                            />
+                                            <span className="text-sm text-stone-600">{tl('days')}</span>
+                                        </div>
+                                    )}
                                     {errors.duration_days && <p className="mt-2 text-sm text-red-600">{errors.duration_days}</p>}
                                 </div>
 

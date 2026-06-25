@@ -476,7 +476,7 @@ class SprintController extends Controller
         return $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'duration_days' => 'required|integer|in:3,7,14,21,30',
+            'duration_days' => 'required|integer|min:1|max:365',
             'is_private' => 'boolean',
             'starts_at' => 'required|date|after:now',
             'tags' => 'array',
