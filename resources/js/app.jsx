@@ -26,7 +26,7 @@ createInertiaApp({
 
         root.render(
             <ThemeProvider>
-                <LanguageProvider>
+                <LanguageProvider initialLanguage={props.initialPage.props.locale?.current ?? 'en'}>
                     <AppWrapper />
                 </LanguageProvider>
             </ThemeProvider>

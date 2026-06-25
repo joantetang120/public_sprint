@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Notifications\CommentActivityEmail;
+use App\Notifications\ReactionActivityEmail;
+use App\Notifications\SprintCompletedEmail;
+use App\Notifications\SprintUpdateEmail;
 use App\Models\User;
-use Illuminate\Support\Facades\Notification;
 
 class NotificationService
 {
@@ -17,6 +20,7 @@ class NotificationService
         $notificationData = array_merge($data ?? [], [
             'message' => $message,
             'actor_id' => $actor?->id,
+            'actor_ulid' => $actor?->ulid,
         ]);
 
         \DB::table('notifications')->insert([
@@ -30,6 +34,51 @@ class NotificationService
         ]);
     }
 
+    public static function ensureFirstLoginNotifications(User $user): void
+    {
+        self::welcome($user);
+
+        if (!empty($user->google_id)) {
+            self::googlePasswordSetupReminder($user);
+        }
+    }
+
+    public static function welcome(User $user): void
+    {
+        if (self::notificationExists($user, 'welcome')) {
+            return;
+        }
+
+        self::create(
+            $user,
+            'welcome',
+            'Welcome to PublicSprint! Start or join a sprint and share your progress in public.',
+            null,
+            [
+                'translation_key' => 'Welcome to PublicSprint! Start or join a sprint and share your progress in public.',
+                'target' => 'dashboard',
+            ]
+        );
+    }
+
+    public static function googlePasswordSetupReminder(User $user): void
+    {
+        if (self::notificationExists($user, 'google_password_setup')) {
+            return;
+        }
+
+        self::create(
+            $user,
+            'google_password_setup',
+            'You signed up with Google. Set a password in Settings if you want to log in without Google too.',
+            null,
+            [
+                'translation_key' => 'You signed up with Google. Set a password in Settings if you want to log in without Google too.',
+                'target' => 'settings',
+            ]
+        );
+    }
+
     public static function newFollower(User $user, User $follower): void
     {
         self::create(
@@ -37,7 +86,10 @@ class NotificationService
             'new_follower',
             "{$follower->name} started following you",
             $follower,
-            ['follower_id' => $follower->id]
+            [
+                'follower_id' => $follower->id,
+                'follower_ulid' => $follower->ulid,
+            ]
         );
     }
 
@@ -51,10 +103,16 @@ class NotificationService
                 $commenter,
                 [
                     'update_id' => $update->id,
+                    'update_ulid' => $update->ulid,
                     'comment_id' => $comment->id,
                     'sprint_id' => $update->sprint_id,
+                    'sprint_ulid' => $update->sprint->ulid,
                 ]
             );
+
+            if ($updateOwner->wantsCommentNotifications()) {
+                $updateOwner->notify(new CommentActivityEmail($commenter, $update, $comment));
+            }
         }
     }
 
@@ -69,8 +127,14 @@ class NotificationService
                 [
                     'update_id' => $update->id,
                     'sprint_id' => $update->sprint_id,
+                    'update_ulid' => $update->ulid,
+                    'sprint_ulid' => $update->sprint->ulid,
                 ]
             );
+
+            if ($updateOwner->wantsReactionNotifications()) {
+                $updateOwner->notify(new ReactionActivityEmail($reactor, $update));
+            }
         }
     }
 
@@ -81,7 +145,10 @@ class NotificationService
             'sprint_milestone',
             "Sprint '{$sprint->title}' {$milestone}",
             null,
-            ['sprint_id' => $sprint->id]
+            [
+                'sprint_id' => $sprint->id,
+                'sprint_ulid' => $sprint->ulid,
+            ]
         );
     }
 
@@ -93,8 +160,44 @@ class NotificationService
                 'new_participant',
                 "{$participant->name} joined your sprint '{$sprint->title}'",
                 $participant,
-                ['sprint_id' => $sprint->id]
+                [
+                    'sprint_id' => $sprint->id,
+                    'sprint_ulid' => $sprint->ulid,
+                ]
             );
         }
+    }
+
+    public static function sprintUpdate($sprint, User $author, $update): void
+    {
+        $participants = $sprint->participants()
+            ->where('users.id', '!=', $author->id)
+            ->get();
+
+        foreach ($participants as $participant) {
+            if ($participant->wantsSprintUpdateNotifications()) {
+                $participant->notify(new SprintUpdateEmail($author, $sprint, $update));
+            }
+        }
+    }
+
+    public static function sprintCompleted($sprint): void
+    {
+        $participants = $sprint->participants()->get();
+
+        foreach ($participants as $participant) {
+            if ($participant->wantsSprintCompletionNotifications()) {
+                $participant->notify(new SprintCompletedEmail($sprint));
+            }
+        }
+    }
+
+    private static function notificationExists(User $user, string $type): bool
+    {
+        return \DB::table('notifications')
+            ->where('notifiable_type', User::class)
+            ->where('notifiable_id', $user->id)
+            ->where('type', $type)
+            ->exists();
     }
 }

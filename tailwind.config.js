@@ -43,7 +43,8 @@ export default {
                 },
             },
             fontFamily: {
-                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                sans: ['DM Sans', ...defaultTheme.fontFamily.sans],
+                display: ['Space Grotesk', 'DM Sans', ...defaultTheme.fontFamily.sans],
             },
             animation: {
                 'fade-in': 'fadeIn 0.5s ease-in-out',

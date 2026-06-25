@@ -1,9 +1,25 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Zap, Mail, Lock, User, ArrowRight, Eye, EyeOff, CheckCircle2, Users, Rocket, Star } from 'lucide-react';
+import {
+    ArrowRightIcon as ArrowRight,
+    BoltIcon as Zap,
+    CheckCircleIcon as CheckCircle2,
+    EnvelopeIcon as Mail,
+    EyeIcon as Eye,
+    EyeSlashIcon as EyeOff,
+    LockClosedIcon as Lock,
+    RocketLaunchIcon as Rocket,
+    StarIcon as Star,
+    UserGroupIcon as Users,
+    UserIcon as User,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
+import LanguageSwitcher from '@/Components/LanguageSwitcher';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function Register({ stats }) {
+    const { props } = usePage();
+    const { tl } = useLanguage();
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -13,6 +29,7 @@ export default function Register({ stats }) {
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const googleError = props.errors?.google;
 
     const submit = (e) => {
         e.preventDefault();
@@ -30,7 +47,7 @@ export default function Register({ stats }) {
 
     return (
         <>
-            <Head title="Join PublicSprint Community" />
+            <Head title={tl('Join PublicSprint Community')} />
             
             <div className="min-h-screen flex bg-white">
                 {/* Left Side - Community Branding */}
@@ -127,6 +144,10 @@ export default function Register({ stats }) {
                 {/* Right Side - Form */}
                 <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-gray-50">
                     <div className="w-full max-w-md">
+                        <div className="mb-4 flex justify-end">
+                            <LanguageSwitcher compact />
+                        </div>
+
                         {/* Mobile Logo */}
                         <Link href="/" className="lg:hidden flex items-center space-x-3 mb-8 justify-center">
                             <img 
@@ -155,6 +176,31 @@ export default function Register({ stats }) {
                                         Sign in
                                     </Link>
                                 </p>
+                            </div>
+
+                            {googleError && (
+                                <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                                    {googleError}
+                                </div>
+                            )}
+
+                            <a
+                                href={route('auth.google.redirect')}
+                                className="mb-6 flex w-full items-center justify-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                            >
+                                <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.6 3.9-5.4 3.9-3.2 0-5.9-2.7-5.9-6s2.7-6 5.9-6c1.8 0 3.1.8 3.8 1.4l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5 6.8 2.5 2.5 6.8 2.5 12S6.8 21.5 12 21.5c6.9 0 9.2-4.8 9.2-7.3 0-.5 0-.8-.1-1.2H12Z" />
+                                    <path fill="#34A853" d="M3.6 7.4l3.2 2.3C7.7 7.8 9.7 6.4 12 6.4c1.8 0 3.1.8 3.8 1.4l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5c-3.6 0-6.7 2-8.4 4.9Z" />
+                                    <path fill="#FBBC05" d="M2.5 12c0 1.6.4 3.2 1.1 4.6l3.7-2.8c-.2-.5-.3-1.1-.3-1.8s.1-1.2.3-1.8L3.6 7.4C2.9 8.8 2.5 10.4 2.5 12Z" />
+                                    <path fill="#4285F4" d="M12 21.5c2.5 0 4.7-.8 6.2-2.3l-3-2.4c-.8.6-1.9 1.1-3.2 1.1-3.7 0-5.2-2.5-5.4-3.8l-3.7 2.8c1.7 3 4.8 4.6 8.1 4.6Z" />
+                                </svg>
+                                <span>Continue with Google</span>
+                            </a>
+
+                            <div className="mb-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
+                                <div className="h-px flex-1 bg-gray-200" />
+                                <span>or create an account with email</span>
+                                <div className="h-px flex-1 bg-gray-200" />
                             </div>
 
                             <form onSubmit={submit} className="space-y-5">

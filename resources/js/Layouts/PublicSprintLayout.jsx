@@ -1,202 +1,203 @@
-import { useState, useEffect } from 'react';
-import { Link, usePage, router } from '@inertiajs/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Home, Compass, PlusCircle, Bell, User, Menu, X, 
-    Zap, TrendingUp, MessageSquare, UserPlus, Search, Settings
-} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+    Bars3Icon,
+    BellAlertIcon,
+    BoltIcon,
+    ChatBubbleOvalLeftEllipsisIcon,
+    Cog6ToothIcon,
+    HomeIcon,
+    MagnifyingGlassIcon,
+    MapIcon,
+    PlusIcon,
+    RocketLaunchIcon,
+    UserCircleIcon,
+    UserPlusIcon,
+    XMarkIcon,
+} from '@heroicons/react/24/outline';
 import UserAvatar from '@/Components/UserAvatar';
+import LanguageSwitcher from '@/Components/LanguageSwitcher';
+import { useLanguage } from '@/Contexts/LanguageContext';
+import { routeKey } from '@/lib/routeKey';
 
 export default function PublicSprintLayout({ children }) {
-    const { auth } = usePage().props;
+    const page = usePage();
+    const { auth } = page.props;
+    const { url } = page;
+    const { t, tl } = useLanguage();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [showNotifications, setShowNotifications] = useState(false);
-    const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
     useEffect(() => {
-        // Fetch notifications if user is logged in
-        if (auth.user) {
-            fetchNotifications();
-            // Poll for new notifications every 30 seconds
-            const interval = setInterval(fetchNotifications, 30000);
-            return () => clearInterval(interval);
+        if (!auth.user) {
+            return undefined;
         }
+
+        const fetchNotifications = async () => {
+            try {
+                const response = await fetch(route('notifications.unread'));
+                const data = await response.json();
+                setUnreadCount(data.count);
+            } catch (error) {
+                console.error('Failed to fetch notifications:', error);
+            }
+        };
+
+        fetchNotifications();
+        const interval = setInterval(fetchNotifications, 30000);
+        return () => clearInterval(interval);
     }, [auth.user]);
 
-    const fetchNotifications = async () => {
-        try {
-            const response = await fetch(route('notifications.unread'));
-            const data = await response.json();
-            setUnreadCount(data.count);
-        } catch (error) {
-            console.error('Failed to fetch notifications:', error);
-        }
-    };
-
-    const loadNotifications = async () => {
-        try {
-            const response = await fetch(route('notifications.index'));
-            setShowNotifications(!showNotifications);
-        } catch (error) {
-            console.error('Failed to load notifications:', error);
-        }
-    };
-
-    const getNotificationIcon = (type) => {
-        switch (type) {
-            case 'new_follower':
-                return <UserPlus className="w-5 h-5 text-green-600" />;
-            case 'new_comment':
-                return <MessageSquare className="w-5 h-5 text-blue-600" />;
-            case 'new_reaction':
-                return <Heart className="w-5 h-5 text-red-600" />;
-            default:
-                return <Bell className="w-5 h-5 text-gray-600" />;
-        }
-    };
-
     const navigation = [
-        { name: 'Home', href: route('dashboard'), icon: Home },
-        { name: 'Discover', href: route('discover'), icon: Compass },
-        { name: 'Sprints', href: route('sprints.index'), icon: TrendingUp },
-        { name: 'Profile', href: auth.user ? route('users.show', auth.user.id) : route('login'), icon: User },
-        ...(auth.user ? [{ name: 'Settings', href: route('settings.index'), icon: Settings }] : []),
+        { name: t('common.home'), href: route('dashboard'), icon: HomeIcon, match: '/dashboard' },
+        { name: t('common.discover'), href: route('discover'), icon: MapIcon, match: '/discover' },
+        { name: t('common.sprints'), href: route('sprints.index'), icon: MapIcon, match: '/sprints' },
+        { name: t('common.profile'), href: auth.user ? route('users.show', routeKey(auth.user)) : route('login'), icon: UserCircleIcon, match: '/users' },
+        ...(auth.user ? [{ name: t('common.settings'), href: route('settings.index'), icon: Cog6ToothIcon, match: '/settings' }] : []),
+    ];
+
+    const isActive = (item) => {
+        if (!url) {
+            return false;
+        }
+
+        return item.match === '/sprints'
+            ? url.startsWith('/sprints')
+            : url.startsWith(item.match);
+    };
+
+    const activityNotes = [
+        tl('Daily check-ins'),
+        tl('Shared progress'),
+        tl('Live accountability'),
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <motion.header 
-                initial={{ y: -100 }}
-                animate={{ y: 0 }}
-                className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm"
+        <div className="ps-app-shell">
+            <motion.header
+                initial={{ y: -18, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="ps-topbar"
             >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        {/* Logo */}
-                        <Link href="/" className="flex items-center space-x-3 group">
-                            <img 
-                                src="/logo/log2.png" 
-                                alt="PublicSprint Logo" 
-                                className="h-20 w-auto"
-                            />
+                <div className="mx-auto flex h-[74px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                    <Link href="/" className="group flex items-center gap-3">
+                        <span className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-lg bg-[#17211d]">
+                            <img src="/logo/minilogowhite.jpg" alt="PublicSprint" className="h-8 w-8 object-contain" />
+                            <span className="absolute bottom-1 right-1 ps-live-dot" />
+                        </span>
+                        <span className="hidden sm:block">
+                            <span className="block font-display text-lg font-black leading-none text-[#17211d]">PublicSprint</span>
+                            <span className="block text-[11px] font-black uppercase tracking-[0.16em] text-[#66736d]">
+                                {tl('ship in public')}
+                            </span>
+                        </span>
+                    </Link>
+
+                    <nav className="hidden items-center gap-1 md:flex">
+                        {navigation.map((item) => (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className={`ps-nav-link ${isActive(item) ? 'ps-nav-link-active' : ''}`}
+                            >
+                                <item.icon className="h-5 w-5" />
+                                <span>{item.name}</span>
+                            </Link>
+                        ))}
+                    </nav>
+
+                    <div className="flex items-center gap-2">
+                        <LanguageSwitcher compact className="hidden md:flex" />
+
+                        <Link
+                            href={route('search.index')}
+                            className="grid h-10 w-10 place-items-center rounded-full border border-black/10 bg-white/70 text-[#17211d] transition hover:bg-[#b7f34a]"
+                            title={tl('Search')}
+                        >
+                            <MagnifyingGlassIcon className="h-5 w-5" />
                         </Link>
 
-                        {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center space-x-1">
-                            {navigation.map((item) => (
-                                <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors font-medium"
-                                >
-                                    <item.icon className="w-5 h-5" />
-                                    <span>{item.name}</span>
-                                </Link>
-                            ))}
-                        </nav>
+                        <Link href={route('sprints.create')} className="ps-command-button hidden sm:inline-flex">
+                            <PlusIcon className="h-5 w-5" />
+                            <span>{t('nav.createSprint')}</span>
+                        </Link>
 
-                        {/* Actions */}
-                        <div className="flex items-center space-x-3">
-                            {/* Search Button */}
-                            <Link
-                                href={route('discover')}
-                                className="p-2 rounded-lg text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
-                            >
-                                <Search className="w-5 h-5" />
-                            </Link>
-
-                            {/* Create Sprint Button */}
-                            <Link
-                                href={route('sprints.create')}
-                                className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm hover:shadow-md"
-                            >
-                                <PlusCircle className="w-5 h-5" />
-                                <span>Create Sprint</span>
-                            </Link>
-
-                            {/* Notifications */}
-                            {auth.user && (
-                                <div className="relative">
-                                    <button
-                                        onClick={() => router.visit(route('notifications.index'))}
-                                        className="relative p-2 rounded-lg text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
-                                    >
-                                        <Bell className="w-5 h-5" />
-                                        {unreadCount > 0 && (
-                                            <span className="absolute top-0 right-0 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
-                                                {unreadCount > 9 ? '9+' : unreadCount}
-                                            </span>
-                                        )}
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* User Avatar / Login */}
-                            {auth.user ? (
-                                <Link
-                                    href={route('users.show', auth.user.id)}
-                                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                                >
-                                    <UserAvatar user={auth.user} className="w-8 h-8" />
-                                </Link>
-                            ) : (
-                                <div className="flex items-center space-x-2">
-                                    <Link
-                                        href={route('login')}
-                                        className="px-4 py-2 text-gray-700 hover:text-green-600 font-medium transition-colors"
-                                    >
-                                        Sign in
-                                    </Link>
-                                    <Link
-                                        href={route('register')}
-                                        className="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm hover:shadow-md"
-                                    >
-                                        Get Started
-                                    </Link>
-                                </div>
-                            )}
-
-                            {/* Mobile Menu Toggle */}
+                        {auth.user && (
                             <button
-                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                                className="md:hidden p-2 rounded-lg text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                                onClick={() => router.visit(route('notifications.index'))}
+                                className="relative grid h-10 w-10 place-items-center rounded-full border border-black/10 bg-white/70 text-[#17211d] transition hover:bg-[#b7f34a]"
+                                title={tl('Notifications')}
                             >
-                                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                                <BellAlertIcon className="h-5 w-5" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#ff8066] px-1 text-[10px] font-black text-white">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
                             </button>
-                        </div>
+                        )}
+
+                        {auth.user ? (
+                            <Link href={route('users.show', routeKey(auth.user))} className="rounded-full border border-black/10 bg-white/75 p-1 transition hover:bg-white">
+                                <UserAvatar user={auth.user} className="h-8 w-8" />
+                            </Link>
+                        ) : (
+                            <div className="hidden items-center gap-2 sm:flex">
+                                <Link href={route('login')} className="ps-nav-link">
+                                    {t('common.login')}
+                                </Link>
+                                <Link href={route('register')} className="ps-command-button">
+                                    {t('common.register')}
+                                </Link>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="grid h-10 w-10 place-items-center rounded-full border border-black/10 bg-white/70 text-[#17211d] md:hidden"
+                        >
+                            {mobileMenuOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
+                        </button>
                     </div>
                 </div>
 
-                {/* Mobile Menu */}
                 <AnimatePresence>
                     {mobileMenuOpen && (
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="md:hidden border-t border-gray-200 bg-white"
+                            className="border-t border-black/10 bg-[#fbfaf5]"
                         >
-                            <div className="px-4 py-4 space-y-2">
+                            <div className="space-y-2 px-4 py-4">
+                                <LanguageSwitcher />
+                                <Link
+                                    href={route('search.index')}
+                                    className="flex items-center gap-3 rounded-lg px-4 py-3 font-bold text-[#66736d]"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <MagnifyingGlassIcon className="h-5 w-5" />
+                                    <span>{tl('Search')}</span>
+                                </Link>
                                 {navigation.map((item) => (
                                     <Link
                                         key={item.name}
                                         href={item.href}
-                                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors font-medium"
+                                        className={`flex items-center gap-3 rounded-lg px-4 py-3 font-bold ${isActive(item) ? 'bg-[#b7f34a]/45 text-[#17211d]' : 'text-[#66736d]'}`}
                                         onClick={() => setMobileMenuOpen(false)}
                                     >
-                                        <item.icon className="w-5 h-5" />
+                                        <item.icon className="h-5 w-5" />
                                         <span>{item.name}</span>
                                     </Link>
                                 ))}
                                 <Link
                                     href={route('sprints.create')}
-                                    className="flex items-center justify-center space-x-2 px-4 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors"
+                                    className="ps-command-button flex w-full"
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
-                                    <PlusCircle className="w-5 h-5" />
-                                    <span>Create Sprint</span>
+                                    <PlusIcon className="h-5 w-5" />
+                                    <span>{t('nav.createSprint')}</span>
                                 </Link>
                             </div>
                         </motion.div>
@@ -204,36 +205,47 @@ export default function PublicSprintLayout({ children }) {
                 </AnimatePresence>
             </motion.header>
 
-            {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="ps-mini-feed">
+                <div className="space-y-2">
+                    {activityNotes.map((note, index) => (
+                        <motion.div
+                            key={note}
+                            initial={{ opacity: 0, x: 16 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.12 * index }}
+                            className="ps-mini-feed-card flex items-center gap-2"
+                        >
+                            {index === 0 && <BoltIcon className="h-4 w-4 text-[#d8604c]" />}
+                            {index === 1 && <ChatBubbleOvalLeftEllipsisIcon className="h-4 w-4 text-[#267f5e]" />}
+                            {index === 2 && <UserPlusIcon className="h-4 w-4 text-[#3a78c2]" />}
+                            <span>{note}</span>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+
+            <main className="ps-page">
                 {children}
             </main>
 
-            {/* Floating Action Button (Mobile) */}
             <Link
                 href={route('sprints.create')}
-                className="sm:hidden fixed bottom-6 right-6 w-14 h-14 bg-green-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors z-40"
+                className="ps-command-button fixed bottom-5 right-5 z-40 h-14 w-14 rounded-full p-0 sm:hidden"
+                title={t('nav.createSprint')}
             >
-                <PlusCircle className="w-6 h-6" />
+                <RocketLaunchIcon className="h-6 w-6" />
             </Link>
 
-            {/* Simple Footer */}
-            <footer className="bg-white border-t border-gray-200 mt-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="flex flex-col md:flex-row justify-between items-center">
-                        <div className="flex items-center space-x-3 mb-4 md:mb-0">
-                            <img 
-                                src="/logo/log2.png" 
-                                alt="PublicSprint Logo" 
-                                className="h-16 w-auto"
-                            />
-                        </div>
-                        <div className="flex items-center space-x-6 text-sm text-gray-600">
-                            <Link href="/about" className="hover:text-green-600 transition-colors">About</Link>
-                            <Link href="/privacy" className="hover:text-green-600 transition-colors">Privacy</Link>
-                            <Link href="/terms" className="hover:text-green-600 transition-colors">Terms</Link>
-                            <span>© 2024 PublicSprint</span>
-                        </div>
+            <footer className="mt-14 border-t border-black/10 bg-white/60">
+                <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-7 text-sm font-bold text-[#66736d] sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+                    <div className="flex items-center gap-3">
+                        <img src="/logo/minilogogreen.jpg" alt="PublicSprint" className="h-9 w-9 rounded-lg object-cover" />
+                        <span>PublicSprint © 2026</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <Link href="/about" className="hover:text-[#17211d]">{tl('About')}</Link>
+                        <Link href="/privacy" className="hover:text-[#17211d]">{tl('Privacy')}</Link>
+                        <Link href="/terms" className="hover:text-[#17211d]">{tl('Terms')}</Link>
                     </div>
                 </div>
             </footer>

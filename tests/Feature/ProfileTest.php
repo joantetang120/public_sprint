@@ -61,6 +61,69 @@ class ProfileTest extends TestCase
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
 
+    public function test_full_profile_information_can_be_updated(): void
+    {
+        $user = User::factory()->create([
+            'bio' => 'Old bio',
+            'location' => 'Old location',
+            'website' => 'https://old.example.com',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('profile.update.full'), [
+                'name' => 'Updated Builder',
+                'email' => 'updated@example.com',
+                'bio' => 'Shipping better work in public every week.',
+                'location' => 'Lagos, Nigeria',
+                'website' => 'https://new.example.com',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('users.show', $user));
+
+        $user->refresh();
+
+        $this->assertSame('Updated Builder', $user->name);
+        $this->assertSame('updated@example.com', $user->email);
+        $this->assertSame('Shipping better work in public every week.', $user->bio);
+        $this->assertSame('Lagos, Nigeria', $user->location);
+        $this->assertSame('https://new.example.com', $user->website);
+        $this->assertNull($user->email_verified_at);
+    }
+
+    public function test_existing_profile_images_are_preserved_when_not_reuploaded(): void
+    {
+        $user = User::factory()->create([
+            'avatar' => 'avatars/existing-avatar.jpg',
+            'cover_image' => 'covers/existing-cover.jpg',
+            'bio' => 'Before edit',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('profile.update.full'), [
+                'name' => 'Still Has Images',
+                'email' => $user->email,
+                'bio' => 'Updated bio only',
+                'location' => 'Lagos',
+                'website' => 'https://example.com',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('users.show', $user));
+
+        $user->refresh();
+
+        $this->assertSame('avatars/existing-avatar.jpg', $user->avatar);
+        $this->assertSame('covers/existing-cover.jpg', $user->cover_image);
+        $this->assertSame('Updated bio only', $user->bio);
+        $this->assertSame('Lagos', $user->location);
+        $this->assertSame('https://example.com', $user->website);
+    }
+
     public function test_user_can_delete_their_account(): void
     {
         $user = User::factory()->create();

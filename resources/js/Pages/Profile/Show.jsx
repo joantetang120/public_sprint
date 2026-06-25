@@ -1,18 +1,47 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    MapPin, Globe, Calendar, Zap, Trophy, Heart, Users, Target,
-    UserPlus, UserMinus, Edit, Mail, X, LogOut, AlertTriangle
-} from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+    ArrowRightOnRectangleIcon,
+    ArrowTopRightOnSquareIcon,
+    BoltIcon,
+    CalendarDaysIcon,
+    EllipsisHorizontalIcon,
+    EnvelopeIcon,
+    ExclamationTriangleIcon,
+    GlobeAltIcon,
+    HeartIcon,
+    LockClosedIcon,
+    MapPinIcon,
+    PencilSquareIcon,
+    SparklesIcon,
+    TrophyIcon,
+    UserGroupIcon,
+    UserMinusIcon,
+    UserPlusIcon,
+    XMarkIcon,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
+import ActivityPulseStrip from '@/Components/ActivityPulseStrip';
 import UserAvatar from '@/Components/UserAvatar';
+import { routeKey } from '@/lib/routeKey';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
-export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, followers = [], followingUsers = [] }) {
+export default function Show({
+    auth,
+    profile,
+    stats,
+    isFollowing,
+    isOwnProfile,
+    followers = [],
+    followingUsers = [],
+}) {
+    const { tl, formatDate } = useLanguage();
     const [following, setFollowing] = useState(isFollowing);
     const [showFollowersModal, setShowFollowersModal] = useState(false);
     const [showFollowingModal, setShowFollowingModal] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [showActionMenu, setShowActionMenu] = useState(false);
     const [localFollowing, setLocalFollowing] = useState({});
 
     const handleFollow = () => {
@@ -22,44 +51,43 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
         }
 
         const endpoint = following ? 'users.unfollow' : 'users.follow';
-        
-        // Optimistic update
         setFollowing(!following);
 
-        router.post(route(endpoint, profile.id), {}, {
+        router.post(route(endpoint, profile.ulid ?? profile.id), {}, {
             preserveScroll: true,
             preserveState: true,
-            onError: () => {
-                // Revert on error
-                setFollowing(following);
-            }
+            onError: () => setFollowing(following),
         });
     };
 
-    const handleFollowUser = (userId, isCurrentlyFollowing) => {
+    const handleFollowUser = (userId, userRouteKey, isCurrentlyFollowing) => {
         if (!auth.user) {
             router.visit(route('login'));
             return;
         }
 
         const endpoint = isCurrentlyFollowing ? 'users.unfollow' : 'users.follow';
-        
-        // Optimistic update
-        setLocalFollowing(prev => ({
+
+        setLocalFollowing((prev) => ({
             ...prev,
-            [userId]: !isCurrentlyFollowing
+            [userId]: !isCurrentlyFollowing,
         }));
 
-        router.post(route(endpoint, userId), {}, {
+        router.post(route(endpoint, userRouteKey), {}, {
             preserveScroll: true,
             preserveState: true,
             onError: () => {
-                // Revert on error
-                setLocalFollowing(prev => ({
+                setLocalFollowing((prev) => ({
                     ...prev,
-                    [userId]: isCurrentlyFollowing
+                    [userId]: isCurrentlyFollowing,
                 }));
-            }
+            },
+        });
+    };
+
+    const handleLogout = () => {
+        router.post(route('logout'), {}, {
+            onSuccess: () => setShowLogoutModal(false),
         });
     };
 
@@ -67,39 +95,36 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
         if (localFollowing[userId] !== undefined) {
             return localFollowing[userId];
         }
-        return followingUsers.some(u => u.id === userId);
+
+        return followingUsers.some((user) => user.id === userId);
     };
 
-    const handleLogout = () => {
-        router.post(route('logout'), {}, {
-            onSuccess: () => {
-                setShowLogoutModal(false);
-            }
-        });
-    };
-
-    const getAvatarUrl = () => {
-        if (profile.avatar) {
-            return `/storage/${profile.avatar}`;
+    const getSprintStatusClass = (status) => {
+        if (status === 'active') {
+            return 'bg-[#b7f34a] text-[#17211d]';
         }
-        return `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&size=200&background=random`;
+
+        if (status === 'upcoming') {
+            return 'bg-[#dcecff] text-[#183d63]';
+        }
+
+        return 'bg-[#17211d] text-white';
     };
 
-    // Check if profile is private and user is not the owner
     if (!profile.profile_public && !isOwnProfile) {
         return (
             <PublicSprintLayout>
-                <Head title={`${profile.name}'s Profile`} />
-                <div className="max-w-2xl mx-auto py-12 px-4">
-                    <div className="bg-white dark:bg-dark-900 rounded-2xl border-2 border-gray-200 dark:border-dark-700 p-12 text-center">
-                        <div className="w-20 h-20 bg-gray-100 dark:bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Users className="w-10 h-10 text-gray-400" />
+                <Head title={`${profile.name} - ${tl('Profile')}`} />
+                <div className="mx-auto max-w-3xl py-8">
+                    <div className="ps-empty-state">
+                        <div className="mx-auto mb-5 grid h-20 w-20 place-items-center rounded-full bg-[#17211d] text-white">
+                            <LockClosedIcon className="h-10 w-10" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                            This Profile is Private
+                        <h2 className="font-display text-3xl font-black text-[#17211d]">
+                            {tl('This Profile is Private')}
                         </h2>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            {profile.name} has set their profile to private.
+                        <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#66736d]">
+                            {profile.name} {tl('has set their profile to private.')}
                         </p>
                     </div>
                 </div>
@@ -109,475 +134,338 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
 
     return (
         <PublicSprintLayout>
-            <Head title={`${profile.name}'s Profile`} />
+            <Head title={`${profile.name} - ${tl('Profile')}`} />
 
             <div className="space-y-6">
-                {/* Profile Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                <motion.section
+                    initial={{ opacity: 0, y: 18 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white dark:bg-dark-900 rounded-2xl border-2 border-gray-200 dark:border-dark-700 overflow-hidden"
+                    className="ps-feed-card overflow-hidden"
                 >
-                    {/* Cover */}
-                    <div className="h-32 bg-gradient-to-r from-primary-600 to-purple-600 relative">
+                    <div className="ps-card-cover min-h-[260px] px-6 py-6 sm:px-8">
                         {profile.cover_image && (
-                            <img 
+                            <img
                                 src={`/storage/${profile.cover_image}`}
                                 alt="Cover"
-                                className="w-full h-full object-cover absolute inset-0"
+                                className="absolute inset-0 h-full w-full object-cover"
                             />
                         )}
+                        <div className="relative z-10 flex min-h-[212px] flex-col gap-5">
+                            <div className="max-w-xl">
+                                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/12 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white backdrop-blur-sm">
+                                    <SparklesIcon className="h-4 w-4 text-[#b7f34a]" />
+                                    {isOwnProfile ? tl('Profile') : tl('Public Profile')}
+                                </div>
+                                <ActivityPulseStrip compact />
+                            </div>
+
+                            <div className="mt-auto flex w-full items-center justify-end gap-3 lg:self-end">
+                                <div className="relative sm:hidden">
+                                    <button
+                                        onClick={() => setShowActionMenu((open) => !open)}
+                                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/12 text-white backdrop-blur-sm transition hover:bg-white/20"
+                                    >
+                                        <EllipsisHorizontalIcon className="h-6 w-6" />
+                                    </button>
+
+                                    {showActionMenu && (
+                                        <div className="absolute bottom-full right-0 z-20 mb-2 min-w-[12rem] overflow-hidden rounded-2xl border border-black/10 bg-white p-2 shadow-2xl">
+                                            {isOwnProfile ? (
+                                                <>
+                                                    <Link
+                                                        href={route('profile.edit')}
+                                                        onClick={() => setShowActionMenu(false)}
+                                                        className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-[#17211d] transition hover:bg-[#f5f3ea]"
+                                                    >
+                                                        <PencilSquareIcon className="h-5 w-5" />
+                                                        <span>{tl('Edit Profile')}</span>
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowActionMenu(false);
+                                                            setShowLogoutModal(true);
+                                                        }}
+                                                        className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-bold text-[#17211d] transition hover:bg-[#f5f3ea]"
+                                                    >
+                                                        <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                                                        <span>{tl('Logout')}</span>
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowActionMenu(false);
+                                                            handleFollow();
+                                                        }}
+                                                        className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-bold text-[#17211d] transition hover:bg-[#f5f3ea]"
+                                                    >
+                                                        {following ? <UserMinusIcon className="h-5 w-5" /> : <UserPlusIcon className="h-5 w-5" />}
+                                                        <span>{following ? tl('Unfollow') : tl('Follow')}</span>
+                                                    </button>
+                                                    {profile.show_email && profile.email && (
+                                                        <a
+                                                            href={`mailto:${profile.email}`}
+                                                            onClick={() => setShowActionMenu(false)}
+                                                            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-[#17211d] transition hover:bg-[#f5f3ea]"
+                                                        >
+                                                            <EnvelopeIcon className="h-5 w-5" />
+                                                            <span>{tl('Email')}</span>
+                                                        </a>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="ml-auto hidden flex-wrap items-center gap-3 sm:flex">
+                                    {isOwnProfile ? (
+                                        <>
+                                            <Link href={route('profile.edit')} className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-[#17211d] shadow-sm transition hover:bg-[#f3ffcf]">
+                                                <PencilSquareIcon className="h-5 w-5" />
+                                                <span>{tl('Edit Profile')}</span>
+                                            </Link>
+                                            <button
+                                                onClick={() => setShowLogoutModal(true)}
+                                                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"
+                                            >
+                                                <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                                                <span>{tl('Logout')}</span>
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button
+                                                onClick={handleFollow}
+                                                className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-black transition ${
+                                                    following
+                                                        ? 'border border-white/20 bg-white/10 text-white hover:bg-white/20'
+                                                        : 'bg-[#b7f34a] text-[#17211d] hover:bg-[#c5fb62]'
+                                                }`}
+                                            >
+                                                {following ? <UserMinusIcon className="h-5 w-5" /> : <UserPlusIcon className="h-5 w-5" />}
+                                                <span>{following ? tl('Unfollow') : tl('Follow')}</span>
+                                            </button>
+                                            {profile.show_email && profile.email && (
+                                                <a
+                                                    href={`mailto:${profile.email}`}
+                                                    className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"
+                                                >
+                                                    <EnvelopeIcon className="h-5 w-5" />
+                                                    <span>{tl('Email')}</span>
+                                                </a>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    {/* Profile Info */}
-                    <div className="px-8 pb-8">
-                        <div className="flex flex-col md:flex-row md:items-end md:justify-between -mt-16 mb-6">
-                            <div className="flex items-end space-x-4">
-                                <img 
-                                    src={getAvatarUrl()}
-                                    alt={profile.name}
-                                    className="w-32 h-32 rounded-2xl border-4 border-white dark:border-dark-900 shadow-xl relative z-10"
-                                />
-                                <div className="pb-2">
-                                    <h1 className="text-3xl font-black text-gray-900 dark:text-white">
+
+                    <div className="bg-white px-6 pb-6 pt-5 sm:px-8">
+                        <div className="-mt-20 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                            <div className="flex flex-col gap-4 items-start">
+                                <UserAvatar user={profile} size="2xl" className="self-start shadow-2xl" />
+                                <div className="space-y-2 pl-1">
+                                    <h1 className="font-display text-3xl font-black text-[#17211d] sm:text-4xl">
                                         {profile.name}
                                     </h1>
                                     {profile.bio && (
-                                        <p className="text-gray-600 dark:text-gray-400 mt-1">
+                                        <p className="max-w-2xl text-sm leading-7 text-[#66736d] sm:text-base">
                                             {profile.bio}
                                         </p>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="flex space-x-3 mt-4 md:mt-0">
-                                {isOwnProfile ? (
-                                    <>
-                                        <Link
-                                            href={route('profile.edit')}
-                                            className="px-6 py-3 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors flex items-center space-x-2"
-                                        >
-                                            <Edit className="w-5 h-5" />
-                                            <span>Edit Profile</span>
-                                        </Link>
-                                        <button
-                                            onClick={() => setShowLogoutModal(true)}
-                                            className="px-6 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center space-x-2"
-                                        >
-                                            <LogOut className="w-5 h-5" />
-                                            <span>Logout</span>
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button
-                                            onClick={handleFollow}
-                                            className={`px-6 py-3 rounded-xl font-semibold transition-colors flex items-center space-x-2 ${
-                                                following
-                                                    ? 'bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-700'
-                                                    : 'bg-primary-600 hover:bg-primary-700 text-white'
-                                            }`}
-                                        >
-                                            {following ? (
-                                                <>
-                                                    <UserMinus className="w-5 h-5" />
-                                                    <span>Unfollow</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <UserPlus className="w-5 h-5" />
-                                                    <span>Follow</span>
-                                                </>
-                                            )}
-                                        </button>
-                                        <button className="px-6 py-3 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors">
-                                            <Mail className="w-5 h-5" />
-                                        </button>
-                                    </>
-                                )}
+                            <div className="flex flex-wrap items-center gap-3">
+                                <button
+                                    onClick={() => setShowFollowersModal(true)}
+                                    className="ps-sticker normal-case"
+                                >
+                                    <UserGroupIcon className="h-4 w-4" />
+                                    <span>{stats.followers_count} {tl('Followers')}</span>
+                                </button>
+                                <button
+                                    onClick={() => setShowFollowingModal(true)}
+                                    className="ps-sticker normal-case"
+                                >
+                                    <UserGroupIcon className="h-4 w-4" />
+                                    <span>{stats.following_count} {tl('Following')}</span>
+                                </button>
                             </div>
                         </div>
 
-                        {/* Meta Info */}
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="mt-6 flex flex-wrap gap-3 text-sm font-bold text-[#66736d]">
                             {profile.show_email && profile.email && (
-                                <div className="flex items-center space-x-1">
-                                    <Mail className="w-4 h-4" />
-                                    <span>{profile.email}</span>
-                                </div>
+                                <span className="inline-flex items-center gap-2 rounded-full bg-[#f5f3ea] px-4 py-2">
+                                    <EnvelopeIcon className="h-4 w-4 text-[#267f5e]" />
+                                    {profile.email}
+                                </span>
                             )}
                             {profile.location && (
-                                <div className="flex items-center space-x-1">
-                                    <MapPin className="w-4 h-4" />
-                                    <span>{profile.location}</span>
-                                </div>
+                                <span className="inline-flex items-center gap-2 rounded-full bg-[#f5f3ea] px-4 py-2">
+                                    <MapPinIcon className="h-4 w-4 text-[#d8604c]" />
+                                    {profile.location}
+                                </span>
                             )}
                             {profile.website && (
-                                <a 
+                                <a
                                     href={profile.website}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400"
+                                    className="inline-flex items-center gap-2 rounded-full bg-[#f5f3ea] px-4 py-2 transition hover:bg-[#ebf7ff] hover:text-[#183d63]"
                                 >
-                                    <Globe className="w-4 h-4" />
-                                    <span>{profile.website}</span>
+                                    <GlobeAltIcon className="h-4 w-4 text-[#3a78c2]" />
+                                    <span className="max-w-[18rem] truncate">{profile.website}</span>
+                                    <ArrowTopRightOnSquareIcon className="h-4 w-4" />
                                 </a>
                             )}
-                            <div className="flex items-center space-x-1">
-                                <Calendar className="w-4 h-4" />
-                                <span>Joined {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
-                            </div>
-                        </div>
-
-                        {/* Followers/Following */}
-                        <div className="flex space-x-6 mt-4">
-                            <button
-                                onClick={() => setShowFollowersModal(true)}
-                                className="hover:underline transition-all"
-                            >
-                                <span className="font-bold text-gray-900 dark:text-white">{stats.followers_count}</span>
-                                <span className="text-gray-600 dark:text-gray-400 ml-1">Followers</span>
-                            </button>
-                            <button
-                                onClick={() => setShowFollowingModal(true)}
-                                className="hover:underline transition-all"
-                            >
-                                <span className="font-bold text-gray-900 dark:text-white">{stats.following_count}</span>
-                                <span className="text-gray-600 dark:text-gray-400 ml-1">Following</span>
-                            </button>
+                            <span className="inline-flex items-center gap-2 rounded-full bg-[#f5f3ea] px-4 py-2">
+                                <CalendarDaysIcon className="h-4 w-4 text-[#17211d]" />
+                                {tl('Joined {date}', {
+                                    date: formatDate(profile.created_at, { month: 'long', year: 'numeric' }),
+                                })}
+                            </span>
                         </div>
                     </div>
-                </motion.div>
+                </motion.section>
 
-                {/* Stats Grid */}
                 {(profile.show_stats || isOwnProfile) && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="bg-white dark:bg-dark-900 p-6 rounded-xl border-2 border-gray-200 dark:border-dark-700"
-                    >
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="w-12 h-12 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                                <Target className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                            </div>
-                        </div>
-                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Total Sprints</p>
-                        <p className="text-3xl font-black text-gray-900 dark:text-white">
-                            {stats.total_sprints}
-                        </p>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="bg-white dark:bg-dark-900 p-6 rounded-xl border-2 border-gray-200 dark:border-dark-700"
-                    >
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="w-12 h-12 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                                <Zap className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                            </div>
-                        </div>
-                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Current Streak</p>
-                        <p className="text-3xl font-black text-gray-900 dark:text-white">
-                            {stats.current_streak} 🔥
-                        </p>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="bg-white dark:bg-dark-900 p-6 rounded-xl border-2 border-gray-200 dark:border-dark-700"
-                    >
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                                <Trophy className="w-6 h-6 text-green-600 dark:text-green-400" />
-                            </div>
-                        </div>
-                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Completed</p>
-                        <p className="text-3xl font-black text-gray-900 dark:text-white">
-                            {stats.sprints_completed}
-                        </p>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="bg-white dark:bg-dark-900 p-6 rounded-xl border-2 border-gray-200 dark:border-dark-700"
-                    >
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                                <Heart className="w-6 h-6 text-red-600 dark:text-red-400" />
-                            </div>
-                        </div>
-                        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Total Likes</p>
-                        <p className="text-3xl font-black text-gray-900 dark:text-white">
-                            {stats.total_likes}
-                        </p>
-                    </motion.div>
-                </div>
+                    <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                        <StatCard icon={SparklesIcon} label={tl('Total Sprints')} value={stats.total_sprints} accent="text-[#267f5e]" />
+                        <StatCard icon={BoltIcon} label={tl('Current Streak')} value={stats.current_streak} suffix="🔥" accent="text-[#d8604c]" />
+                        <StatCard icon={TrophyIcon} label={tl('Completed')} value={stats.sprints_completed} accent="text-[#17211d]" />
+                        <StatCard icon={HeartIcon} label={tl('Total Likes')} value={stats.total_likes} accent="text-[#b44153]" />
+                    </section>
                 )}
 
-                {/* Recent Sprints */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                <motion.section
+                    initial={{ opacity: 0, y: 18 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="bg-white dark:bg-dark-900 rounded-2xl border-2 border-gray-200 dark:border-dark-700 overflow-hidden"
+                    transition={{ delay: 0.1 }}
+                    className="ps-feed-card overflow-hidden"
                 >
-                    <div className="p-6 border-b-2 border-gray-200 dark:border-dark-700">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                            Recent Sprints
-                        </h2>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                            Sprints {profile.name} is participating in
-                        </p>
+                    <div className="border-b border-black/10 px-6 py-5 sm:px-8">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                            <div>
+                                <h2 className="font-display text-2xl font-black text-[#17211d]">
+                                    {tl('Recent Sprints')}
+                                </h2>
+                                <p className="text-sm font-bold text-[#66736d]">
+                                    {tl('Sprints {name} is participating in', { name: profile.name })}
+                                </p>
+                            </div>
+                            <span className="ps-sticker normal-case">
+                                <SparklesIcon className="h-4 w-4" />
+                                {profile.sprints?.length || 0} {tl('Sprints')}
+                            </span>
+                        </div>
                     </div>
 
                     {profile.sprints && profile.sprints.length > 0 ? (
-                        <div className="divide-y divide-gray-200 dark:divide-dark-800">
-                            {profile.sprints.map((sprint) => (
+                        <div className="divide-y divide-black/10">
+                            {profile.sprints.map((sprint, index) => (
                                 <Link
                                     key={sprint.id}
-                                    href={route('sprints.show', sprint.id)}
-                                    className="block p-6 hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors"
+                                    href={route('sprints.show', routeKey(sprint))}
+                                    className="block px-6 py-5 transition hover:bg-[#faf8ef] sm:px-8"
                                 >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex-1">
-                                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                        <div className="space-y-2">
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black uppercase ${getSprintStatusClass(sprint.status)}`}>
+                                                    {tl(sprint.status)}
+                                                </span>
+                                                <span className="text-xs font-black uppercase tracking-[0.16em] text-[#66736d]">
+                                                    #{String(index + 1).padStart(2, '0')}
+                                                </span>
+                                            </div>
+                                            <h3 className="font-display text-2xl font-black text-[#17211d]">
                                                 {sprint.title}
                                             </h3>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">
-                                                {sprint.description}
-                                            </p>
-                                            <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                                <span>Score: {sprint.pivot.score || 0}</span>
-                                                <span>Updates: {sprint.pivot.updates_posted || 0}</span>
-                                                <span>Likes: {sprint.pivot.reactions_received || 0}</span>
-                                            </div>
+                                            {sprint.description && (
+                                                <p className="max-w-3xl text-sm leading-7 text-[#66736d]">
+                                                    {sprint.description}
+                                                </p>
+                                            )}
                                         </div>
-                                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                            sprint.status === 'active' 
-                                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                                : sprint.status === 'upcoming'
-                                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                                        }`}>
-                                            {sprint.status}
+
+                                        <div className="grid grid-cols-3 gap-2 sm:min-w-[270px]">
+                                            <SprintMetric label={tl('Score')} value={sprint.pivot.score || 0} />
+                                            <SprintMetric label={tl('Updates')} value={sprint.pivot.updates_posted || 0} />
+                                            <SprintMetric label={tl('Likes')} value={sprint.pivot.reactions_received || 0} />
                                         </div>
                                     </div>
                                 </Link>
                             ))}
                         </div>
                     ) : (
-                        <div className="p-12 text-center">
-                            <Target className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                            <p className="text-gray-500 dark:text-gray-400">
-                                No sprints yet
-                            </p>
+                        <div className="ps-empty-state rounded-none border-0 shadow-none">
+                            <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-[#17211d] text-white">
+                                <SparklesIcon className="h-8 w-8" />
+                            </div>
+                            <p className="text-sm font-bold text-[#66736d]">{tl('No sprints yet')}</p>
                         </div>
                     )}
-                </motion.div>
+                </motion.section>
             </div>
 
-            {/* Followers Modal */}
-            <AnimatePresence>
-                {showFollowersModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowFollowersModal(false)}>
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="bg-white dark:bg-dark-900 rounded-2xl border-2 border-gray-200 dark:border-dark-700 w-full max-w-md max-h-[80vh] overflow-hidden"
-                        >
-                            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-dark-700">
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                                    Followers ({stats.followers_count})
-                                </h2>
-                                <button
-                                    onClick={() => setShowFollowersModal(false)}
-                                    className="p-2 hover:bg-gray-100 dark:hover:bg-dark-800 rounded-xl transition-colors"
-                                >
-                                    <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                                </button>
-                            </div>
-                            <div className="overflow-y-auto max-h-[60vh]">
-                                {followers && followers.length > 0 ? (
-                                    <div className="divide-y divide-gray-200 dark:divide-dark-800">
-                                        {followers.map((follower) => {
-                                            const isFollowingThisUser = isFollowingUser(follower.id);
-                                            const isOwnAccount = auth.user?.id === follower.id;
-                                            
-                                            return (
-                                                <div key={follower.id} className="flex items-center space-x-3 p-4 hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors">
-                                                    <Link href={route('users.show', follower.id)}>
-                                                        <UserAvatar user={follower} size="lg" />
-                                                    </Link>
-                                                    <Link 
-                                                        href={route('users.show', follower.id)}
-                                                        className="flex-1 min-w-0"
-                                                    >
-                                                        <p className="font-bold text-gray-900 dark:text-white truncate hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-                                                            {follower.name}
-                                                        </p>
-                                                        {follower.bio && (
-                                                            <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                                                                {follower.bio}
-                                                            </p>
-                                                        )}
-                                                    </Link>
-                                                    {!isOwnAccount && auth.user && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleFollowUser(follower.id, isFollowingThisUser);
-                                                            }}
-                                                            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
-                                                                isFollowingThisUser
-                                                                    ? 'bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-700'
-                                                                    : 'bg-primary-600 hover:bg-primary-700 text-white'
-                                                            }`}
-                                                        >
-                                                            {isFollowingThisUser ? 'Following' : 'Follow'}
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ) : (
-                                    <div className="p-12 text-center">
-                                        <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                                        <p className="text-gray-500 dark:text-gray-400">No followers yet</p>
-                                    </div>
-                                )}
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+            <PeopleModal
+                open={showFollowersModal}
+                onClose={() => setShowFollowersModal(false)}
+                title={`${tl('Followers')} (${stats.followers_count})`}
+                users={followers}
+                auth={auth}
+                onToggleFollow={handleFollowUser}
+                isFollowingUser={isFollowingUser}
+            />
 
-            {/* Following Modal */}
-            <AnimatePresence>
-                {showFollowingModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowFollowingModal(false)}>
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="bg-white dark:bg-dark-900 rounded-2xl border-2 border-gray-200 dark:border-dark-700 w-full max-w-md max-h-[80vh] overflow-hidden"
-                        >
-                            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-dark-700">
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                                    Following ({stats.following_count})
-                                </h2>
-                                <button
-                                    onClick={() => setShowFollowingModal(false)}
-                                    className="p-2 hover:bg-gray-100 dark:hover:bg-dark-800 rounded-xl transition-colors"
-                                >
-                                    <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                                </button>
-                            </div>
-                            <div className="overflow-y-auto max-h-[60vh]">
-                                {followingUsers && followingUsers.length > 0 ? (
-                                    <div className="divide-y divide-gray-200 dark:divide-dark-800">
-                                        {followingUsers.map((user) => {
-                                            const isFollowingThisUser = isFollowingUser(user.id);
-                                            const isOwnAccount = auth.user?.id === user.id;
-                                            
-                                            return (
-                                                <div key={user.id} className="flex items-center space-x-3 p-4 hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors">
-                                                    <Link href={route('users.show', user.id)}>
-                                                        <UserAvatar user={user} size="lg" />
-                                                    </Link>
-                                                    <Link 
-                                                        href={route('users.show', user.id)}
-                                                        className="flex-1 min-w-0"
-                                                    >
-                                                        <p className="font-bold text-gray-900 dark:text-white truncate hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-                                                            {user.name}
-                                                        </p>
-                                                        {user.bio && (
-                                                            <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                                                                {user.bio}
-                                                            </p>
-                                                        )}
-                                                    </Link>
-                                                    {!isOwnAccount && auth.user && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleFollowUser(user.id, isFollowingThisUser);
-                                                            }}
-                                                            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
-                                                                isFollowingThisUser
-                                                                    ? 'bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-700'
-                                                                    : 'bg-primary-600 hover:bg-primary-700 text-white'
-                                                            }`}
-                                                        >
-                                                            {isFollowingThisUser ? 'Following' : 'Follow'}
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ) : (
-                                    <div className="p-12 text-center">
-                                        <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                                        <p className="text-gray-500 dark:text-gray-400">Not following anyone yet</p>
-                                    </div>
-                                )}
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
+            <PeopleModal
+                open={showFollowingModal}
+                onClose={() => setShowFollowingModal(false)}
+                title={`${tl('Following')} (${stats.following_count})`}
+                users={followingUsers}
+                auth={auth}
+                onToggleFollow={handleFollowUser}
+                isFollowingUser={isFollowingUser}
+            />
 
-                {/* Logout Confirmation Modal */}
+            <AnimatePresence>
                 {showLogoutModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17211d]/70 p-4 backdrop-blur-sm">
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
+                            initial={{ opacity: 0, scale: 0.96 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-white dark:bg-dark-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border-2 border-gray-200 dark:border-dark-700"
+                            exit={{ opacity: 0, scale: 0.96 }}
+                            className="ps-modal-surface w-full max-w-md overflow-hidden"
                         >
-                            {/* Header */}
-                            <div className="bg-gradient-to-r from-red-500 to-red-600 p-6">
-                                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-full">
-                                    <AlertTriangle className="w-8 h-8 text-white" />
+                            <div className="ps-card-cover min-h-0 px-6 py-6 text-white">
+                                <div className="relative z-10 text-center">
+                                    <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-white/14">
+                                        <ExclamationTriangleIcon className="h-8 w-8" />
+                                    </div>
+                                    <h3 className="font-display text-2xl font-black">{tl('Confirm Logout')}</h3>
                                 </div>
-                                <h3 className="text-2xl font-bold text-white text-center">
-                                    Confirm Logout
-                                </h3>
                             </div>
-
-                            {/* Content */}
-                            <div className="p-6">
-                                <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
-                                    Are you sure you want to logout? You'll need to sign in again to access your account.
+                            <div className="space-y-6 bg-white p-6">
+                                <p className="text-center text-sm leading-7 text-[#66736d]">
+                                    {tl("Are you sure you want to logout? You'll need to sign in again to access your account.")}
                                 </p>
-
-                                {/* Actions */}
-                                <div className="flex space-x-3">
+                                <div className="flex gap-3">
                                     <button
                                         onClick={() => setShowLogoutModal(false)}
-                                        className="flex-1 px-6 py-3 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
+                                        className="flex-1 rounded-full border border-black/10 bg-[#f5f3ea] px-5 py-3 text-sm font-black text-[#17211d] transition hover:bg-[#ece8dc]"
                                     >
-                                        Cancel
+                                        {tl('Cancel')}
                                     </button>
                                     <button
                                         onClick={handleLogout}
-                                        className="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
+                                        className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#17211d] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0f1714]"
                                     >
-                                        <LogOut className="w-5 h-5" />
-                                        <span>Logout</span>
+                                        <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                                        <span>{tl('Logout')}</span>
                                     </button>
                                 </div>
                             </div>
@@ -586,5 +474,112 @@ export default function Show({ auth, profile, stats, isFollowing, isOwnProfile, 
                 )}
             </AnimatePresence>
         </PublicSprintLayout>
+    );
+}
+
+function StatCard({ icon: Icon, label, value, suffix = '', accent }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="ps-feed-card p-5"
+        >
+            <div className="mb-4 flex items-center justify-between">
+                <div className={`grid h-11 w-11 place-items-center rounded-full bg-[#f5f3ea] ${accent}`}>
+                    <Icon className="h-5 w-5" />
+                </div>
+            </div>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#66736d]">{label}</p>
+            <p className="mt-2 font-display text-3xl font-black text-[#17211d]">
+                {value} {suffix}
+            </p>
+        </motion.div>
+    );
+}
+
+function SprintMetric({ label, value }) {
+    return (
+        <div className="rounded-lg border border-black/10 bg-[#fbfaf5] px-3 py-3 text-center">
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#66736d]">{label}</p>
+            <p className="mt-2 text-xl font-black text-[#17211d]">{value}</p>
+        </div>
+    );
+}
+
+function PeopleModal({ open, onClose, title, users, auth, onToggleFollow, isFollowingUser }) {
+    const { tl } = useLanguage();
+
+    return (
+        <AnimatePresence>
+            {open && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17211d]/70 p-4 backdrop-blur-sm" onClick={onClose}>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        onClick={(event) => event.stopPropagation()}
+                        className="ps-modal-surface flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden"
+                    >
+                        <div className="border-b border-black/10 bg-white px-6 py-5">
+                            <div className="flex items-center justify-between gap-4">
+                                <h2 className="font-display text-2xl font-black text-[#17211d]">{title}</h2>
+                                <button
+                                    onClick={onClose}
+                                    className="grid h-10 w-10 place-items-center rounded-full bg-[#f5f3ea] text-[#17211d] transition hover:bg-[#ece8dc]"
+                                >
+                                    <XMarkIcon className="h-5 w-5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="overflow-y-auto bg-white">
+                            {users && users.length > 0 ? (
+                                <div className="divide-y divide-black/10">
+                                    {users.map((user) => {
+                                        const followingThisUser = isFollowingUser(user.id);
+                                        const isOwnAccount = auth.user?.id === user.id;
+
+                                        return (
+                                            <div key={user.id} className="flex items-center gap-4 px-6 py-4 transition hover:bg-[#faf8ef]">
+                                                <Link href={route('users.show', routeKey(user))}>
+                                                    <UserAvatar user={user} size="lg" />
+                                                </Link>
+                                                <Link href={route('users.show', routeKey(user))} className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-black text-[#17211d]">{user.name}</p>
+                                                    {user.bio && (
+                                                        <p className="truncate text-sm text-[#66736d]">{user.bio}</p>
+                                                    )}
+                                                </Link>
+                                                {!isOwnAccount && auth.user && (
+                                                    <button
+                                                        onClick={() => onToggleFollow(user.id, routeKey(user), followingThisUser)}
+                                                        className={`rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.12em] transition ${
+                                                            followingThisUser
+                                                                ? 'border border-black/10 bg-[#f5f3ea] text-[#17211d] hover:bg-[#ece8dc]'
+                                                                : 'bg-[#b7f34a] text-[#17211d] hover:bg-[#c5fb62]'
+                                                        }`}
+                                                    >
+                                                        {followingThisUser ? tl('Following') : tl('Follow')}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="ps-empty-state rounded-none border-0 shadow-none">
+                                    <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-[#17211d] text-white">
+                                        <UserGroupIcon className="h-8 w-8" />
+                                    </div>
+                                    <p className="text-sm font-bold text-[#66736d]">
+                                        {title.startsWith(tl('Followers')) ? tl('No followers yet') : tl('Not following anyone yet')}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
     );
 }

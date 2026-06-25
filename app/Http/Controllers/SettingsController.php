@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Services\EngagementService;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
+use Inertia\Inertia;
 
 class SettingsController extends Controller
 {
@@ -18,7 +21,7 @@ class SettingsController extends Controller
 
     public function updateNotifications(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'email_notifications' => 'boolean',
             'sprint_updates_notifications' => 'boolean',
             'comment_notifications' => 'boolean',
@@ -26,20 +29,32 @@ class SettingsController extends Controller
             'sprint_completion_notifications' => 'boolean',
         ]);
 
-        auth()->user()->update($validated);
+        $user = auth()->user();
+        $user->forceFill([
+            'email_notifications' => $request->boolean('email_notifications'),
+            'sprint_updates_notifications' => $request->boolean('sprint_updates_notifications'),
+            'comment_notifications' => $request->boolean('comment_notifications'),
+            'reaction_notifications' => $request->boolean('reaction_notifications'),
+            'sprint_completion_notifications' => $request->boolean('sprint_completion_notifications'),
+        ])->save();
 
         return back()->with('success', 'Notification settings updated successfully!');
     }
 
     public function updatePrivacy(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'profile_public' => 'boolean',
             'show_email' => 'boolean',
             'show_stats' => 'boolean',
         ]);
 
-        auth()->user()->update($validated);
+        $user = auth()->user();
+        $user->forceFill([
+            'profile_public' => $request->boolean('profile_public'),
+            'show_email' => $request->boolean('show_email'),
+            'show_stats' => $request->boolean('show_stats'),
+        ])->save();
 
         return back()->with('success', 'Privacy settings updated successfully!');
     }
@@ -51,7 +66,7 @@ class SettingsController extends Controller
             'language' => 'required|in:en,fr',
         ]);
 
-        auth()->user()->update($validated);
+        auth()->user()->forceFill($validated)->save();
 
         return back()->with('success', 'Preferences updated successfully!');
     }
@@ -62,8 +77,8 @@ class SettingsController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . auth()->id(),
             'bio' => 'nullable|string|max:500',
-            'current_password' => 'nullable|required_with:new_password',
-            'new_password' => ['nullable', 'confirmed', Password::min(8)],
+            'current_password' => 'nullable|string',
+            'new_password' => ['nullable', 'confirmed', Password::defaults()],
         ]);
 
         $user = auth()->user();
@@ -76,10 +91,19 @@ class SettingsController extends Controller
         }
 
         // Update password if provided
-        if ($request->filled('current_password')) {
-            if (!Hash::check($request->current_password, $user->password)) {
+        if ($request->filled('new_password')) {
+            $requiresCurrentPassword = empty($user->google_id);
+
+            if ($requiresCurrentPassword && !$request->filled('current_password')) {
+                return back()->withErrors([
+                    'current_password' => 'Current password is required to change your password.',
+                ]);
+            }
+
+            if ($request->filled('current_password') && !Hash::check($request->current_password, $user->password)) {
                 return back()->withErrors(['current_password' => 'Current password is incorrect.']);
             }
+
             $user->password = Hash::make($validated['new_password']);
         }
 
@@ -100,14 +124,10 @@ class SettingsController extends Controller
             return back()->withErrors(['password' => 'Password is incorrect.']);
         }
 
-        // Delete user's data
-        $user->sprints()->detach();
-        $user->updates()->delete();
-        $user->comments()->delete();
-        $user->reactions()->delete();
-        
-        // Delete user
-        $user->delete();
+        DB::transaction(function () use ($user) {
+            EngagementService::deleteUserData($user);
+            User::whereKey($user->id)->delete();
+        });
 
         auth()->logout();
 

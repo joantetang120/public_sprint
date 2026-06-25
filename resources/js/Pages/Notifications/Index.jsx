@@ -1,11 +1,24 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Bell, Heart, MessageSquare, UserPlus, Zap, Check, Trash2, CheckCheck } from 'lucide-react';
+import {
+    BellAlertIcon as Bell,
+    BoltIcon as Zap,
+    ChatBubbleOvalLeftEllipsisIcon as MessageSquare,
+    CheckIcon as Check,
+    CheckCircleIcon as CheckCheck,
+    HeartIcon as Heart,
+    LockClosedIcon as Lock,
+    SparklesIcon as Sparkles,
+    TrashIcon as Trash2,
+    UserPlusIcon as UserPlus,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function Index({ auth, notifications }) {
+    const { tl, formatDateTime } = useLanguage();
     const [localNotifications, setLocalNotifications] = useState(notifications.data || []);
 
     const getNotificationIcon = (type) => {
@@ -18,22 +31,42 @@ export default function Index({ auth, notifications }) {
                 return <Heart className="w-5 h-5 text-red-600" />;
             case 'sprint_milestone':
                 return <Zap className="w-5 h-5 text-yellow-600" />;
+            case 'welcome':
+                return <Sparkles className="w-5 h-5 text-green-600" />;
+            case 'google_password_setup':
+                return <Lock className="w-5 h-5 text-indigo-600" />;
             default:
                 return <Bell className="w-5 h-5 text-gray-600" />;
         }
     };
 
+    const getNotificationMessage = (notification) => {
+        const data = notification.data || {};
+
+        if (data.translation_key) {
+            return tl(data.translation_key, data.translation_params || {});
+        }
+
+        return data.message;
+    };
+
     const getNotificationLink = (notification) => {
         const data = notification.data;
         
-        if (data.sprint_id && data.update_id) {
-            return route('sprints.show', data.sprint_id);
+        if (data.target === 'settings') {
+            return route('settings.index');
         }
-        if (data.follower_id) {
-            return route('users.show', data.follower_id);
+        if (data.target === 'dashboard') {
+            return route('dashboard');
         }
-        if (data.sprint_id) {
-            return route('sprints.show', data.sprint_id);
+        if ((data.sprint_ulid || data.sprint_id) && (data.update_ulid || data.update_id)) {
+            return route('sprints.show', data.sprint_ulid || data.sprint_id);
+        }
+        if (data.follower_ulid || data.follower_id) {
+            return route('users.show', data.follower_ulid || data.follower_id);
+        }
+        if (data.sprint_ulid || data.sprint_id) {
+            return route('sprints.show', data.sprint_ulid || data.sprint_id);
         }
         return null;
     };
@@ -83,18 +116,20 @@ export default function Index({ auth, notifications }) {
 
     return (
         <PublicSprintLayout>
-            <Head title="Notifications" />
+            <Head title={tl('Notifications')} />
 
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-black text-gray-900 dark:text-white">
-                            Notifications
+                            {tl('Notifications')}
                         </h1>
                         {unreadCount > 0 && (
                             <p className="text-gray-600 dark:text-gray-400 mt-1">
-                                You have {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
+                                {unreadCount === 1
+                                    ? tl('You have {count} unread notification', { count: unreadCount })
+                                    : tl('You have {count} unread notifications', { count: unreadCount })}
                             </p>
                         )}
                     </div>
@@ -104,7 +139,7 @@ export default function Index({ auth, notifications }) {
                             className="flex items-center space-x-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold transition-colors"
                         >
                             <CheckCheck className="w-5 h-5" />
-                            <span>Mark All Read</span>
+                            <span>{tl('Mark All Read')}</span>
                         </button>
                     )}
                 </div>
@@ -142,10 +177,10 @@ export default function Index({ auth, notifications }) {
                                             onClick={() => handleNotificationClick(notification)}
                                         >
                                             <p className={`text-sm ${isUnread ? 'font-semibold' : ''} text-gray-900 dark:text-white`}>
-                                                {notification.data?.message}
+                                                {getNotificationMessage(notification)}
                                             </p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                {new Date(notification.created_at).toLocaleString()}
+                                                {formatDateTime(notification.created_at)}
                                             </p>
                                         </div>
 
@@ -158,7 +193,7 @@ export default function Index({ auth, notifications }) {
                                                         markAsRead(notification.id);
                                                     }}
                                                     className="p-2 hover:bg-gray-200 dark:hover:bg-dark-700 rounded-lg transition-colors"
-                                                    title="Mark as read"
+                                                    title={tl('Mark as read')}
                                                 >
                                                     <Check className="w-4 h-4 text-primary-600" />
                                                 </button>
@@ -169,7 +204,7 @@ export default function Index({ auth, notifications }) {
                                                     deleteNotification(notification.id);
                                                 }}
                                                 className="p-2 hover:bg-gray-200 dark:hover:bg-dark-700 rounded-lg transition-colors"
-                                                title="Delete"
+                                                title={tl('Delete')}
                                             >
                                                 <Trash2 className="w-4 h-4 text-red-600" />
                                             </button>
@@ -187,10 +222,10 @@ export default function Index({ auth, notifications }) {
                     >
                         <Bell className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                            No notifications yet
+                            {tl('No notifications yet')}
                         </h3>
                         <p className="text-gray-600 dark:text-gray-400">
-                            When you get notifications, they'll show up here
+                            {tl("When you get notifications, they'll show up here")}
                         </p>
                     </motion.div>
                 )}

@@ -4,16 +4,41 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use App\Models\Update;
+use App\Services\EngagementService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CommentController extends Controller
 {
+    private function canEdit(Comment $comment): bool
+    {
+        return $comment->user_id === auth()->id()
+            && $comment->created_at
+            && $comment->created_at->gt(now()->subMinutes(3));
+    }
+
+    private function canDelete(Comment $comment): bool
+    {
+        if ($comment->user_id !== auth()->id()) {
+            return false;
+        }
+
+        if ($comment->parent_id) {
+            return true;
+        }
+
+        return !$comment->replies()->exists();
+    }
+
     public function store(Request $request, Update $update)
     {
         $validated = $request->validate([
             'content' => 'required|string|max:1000',
-            'parent_id' => 'nullable|exists:comments,id',
+            'parent_id' => [
+                'nullable',
+                Rule::exists('comments', 'id')->where(fn ($query) => $query->where('update_id', $update->id)),
+            ],
         ]);
 
         $comment = Comment::create([
@@ -23,18 +48,7 @@ class CommentController extends Controller
             'content' => $validated['content'],
         ]);
 
-        // Update counts
-        $update->increment('comments_count');
-
-        if (isset($validated['parent_id']) && $validated['parent_id']) {
-            Comment::find($validated['parent_id'])->increment('replies_count');
-        }
-
-        // Update participant stats
-        $update->sprint->participants()->updateExistingPivot(auth()->id(), [
-            'comments_made' => \DB::raw('comments_made + 1'),
-            'score' => \DB::raw('score + 0.5'),
-        ]);
+        EngagementService::recordCommentCreated($comment);
 
         // Create notification
         NotificationService::newComment($update->user, auth()->user(), $update, $comment);
@@ -44,7 +58,7 @@ class CommentController extends Controller
 
     public function update(Request $request, Comment $comment)
     {
-        if ($comment->user_id !== auth()->id()) {
+        if (!$this->canEdit($comment)) {
             abort(403);
         }
 
@@ -59,26 +73,11 @@ class CommentController extends Controller
 
     public function destroy(Comment $comment)
     {
-        if ($comment->user_id !== auth()->id()) {
+        if (!$this->canDelete($comment)) {
             abort(403);
         }
 
-        $update = $comment->sprintUpdate;
-
-        // Update counts
-        $update->decrement('comments_count');
-
-        if ($comment->parent_id) {
-            Comment::find($comment->parent_id)->decrement('replies_count');
-        }
-
-        // Update participant stats
-        $update->sprint->participants()->updateExistingPivot(auth()->id(), [
-            'comments_made' => \DB::raw('comments_made - 1'),
-            'score' => \DB::raw('score - 0.5'),
-        ]);
-
-        $comment->delete();
+        EngagementService::deleteCommentThread($comment);
 
         return back()->with('success', 'Comment deleted.');
     }

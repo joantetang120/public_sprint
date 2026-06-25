@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Sprint;
 use App\Models\Update;
 use App\Models\Reaction;
+use App\Services\EngagementService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,15 @@ use Inertia\Inertia;
 
 class UpdateController extends Controller
 {
+    private function getCurrentSprintDay(Sprint $sprint): int
+    {
+        $startDay = $sprint->starts_at->copy()->startOfDay();
+        $today = now()->startOfDay();
+        $daysPassed = $startDay->diffInDays($today) + 1;
+
+        return (int) max(1, min($daysPassed, $sprint->duration_days));
+    }
+
     public function index()
     {
         $user = auth()->user();
@@ -72,26 +82,24 @@ class UpdateController extends Controller
     {
         // Check if user is participant
         if (!$sprint->participants()->where('user_id', auth()->id())->exists()) {
-            return redirect()->route('sprints.show', $sprint->id)
+            return redirect()->route('sprints.show', $sprint)
                 ->with('error', 'You must be a participant to post updates.');
         }
 
-        // TEMPORARILY DISABLED FOR TESTING
-        // // Check if sprint has started
-        // if ($sprint->status === 'upcoming' || now()->isBefore($sprint->starts_at)) {
-        //     return redirect()->route('sprints.show', $sprint->id)
-        //         ->with('error', 'You can only post updates after the sprint has started.');
-        // }
+        // Check if sprint has started
+        if ($sprint->status === 'upcoming' || now()->isBefore($sprint->starts_at)) {
+            return redirect()->route('sprints.show', $sprint)
+                ->with('error', 'You can only publish after the sprint has started.');
+        }
 
-        // // Check if sprint has ended
-        // if ($sprint->status === 'completed' || now()->isAfter($sprint->ends_at)) {
-        //     return redirect()->route('sprints.show', $sprint->id)
-        //         ->with('error', 'This sprint has ended. You can no longer post updates.');
-        // }
+        // Check if sprint has ended
+        if ($sprint->status === 'completed' || now()->isAfter($sprint->ends_at)) {
+            return redirect()->route('sprints.show', $sprint)
+                ->with('error', 'This sprint has ended. You can no longer publish.');
+        }
 
         // Calculate current day
-        $daysPassed = now()->diffInDays($sprint->starts_at) + 1;
-        $sprint->current_day = (int) max(1, min($daysPassed, $sprint->duration_days));
+        $sprint->current_day = $this->getCurrentSprintDay($sprint);
 
         return Inertia::render('Update/Create', [
             'sprint' => $sprint->load('creator'),
@@ -100,22 +108,20 @@ class UpdateController extends Controller
 
     public function store(Request $request, Sprint $sprint)
     {
-        // TEMPORARILY DISABLED FOR TESTING - Allow anyone to post
-        // // Check if user is participant
-        // if (!$sprint->participants()->where('user_id', auth()->id())->exists()) {
-        //     return back()->withErrors(['error' => 'You must be a participant to post updates.']);
-        // }
+        // Check if user is participant
+        if (!$sprint->participants()->where('user_id', auth()->id())->exists()) {
+            return back()->withErrors(['error' => 'You must be a participant to publish.']);
+        }
 
-        // TEMPORARILY DISABLED FOR TESTING
-        // // Check if sprint has started
-        // if ($sprint->status === 'upcoming' || now()->isBefore($sprint->starts_at)) {
-        //     return back()->withErrors(['error' => 'You can only post updates after the sprint has started.']);
-        // }
+        // Check if sprint has started
+        if ($sprint->status === 'upcoming' || now()->isBefore($sprint->starts_at)) {
+            return back()->withErrors(['error' => 'You can only publish after the sprint has started.']);
+        }
 
-        // // Check if sprint has ended
-        // if ($sprint->status === 'completed' || now()->isAfter($sprint->ends_at)) {
-        //     return back()->withErrors(['error' => 'This sprint has ended. You can no longer post updates.']);
-        // }
+        // Check if sprint has ended
+        if ($sprint->status === 'completed' || now()->isAfter($sprint->ends_at)) {
+            return back()->withErrors(['error' => 'This sprint has ended. You can no longer publish.']);
+        }
 
         $validated = $request->validate([
             'content' => 'required|string|max:1000',
@@ -123,9 +129,11 @@ class UpdateController extends Controller
             'images.*' => 'image|max:5120', // 5MB each
             'links' => 'nullable|array',
             'links.*' => 'url|max:500',
-            'day_number' => 'required|integer|min:1',
+            'day_number' => 'nullable|integer|min:1',
             'is_draft' => 'boolean',
         ]);
+
+        $currentSprintDay = $this->getCurrentSprintDay($sprint);
 
         // TEMPORARILY DISABLED FOR TESTING - Allow multiple updates per day
         // // Check if update for this day already exists
@@ -202,7 +210,7 @@ class UpdateController extends Controller
             $update = Update::create([
                 'sprint_id' => $sprint->id,
                 'user_id' => auth()->id(),
-                'day_number' => $validated['day_number'],
+                'day_number' => $currentSprintDay,
                 'content' => $validated['content'],
                 'image' => $imagePath,
                 'images' => !empty($imageUrls) ? $imageUrls : null,
@@ -218,10 +226,7 @@ class UpdateController extends Controller
 
                 // Update participant stats (only if user is participant)
                 if ($sprint->participants()->where('user_id', auth()->id())->exists()) {
-                    $sprint->participants()->updateExistingPivot(auth()->id(), [
-                        'updates_posted' => \DB::raw('updates_posted + 1'),
-                        'score' => \DB::raw('score + 2'), // 2 points per update
-                    ]);
+                    EngagementService::recordPublishedUpdate($update);
                 }
 
                 // Update user stats
@@ -231,9 +236,11 @@ class UpdateController extends Controller
 
                 // Check and update streak
                 $this->updateUserStreak();
+
+                NotificationService::sprintUpdate($sprint, auth()->user(), $update);
             }
 
-            return redirect()->route('sprints.show', $sprint->id)
+            return redirect()->route('sprints.show', $sprint)
                 ->with('success', $update->is_draft ? 'Draft saved!' : 'Update posted! 🎉');
         } catch (\Exception $e) {
             \Log::error('Failed to create update', [
@@ -276,21 +283,7 @@ class UpdateController extends Controller
             abort(403);
         }
 
-        // Delete image if exists
-        if ($update->image) {
-            Storage::disk('cloudinary')->delete($update->image);
-        }
-
-        // Update stats if not draft
-        if (!$update->is_draft) {
-            $update->sprint->decrement('updates_count');
-            $update->sprint->participants()->updateExistingPivot(auth()->id(), [
-                'updates_posted' => \DB::raw('updates_posted - 1'),
-                'score' => \DB::raw('score - 2'),
-            ]);
-        }
-
-        $update->delete();
+        EngagementService::deleteUpdate($update);
 
         return back()->with('success', 'Update deleted.');
     }
@@ -335,42 +328,18 @@ class UpdateController extends Controller
             ->first();
 
         if ($existingReaction) {
-            // Unlike - remove reaction
-            $existingReaction->delete();
-            
-            // Update stats
-            $update->sprint->participants()->updateExistingPivot($update->user_id, [
-                'reactions_received' => \DB::raw('GREATEST(reactions_received - 1, 0)'),
-                'score' => \DB::raw('GREATEST(score - 1, 0)'),
-            ]);
-            
-            // Update user total likes
-            if ($update->user->total_likes > 0) {
-                $update->user->decrement('total_likes');
-            }
-            
-            $message = 'Reaction removed';
+            EngagementService::deleteReaction($existingReaction);
         } else {
-            // Like - add reaction
             Reaction::create([
                 'update_id' => $update->id,
                 'user_id' => $user->id,
                 'type' => 'heart',
             ]);
-            
-            // Update stats
-            $update->sprint->participants()->updateExistingPivot($update->user_id, [
-                'reactions_received' => \DB::raw('reactions_received + 1'),
-                'score' => \DB::raw('score + 1'),
-            ]);
-            
-            // Update user total likes
-            $update->user->increment('total_likes');
-            
+
+            EngagementService::recordReactionCreated($update);
+
             // Create notification
             NotificationService::newReaction($update->user, auth()->user(), $update);
-            
-            $message = 'Reaction added';
         }
 
         // Return back to reload the page with updated data

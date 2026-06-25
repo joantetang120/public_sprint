@@ -1,11 +1,25 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Camera, User, Mail, MapPin, Globe, Save, ArrowLeft, Upload } from 'lucide-react';
+import {
+    ArrowLeftIcon,
+    CameraIcon,
+    EnvelopeIcon,
+    GlobeAltIcon,
+    PencilSquareIcon,
+    BookmarkSquareIcon,
+    MapPinIcon,
+    UserIcon,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
+import ActivityPulseStrip from '@/Components/ActivityPulseStrip';
+import UserAvatar from '@/Components/UserAvatar';
+import { routeKey } from '@/lib/routeKey';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function EditNew({ auth }) {
-    const { data, setData, post, patch, processing, errors } = useForm({
+    const { tl } = useLanguage();
+    const { data, setData, post, processing, errors } = useForm({
         name: auth.user.name || '',
         email: auth.user.email || '',
         bio: auth.user.bio || '',
@@ -22,102 +36,109 @@ export default function EditNew({ auth }) {
         auth.user.cover_image ? `/storage/${auth.user.cover_image}` : null
     );
 
-    const handleAvatarChange = (e) => {
-        const file = e.target.files[0];
+    const handleAvatarChange = (event) => {
+        const file = event.target.files[0];
         if (file) {
             setData('avatar', file);
             setAvatarPreview(URL.createObjectURL(file));
         }
     };
 
-    const handleCoverChange = (e) => {
-        const file = e.target.files[0];
+    const handleCoverChange = (event) => {
+        const file = event.target.files[0];
         if (file) {
             setData('cover_image', file);
             setCoverPreview(URL.createObjectURL(file));
         }
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        
-        // Use post with _method for file uploads
+    const handleSubmit = (event) => {
+        event.preventDefault();
         post(route('profile.update.full'), {
             forceFormData: true,
             preserveScroll: true,
         });
     };
 
-    const getAvatarUrl = () => {
-        if (avatarPreview) return avatarPreview;
-        return `https://ui-avatars.com/api/?name=${encodeURIComponent(auth.user.name)}&size=200&background=random`;
+    const previewUser = {
+        ...auth.user,
+        avatar: avatarPreview ? null : auth.user.avatar,
     };
 
     return (
         <PublicSprintLayout>
-            <Head title="Edit Profile" />
+            <Head title={tl('Edit Profile')} />
 
-            <div className="max-w-4xl mx-auto space-y-6">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-black text-gray-900 dark:text-white">
-                            Edit Profile
-                        </h1>
-                        <p className="text-gray-600 dark:text-gray-400 mt-1">
-                            Update your profile information and settings
-                        </p>
+            <div className="mx-auto max-w-5xl space-y-6">
+                <section className="ps-hero-band p-7">
+                    <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="max-w-2xl">
+                            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/12 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white backdrop-blur-sm">
+                                <span className="grid h-6 w-6 place-items-center rounded-full bg-white/14">
+                                    <PencilSquareIcon className="h-3.5 w-3.5" />
+                                </span>
+                                {tl('Edit Profile')}
+                            </div>
+                            <h1 className="font-display text-4xl font-black text-white">
+                                {tl('Edit Profile')}
+                            </h1>
+                            <p className="mt-2 text-sm leading-7 text-white/74">
+                                {tl('Update your profile information and settings')}
+                            </p>
+                        </div>
+
+                        <div className="w-full max-w-sm space-y-3">
+                            <ActivityPulseStrip />
+                            <Link
+                                href={route('users.show', routeKey(auth.user))}
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-[#17211d] transition hover:bg-[#f3ffcf]"
+                            >
+                                <ArrowLeftIcon className="h-4 w-4" />
+                                <span>{tl('Back to Profile')}</span>
+                            </Link>
+                        </div>
                     </div>
-                    <Link
-                        href={route('users.show', auth.user.id)}
-                        className="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>Back to Profile</span>
-                    </Link>
-                </div>
+                </section>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Cover Image & Avatar Section */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                    <motion.section
+                        initial={{ opacity: 0, y: 18 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white dark:bg-dark-900 rounded-2xl border-2 border-gray-200 dark:border-dark-700 overflow-hidden"
+                        className="ps-feed-card overflow-hidden"
                     >
-                        {/* Cover Image */}
-                        <div className="relative h-48 bg-gradient-to-r from-primary-600 to-purple-600">
+                        <div className="ps-card-cover h-56">
                             {coverPreview && (
-                                <img 
+                                <img
                                     src={coverPreview}
                                     alt="Cover"
-                                    className="w-full h-full object-cover"
+                                    className="h-full w-full object-cover"
                                 />
                             )}
-                            <label className="absolute top-4 right-4 cursor-pointer">
+                            <label className="absolute right-4 top-4 z-10 cursor-pointer">
                                 <input
                                     type="file"
                                     accept="image/*"
                                     onChange={handleCoverChange}
                                     className="hidden"
                                 />
-                                <div className="px-4 py-2 bg-white/90 dark:bg-dark-900/90 backdrop-blur-sm rounded-xl flex items-center space-x-2 hover:bg-white dark:hover:bg-dark-900 transition-colors">
-                                    <Camera className="w-4 h-4 text-gray-900 dark:text-white" />
-                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                                        Change Cover
-                                    </span>
-                                </div>
+                                <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-[#17211d] shadow-sm transition hover:bg-[#f3ffcf]">
+                                    <CameraIcon className="h-4 w-4" />
+                                    {tl('Change Cover')}
+                                </span>
                             </label>
                         </div>
 
-                        {/* Avatar */}
-                        <div className="px-8 pb-8">
-                            <div className="flex items-end -mt-16 mb-6">
+                        <div className="bg-white px-8 pb-8">
+                            <div className="-mt-16 mb-6 flex items-end">
                                 <div className="relative">
-                                    <img 
-                                        src={getAvatarUrl()}
-                                        alt={auth.user.name}
-                                        className="w-32 h-32 rounded-2xl border-4 border-white dark:border-dark-900 shadow-xl"
-                                    />
+                                    <UserAvatar user={previewUser} size="2xl" className="shadow-2xl" />
+                                    {avatarPreview && (
+                                        <img
+                                            src={avatarPreview}
+                                            alt={auth.user.name}
+                                            className="absolute inset-[2px] h-32 w-32 rounded-full border-2 border-white object-cover"
+                                        />
+                                    )}
                                     <label className="absolute bottom-0 right-0 cursor-pointer">
                                         <input
                                             type="file"
@@ -125,169 +146,150 @@ export default function EditNew({ auth }) {
                                             onChange={handleAvatarChange}
                                             className="hidden"
                                         />
-                                        <div className="w-10 h-10 bg-primary-600 hover:bg-primary-700 rounded-xl flex items-center justify-center shadow-lg transition-colors">
-                                            <Camera className="w-5 h-5 text-white" />
-                                        </div>
+                                        <span className="grid h-11 w-11 place-items-center rounded-full bg-[#17211d] text-white shadow-lg transition hover:bg-[#0f1714]">
+                                            <CameraIcon className="h-5 w-5" />
+                                        </span>
                                     </label>
                                 </div>
                             </div>
 
-                            {errors.avatar && (
-                                <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-                                    {errors.avatar}
-                                </p>
-                            )}
-                            {errors.cover_image && (
-                                <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-                                    {errors.cover_image}
-                                </p>
-                            )}
+                            {errors.avatar && <p className="mb-3 text-sm text-red-600">{errors.avatar}</p>}
+                            {errors.cover_image && <p className="mb-3 text-sm text-red-600">{errors.cover_image}</p>}
                         </div>
-                    </motion.div>
+                    </motion.section>
 
-                    {/* Profile Information */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                    <motion.section
+                        initial={{ opacity: 0, y: 18 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="bg-white dark:bg-dark-900 rounded-2xl border-2 border-gray-200 dark:border-dark-700 p-8"
+                        transition={{ delay: 0.08 }}
+                        className="ps-feed-card p-8"
                     >
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                            Profile Information
+                        <h2 className="mb-6 font-display text-2xl font-black text-[#17211d]">
+                            {tl('Profile Information')}
                         </h2>
 
                         <div className="space-y-6">
-                            {/* Name */}
-                            <div>
-                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    <User className="w-4 h-4" />
-                                    <span>Name</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-700 rounded-xl focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none text-gray-900 dark:text-white"
-                                    placeholder="Your name"
-                                />
-                                {errors.name && (
-                                    <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                                        {errors.name}
-                                    </p>
-                                )}
-                            </div>
+                            <Field
+                                icon={UserIcon}
+                                label={tl('Name')}
+                                error={errors.name}
+                                input={
+                                    <input
+                                        type="text"
+                                        value={data.name}
+                                        onChange={(event) => setData('name', event.target.value)}
+                                        className="w-full px-4 py-3 text-[#17211d]"
+                                        placeholder={tl('Your name')}
+                                    />
+                                }
+                            />
 
-                            {/* Email */}
-                            <div>
-                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    <Mail className="w-4 h-4" />
-                                    <span>Email</span>
-                                </label>
-                                <input
-                                    type="email"
-                                    value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-700 rounded-xl focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none text-gray-900 dark:text-white"
-                                    placeholder="your@email.com"
-                                />
-                                {errors.email && (
-                                    <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                                        {errors.email}
-                                    </p>
-                                )}
-                            </div>
+                            <Field
+                                icon={EnvelopeIcon}
+                                label={tl('Email')}
+                                error={errors.email}
+                                input={
+                                    <input
+                                        type="email"
+                                        value={data.email}
+                                        onChange={(event) => setData('email', event.target.value)}
+                                        className="w-full px-4 py-3 text-[#17211d]"
+                                        placeholder={tl('your@email.com')}
+                                    />
+                                }
+                            />
 
-                            {/* Bio */}
-                            <div>
-                                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                                    Bio
-                                </label>
-                                <textarea
-                                    value={data.bio}
-                                    onChange={(e) => setData('bio', e.target.value)}
-                                    rows="4"
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-700 rounded-xl focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none text-gray-900 dark:text-white resize-none"
-                                    placeholder="Tell us about yourself..."
-                                    maxLength="500"
-                                />
-                                <div className="flex justify-between items-center mt-1">
-                                    {errors.bio && (
-                                        <p className="text-sm text-red-600 dark:text-red-400">
-                                            {errors.bio}
-                                        </p>
-                                    )}
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
-                                        {data.bio.length}/500
-                                    </p>
-                                </div>
-                            </div>
+                            <Field
+                                label={tl('Bio')}
+                                error={errors.bio}
+                                input={
+                                    <>
+                                        <textarea
+                                            value={data.bio}
+                                            onChange={(event) => setData('bio', event.target.value)}
+                                            rows="4"
+                                            className="w-full resize-none px-4 py-3 text-[#17211d]"
+                                            placeholder={tl('Tell us about yourself...')}
+                                            maxLength="500"
+                                        />
+                                        <div className="mt-2 flex justify-between gap-3">
+                                            <span className="text-sm text-red-600">{errors.bio}</span>
+                                            <span className="ml-auto text-xs font-bold text-[#66736d]">
+                                                {data.bio.length}/500
+                                            </span>
+                                        </div>
+                                    </>
+                                }
+                            />
 
-                            {/* Location */}
-                            <div>
-                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    <MapPin className="w-4 h-4" />
-                                    <span>Location</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.location}
-                                    onChange={(e) => setData('location', e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-700 rounded-xl focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none text-gray-900 dark:text-white"
-                                    placeholder="City, Country"
-                                />
-                                {errors.location && (
-                                    <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                                        {errors.location}
-                                    </p>
-                                )}
-                            </div>
+                            <Field
+                                icon={MapPinIcon}
+                                label={tl('Location')}
+                                error={errors.location}
+                                input={
+                                    <input
+                                        type="text"
+                                        value={data.location}
+                                        onChange={(event) => setData('location', event.target.value)}
+                                        className="w-full px-4 py-3 text-[#17211d]"
+                                        placeholder={tl('City, Country')}
+                                    />
+                                }
+                            />
 
-                            {/* Website */}
-                            <div>
-                                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    <Globe className="w-4 h-4" />
-                                    <span>Website</span>
-                                </label>
-                                <input
-                                    type="url"
-                                    value={data.website}
-                                    onChange={(e) => setData('website', e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-700 rounded-xl focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none text-gray-900 dark:text-white"
-                                    placeholder="https://yourwebsite.com"
-                                />
-                                {errors.website && (
-                                    <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                                        {errors.website}
-                                    </p>
-                                )}
-                            </div>
+                            <Field
+                                icon={GlobeAltIcon}
+                                label={tl('Website')}
+                                error={errors.website}
+                                input={
+                                    <input
+                                        type="url"
+                                        value={data.website}
+                                        onChange={(event) => setData('website', event.target.value)}
+                                        className="w-full px-4 py-3 text-[#17211d]"
+                                        placeholder={tl('https://yourwebsite.com')}
+                                    />
+                                }
+                            />
                         </div>
-                    </motion.div>
+                    </motion.section>
 
-                    {/* Save Button */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 18 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="flex justify-end space-x-4"
+                        transition={{ delay: 0.12 }}
+                        className="flex justify-end gap-4"
                     >
                         <Link
-                            href={route('users.show', auth.user.id)}
-                            className="px-6 py-3 bg-gray-100 dark:bg-dark-800 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
+                            href={route('users.show', routeKey(auth.user))}
+                            className="rounded-full border border-black/10 bg-[#f5f3ea] px-6 py-3 text-sm font-black text-[#17211d] transition hover:bg-[#ece8dc]"
                         >
-                            Cancel
+                            {tl('Cancel')}
                         </Link>
                         <button
                             type="submit"
                             disabled={processing}
-                            className="flex items-center space-x-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-colors"
+                            className="inline-flex items-center gap-2 rounded-full bg-[#17211d] px-6 py-3 text-sm font-black text-white transition hover:bg-[#0f1714] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            <Save className="w-5 h-5" />
-                            <span>{processing ? 'Saving...' : 'Save Changes'}</span>
+                            <BookmarkSquareIcon className="h-5 w-5" />
+                            <span>{processing ? tl('Saving...') : tl('Save Changes')}</span>
                         </button>
                     </motion.div>
                 </form>
             </div>
         </PublicSprintLayout>
+    );
+}
+
+function Field({ icon: Icon, label, error, input }) {
+    return (
+        <div>
+            <label className="mb-2 flex items-center gap-2 text-sm font-black text-[#17211d]">
+                {Icon ? <Icon className="h-4 w-4" /> : null}
+                <span>{label}</span>
+            </label>
+            {input}
+            {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+        </div>
     );
 }

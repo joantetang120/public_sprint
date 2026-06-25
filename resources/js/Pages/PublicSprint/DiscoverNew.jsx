@@ -1,11 +1,24 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Search, Filter, SlidersHorizontal, TrendingUp, Clock, Users, X, Sparkles, Zap, Rocket } from 'lucide-react';
+import {
+    AdjustmentsHorizontalIcon as SlidersHorizontal,
+    ArrowTrendingUpIcon as TrendingUp,
+    BoltIcon as Zap,
+    ClockIcon as Clock,
+    MagnifyingGlassIcon as Search,
+    RocketLaunchIcon as Rocket,
+    SparklesIcon as Sparkles,
+    UserGroupIcon as Users,
+    XMarkIcon as X,
+} from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import SprintCard from '@/Components/SprintCard';
+import ActivityPulseStrip from '@/Components/ActivityPulseStrip';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function DiscoverNew({ sprints, statusCounts, featured, popularTags, filters }) {
+    const { tl } = useLanguage();
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState(filters.status || 'all');
@@ -47,43 +60,43 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
     const hasActiveFilters = filters.search || filters.status !== 'all' || filters.sort !== 'trending';
 
     const sortOptions = [
-        { value: 'trending', label: 'Trending', icon: TrendingUp },
-        { value: 'recent', label: 'Most Recent', icon: Clock },
-        { value: 'popular', label: 'Most Popular', icon: Users },
-        { value: 'ending_soon', label: 'Ending Soon', icon: Clock },
+        { value: 'trending', label: tl('Trending'), icon: TrendingUp },
+        { value: 'recent', label: tl('Most Recent'), icon: Clock },
+        { value: 'popular', label: tl('Most Popular'), icon: Users },
+        { value: 'ending_soon', label: tl('Ending Soon'), icon: Clock },
     ];
 
     const statusOptions = [
-        { value: 'all', label: 'All Sprints', count: statusCounts?.all || 0 },
-        { value: 'active', label: 'Active', count: statusCounts?.active || 0 },
-        { value: 'upcoming', label: 'Upcoming', count: statusCounts?.upcoming || 0 },
-        { value: 'completed', label: 'Completed', count: statusCounts?.completed || 0 },
+        { value: 'all', label: tl('All Sprints'), count: statusCounts?.all || 0 },
+        { value: 'active', label: tl('Active'), count: statusCounts?.active || 0 },
+        { value: 'upcoming', label: tl('Upcoming'), count: statusCounts?.upcoming || 0 },
+        { value: 'completed', label: tl('Completed'), count: statusCounts?.completed || 0 },
     ];
 
     return (
         <PublicSprintLayout>
-            <Head title="Discover Sprints - PublicSprint" />
+            <Head title={tl('Discover Sprints')} />
 
-            <div className="min-h-screen bg-gray-50 py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen py-2">
                     <div className="space-y-8">
                         {/* Header */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-center"
+                            className="ps-hero-band p-7 text-center"
                         >
-                            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-green-50 rounded-full mb-4 border border-green-200">
-                                <Sparkles className="w-4 h-4 text-green-600" />
-                                <span className="text-sm font-semibold text-green-700">
-                                    Explore the community
-                                </span>
+                            <div className="relative z-10 mx-auto mb-5 max-w-sm">
+                                <ActivityPulseStrip />
                             </div>
-                            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-                                Discover <span className="text-green-600">Sprints</span>
+                            <div className="relative z-10 mb-4 inline-flex items-center space-x-2 rounded-full border border-white/15 bg-white/12 px-4 py-2 backdrop-blur-sm">
+                                <Sparkles className="h-4 w-4 text-[#b7f34a]" />
+                                <span className="text-sm font-semibold text-white">{tl('Explore the community')}</span>
+                            </div>
+                            <h1 className="relative z-10 mb-4 font-display text-4xl font-black text-white sm:text-5xl">
+                                {tl('Discover')} <span className="text-[#b7f34a]">{tl('Sprints')}</span>
                             </h1>
-                            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                                Find inspiring projects and join fellow builders in active sprints
+                            <p className="relative z-10 mx-auto max-w-2xl text-lg text-white/74">
+                                {tl('Find inspiring projects and join fellow builders in active sprints')}
                             </p>
                         </motion.div>
 
@@ -92,7 +105,7 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="bg-white rounded-xl p-6 border border-gray-200"
+                            className="ps-panel p-6"
                         >
                             {/* Search Bar */}
                             <form onSubmit={handleSearch} className="flex gap-3 mb-4">
@@ -102,7 +115,7 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                                         type="text"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder="Search sprints by title or description..."
+                                        placeholder={tl('Search sprints by title or description...')}
                                         className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none text-gray-900 placeholder-gray-500 transition-all"
                                     />
                                 </div>
@@ -110,7 +123,7 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                                     type="submit"
                                     className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-colors shadow-sm hover:shadow-md"
                                 >
-                                    Search
+                                    {tl('Search')}
                                 </button>
                                 <button
                                     type="button"
@@ -118,7 +131,7 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                                     className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-lg font-semibold transition-colors flex items-center space-x-2 shadow-sm"
                                 >
                                     <SlidersHorizontal className="w-5 h-5" />
-                                    <span>Filters</span>
+                                    <span>{tl('Filters')}</span>
                                 </button>
                             </form>
 
@@ -133,7 +146,7 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                                     {/* Status Filter */}
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                            Status
+                                            {tl('Status')}
                                         </label>
                                         <div className="flex flex-wrap gap-2">
                                             {statusOptions.map((option) => (
@@ -158,7 +171,7 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                                     {/* Sort Options */}
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                            Sort By
+                                            {tl('Sort By')}
                                         </label>
                                         <div className="flex flex-wrap gap-2">
                                             {sortOptions.map((option) => (
@@ -188,7 +201,7 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                                             className="flex items-center space-x-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 transition-colors"
                                         >
                                             <X className="w-4 h-4" />
-                                            <span>Clear All Filters</span>
+                                            <span>{tl('Clear All Filters')}</span>
                                         </button>
                                     )}
                                 </motion.div>
@@ -204,7 +217,7 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                             >
                                 <div className="flex items-center justify-between mb-6">
                                     <h2 className="text-2xl font-bold text-gray-900">
-                                        {hasActiveFilters ? 'Search Results' : 'All Sprints'} ({sprints.total})
+                                        {hasActiveFilters ? tl('Search Results') : tl('All Sprints')} ({sprints.total})
                                     </h2>
                                 </div>
                                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -242,21 +255,21 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-white rounded-xl p-12 text-center border border-gray-200"
+                                className="ps-empty-state"
                             >
-                                <Search className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                                <Search className="mx-auto mb-4 h-16 w-16 text-[#66736d]" />
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                    No sprints found
+                                    {tl('No sprints found')}
                                 </h3>
                                 <p className="text-gray-600 mb-4">
-                                    Try adjusting your search or filters
+                                    {tl('Try adjusting your search or filters')}
                                 </p>
                                 {hasActiveFilters && (
                                     <button
                                         onClick={clearFilters}
                                         className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-colors"
                                     >
-                                        Clear Filters
+                                        {tl('Clear Filters')}
                                     </button>
                                 )}
                             </motion.div>
@@ -277,10 +290,10 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                                                 <TrendingUp className="w-4 h-4 text-orange-600" />
                                             </div>
                                             <h2 className="text-2xl font-bold text-gray-900">
-                                                Trending Sprints
+                                                {tl('Trending Sprints')}
                                             </h2>
                                             <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold border border-orange-200">
-                                                Community Favorites
+                                                {tl('Community Favorites')}
                                             </span>
                                         </div>
                                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -303,10 +316,10 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                                                 <Zap className="w-4 h-4 text-green-600" />
                                             </div>
                                             <h2 className="text-2xl font-bold text-gray-900">
-                                                Active Sprints
+                                                {tl('Active Sprints')}
                                             </h2>
                                             <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold border border-green-200">
-                                                Happening Now
+                                                {tl('Happening Now')}
                                             </span>
                                         </div>
                                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -329,10 +342,10 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                                                 <Rocket className="w-4 h-4 text-blue-600" />
                                             </div>
                                             <h2 className="text-2xl font-bold text-gray-900">
-                                                Coming Soon
+                                                {tl('Coming Soon')}
                                             </h2>
                                             <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold border border-blue-200">
-                                                Starting Soon
+                                                {tl('Starting Soon')}
                                             </span>
                                         </div>
                                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -353,21 +366,20 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                                 transition={{ delay: 0.6 }}
                                 className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-8 text-center text-white"
                             >
-                                <h3 className="text-2xl font-bold mb-3">Ready to start building?</h3>
+                                <h3 className="text-2xl font-bold mb-3">{tl('Ready to start building?')}</h3>
                                 <p className="text-green-100 mb-6 max-w-md mx-auto">
-                                    Create your own sprint and invite the community to build alongside you
+                                    {tl('Create your own sprint and invite the community to build alongside you')}
                                 </p>
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
                                 >
-                                    Start a Sprint
+                                    {tl('Start a Sprint')}
                                 </motion.button>
                             </motion.section>
                         )}
                     </div>
-                </div>
             </div>
         </PublicSprintLayout>
     );

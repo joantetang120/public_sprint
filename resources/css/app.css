@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,36 @@
 
 @layer base {
     :root {
-        --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+        --font-display: 'Space Grotesk', 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+        --ps-ink: #17211d;
+        --ps-muted: #66736d;
+        --ps-paper: #fbfaf5;
+        --ps-line: rgba(23, 33, 29, 0.12);
+        --ps-lime: #b7f34a;
+        --ps-mint: #50d69a;
+        --ps-coral: #ff8066;
+        --ps-sky: #63b3ff;
+        --ps-violet: #7c6cff;
+    }
+
+    body {
+        color: var(--ps-ink);
+        background:
+            linear-gradient(90deg, rgba(23, 33, 29, 0.045) 1px, transparent 1px),
+            linear-gradient(180deg, rgba(23, 33, 29, 0.045) 1px, transparent 1px),
+            radial-gradient(circle at 18% 12%, rgba(183, 243, 74, 0.2), transparent 32%),
+            radial-gradient(circle at 84% 8%, rgba(99, 179, 255, 0.2), transparent 28%),
+            #fbfaf5;
+        background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+
+    h1,
+    h2,
+    h3,
+    .font-display {
+        font-family: var(--font-display);
+        letter-spacing: 0;
     }
 }
 
@@ -29,23 +58,170 @@
 }
 
 @layer components {
-    /* Glassmorphism effect */
+    .ps-app-shell {
+        min-height: 100vh;
+        background:
+            linear-gradient(115deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.36)),
+            linear-gradient(180deg, rgba(80, 214, 154, 0.08), transparent 42%);
+    }
+
+    .ps-topbar {
+        @apply sticky top-0 z-50 border-b;
+        border-color: rgba(23, 33, 29, 0.1);
+        background: rgba(251, 250, 245, 0.9);
+        backdrop-filter: blur(18px);
+    }
+
+    .ps-nav-link {
+        @apply inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold transition;
+        color: rgba(23, 33, 29, 0.72);
+    }
+
+    .ps-nav-link:hover,
+    .ps-nav-link-active {
+        color: var(--ps-ink);
+        background: rgba(183, 243, 74, 0.34);
+        box-shadow: inset 0 0 0 1px rgba(23, 33, 29, 0.08);
+    }
+
+    .ps-command-button {
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-black transition;
+        color: #14201a;
+        background: var(--ps-lime);
+        box-shadow: 0 12px 28px rgba(23, 33, 29, 0.13), inset 0 -2px 0 rgba(23, 33, 29, 0.16);
+    }
+
+    .ps-command-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 16px 32px rgba(23, 33, 29, 0.17), inset 0 -2px 0 rgba(23, 33, 29, 0.18);
+    }
+
+    .ps-page {
+        @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8;
+    }
+
+    .ps-panel {
+        @apply border shadow-sm;
+        background-color: rgba(255, 255, 255, 0.82);
+        border-color: var(--ps-line);
+        border-radius: 8px;
+        box-shadow: 0 18px 55px rgba(23, 33, 29, 0.08);
+    }
+
+    .ps-feed-card {
+        @apply border bg-white shadow-sm transition;
+        border-color: var(--ps-line);
+        border-radius: 8px;
+    }
+
+    .ps-feed-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 22px 60px rgba(23, 33, 29, 0.12);
+        border-color: rgba(23, 33, 29, 0.22);
+    }
+
+    .ps-hero-band {
+        @apply relative overflow-hidden border;
+        border-color: rgba(23, 33, 29, 0.12);
+        border-radius: 8px;
+        background:
+            linear-gradient(135deg, rgba(23, 33, 29, 0.94), rgba(35, 64, 51, 0.94)),
+            repeating-linear-gradient(135deg, transparent 0 12px, rgba(255,255,255,0.08) 12px 13px);
+        color: white;
+    }
+
+    .ps-hero-band::after,
+    .ps-card-cover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+            linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent),
+            radial-gradient(circle at 25% 18%, rgba(183,243,74,0.22), transparent 28%),
+            radial-gradient(circle at 78% 16%, rgba(99,179,255,0.18), transparent 26%);
+        transform: translateX(-24%);
+        animation: psScan 6s ease-in-out infinite;
+    }
+
+    .ps-card-cover {
+        @apply relative overflow-hidden;
+        min-height: 108px;
+        background:
+            linear-gradient(135deg, rgba(23,33,29,0.94), rgba(51,75,67,0.92)),
+            repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 18px);
+    }
+
+    .ps-live-dot {
+        @apply inline-flex h-2.5 w-2.5 rounded-full;
+        background: var(--ps-lime);
+        box-shadow: 0 0 0 0 rgba(183, 243, 74, 0.65);
+        animation: psPulse 1.7s infinite;
+    }
+
+    .ps-sticker {
+        @apply inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-black uppercase;
+        border-color: rgba(23, 33, 29, 0.1);
+        background: rgba(255,255,255,0.72);
+        color: rgba(23,33,29,0.78);
+    }
+
+    .ps-empty-state {
+        @apply relative overflow-hidden border bg-white p-10 text-center;
+        border-color: var(--ps-line);
+        border-radius: 8px;
+    }
+
+    .ps-empty-state::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 5px;
+        background: linear-gradient(90deg, var(--ps-lime), var(--ps-sky), var(--ps-coral));
+    }
+
+    .ps-mini-feed {
+        @apply hidden xl:block fixed right-5 top-24 z-20 w-56;
+    }
+
+    .ps-mini-feed-card {
+        @apply border p-3 text-xs font-bold shadow-sm;
+        background-color: rgba(255, 255, 255, 0.86);
+        border-color: var(--ps-line);
+        border-radius: 8px;
+        backdrop-filter: blur(16px);
+    }
+
+    .ps-modal-surface {
+        @apply border bg-white shadow-2xl;
+        border-color: var(--ps-line);
+        border-radius: 8px;
+        box-shadow: 0 34px 90px rgba(23, 33, 29, 0.2);
+    }
+
+    /* Legacy helpers now resolve to the new visual system. */
     .glass {
-        @apply backdrop-blur-xl bg-white/70 dark:bg-dark-900/70 border border-gray-200/50 dark:border-dark-700/50;
+        @apply backdrop-blur-xl;
+        background-color: rgba(255, 255, 255, 0.82);
+        border: 1px solid var(--ps-line);
     }
 
     .glass-card {
-        @apply glass rounded-2xl shadow-xl;
+        @apply glass shadow-xl;
+        border-radius: 8px;
     }
 
     /* Gradient text */
     .gradient-text {
-        @apply bg-gradient-to-r from-primary-500 via-purple-500 to-pink-500 bg-clip-text text-transparent;
+        @apply bg-clip-text text-transparent;
+        background-image: linear-gradient(90deg, #17211d, #267f5e, #d8604c);
     }
 
     /* Animated gradient background */
     .gradient-bg {
-        @apply bg-gradient-to-br from-primary-500 via-purple-500 to-pink-500;
+        background-image: linear-gradient(135deg, #17211d, #267f5e, #b7f34a);
         background-size: 200% 200%;
         animation: gradient 15s ease infinite;
     }
@@ -66,4 +242,93 @@
     .transition-smooth {
         @apply transition-colors duration-200;
     }
+}
+
+@keyframes psPulse {
+    70% {
+        box-shadow: 0 0 0 10px rgba(183, 243, 74, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(183, 243, 74, 0);
+    }
+}
+
+@keyframes psScan {
+    0%, 100% {
+        transform: translateX(-34%);
+        opacity: 0.76;
+    }
+    50% {
+        transform: translateX(24%);
+        opacity: 1;
+    }
+}
+
+.ps-app-shell .bg-gray-50,
+.ps-app-shell .dark\:bg-gray-950,
+.ps-app-shell .dark\:bg-dark-900 {
+    background: transparent;
+}
+
+.ps-app-shell .bg-white,
+.ps-app-shell .dark\:bg-gray-900,
+.ps-app-shell .dark\:bg-dark-900 {
+    background-color: rgba(255, 255, 255, 0.84);
+}
+
+.ps-app-shell .rounded-xl,
+.ps-app-shell .rounded-2xl,
+.ps-app-shell .rounded-\[24px\],
+.ps-app-shell .rounded-\[26px\],
+.ps-app-shell .rounded-\[28px\] {
+    border-radius: 8px;
+}
+
+.ps-app-shell .border-gray-200,
+.ps-app-shell .dark\:border-gray-800,
+.ps-app-shell .dark\:border-dark-700 {
+    border-color: var(--ps-line);
+}
+
+.ps-app-shell .shadow-xl,
+.ps-app-shell .shadow-2xl,
+.ps-app-shell .shadow-lg {
+    box-shadow: 0 18px 55px rgba(23, 33, 29, 0.11);
+}
+
+.ps-app-shell input,
+.ps-app-shell textarea,
+.ps-app-shell select {
+    border-radius: 8px;
+    border-color: rgba(23, 33, 29, 0.14);
+    background-color: rgba(255, 255, 255, 0.86);
+}
+
+.ps-app-shell input:focus,
+.ps-app-shell textarea:focus,
+.ps-app-shell select:focus {
+    border-color: rgba(38, 127, 94, 0.72);
+    box-shadow: 0 0 0 4px rgba(183, 243, 74, 0.24);
+}
+
+body .min-h-screen.bg-gradient-to-br {
+    background:
+        linear-gradient(90deg, rgba(23, 33, 29, 0.045) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(23, 33, 29, 0.045) 1px, transparent 1px),
+        radial-gradient(circle at 18% 12%, rgba(183, 243, 74, 0.22), transparent 31%),
+        radial-gradient(circle at 88% 10%, rgba(99, 179, 255, 0.24), transparent 30%),
+        #fbfaf5 !important;
+    background-size: 34px 34px, 34px 34px, auto, auto, auto !important;
+}
+
+body .min-h-screen.bg-gradient-to-br .rounded-2xl,
+body .min-h-screen.bg-gradient-to-br .rounded-3xl,
+body .min-h-screen.bg-gradient-to-br .rounded-xl {
+    border-radius: 8px;
+}
+
+body .min-h-screen.bg-gradient-to-br .shadow-2xl,
+body .min-h-screen.bg-gradient-to-br .shadow-xl,
+body .min-h-screen.bg-gradient-to-br .shadow-lg {
+    box-shadow: 0 24px 70px rgba(23, 33, 29, 0.16);
 }

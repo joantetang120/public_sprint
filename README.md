@@ -28,7 +28,6 @@ A modern social platform where creators join time-boxed sprints and share their 
 - [Project Structure](#-project-structure)
 - [Database Design](#-database-design)
 - [Development](#-development)
-- [Deployment](#-deployment)
 - [Roadmap](#-roadmap)
 - [License](#-license)
 
@@ -130,8 +129,6 @@ PublicSprint provides:
 - **Laravel Breeze** - Authentication scaffolding
 - **Laravel Pail** - Real-time log viewer
 - **Concurrently** - Run multiple dev servers
-- **Docker** - Containerization (optional)
-- **Railway/Render** - Cloud deployment platforms
 
 ---
 
@@ -602,63 +599,6 @@ php artisan test --coverage
 
 ---
 
-## 🚢 Deployment
-
-### Production Checklist
-
-- [ ] Set `APP_ENV=production` in `.env`
-- [ ] Set `APP_DEBUG=false`
-- [ ] Generate new `APP_KEY`
-- [ ] Configure production database
-- [ ] Set up Pusher production credentials
-- [ ] Configure Cloudinary production account
-- [ ] Run `php artisan config:cache`
-- [ ] Run `php artisan route:cache`
-- [ ] Run `php artisan view:cache`
-- [ ] Run `npm run build`
-- [ ] Set up queue worker (Supervisor)
-- [ ] Configure SSL certificate
-- [ ] Set up database backups
-- [ ] Configure error monitoring (Sentry, Bugsnag)
-
-### Deployment Platforms
-
-#### Railway (Recommended)
-
-```bash
-# Install Railway CLI
-npm install -g @railway/cli
-
-# Login
-railway login
-
-# Initialize project
-railway init
-
-# Deploy
-railway up
-```
-
-See `RAILWAY_SETUP.md` for detailed instructions.
-
-#### Render
-
-See `render.yaml` for configuration.
-
-#### Docker
-
-```bash
-# Build image
-docker-compose build
-
-# Start containers
-docker-compose up -d
-
-# Run migrations
-docker-compose exec app php artisan migrate
-```
-
----
 
 ## 🗺️ Roadmap
 

@@ -3,9 +3,12 @@
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SprintController;
+use App\Http\Controllers\SummaryShareController;
 use App\Http\Controllers\UpdateController;
+use App\Http\Controllers\LanguageController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -24,6 +27,9 @@ Route::get('/health', function () {
 
 
 Route::get('/discover', [SprintController::class, 'discover'])->name('discover');
+Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread');
+Route::post('/language', [LanguageController::class, 'update'])->name('language.update');
 
 // Serve update images
 Route::get('/storage/updates/{filename}', function ($filename) {
@@ -58,10 +64,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/sprints', [SprintController::class, 'index'])->name('sprints.index');
     Route::get('/sprints/create', [SprintController::class, 'create'])->name('sprints.create');
     Route::post('/sprints', [SprintController::class, 'store'])->name('sprints.store');
+    Route::get('/sprints/{sprint}/edit', [SprintController::class, 'edit'])->name('sprints.edit');
+    Route::put('/sprints/{sprint}', [SprintController::class, 'update'])->name('sprints.update');
+    Route::delete('/sprints/{sprint}', [SprintController::class, 'destroy'])->name('sprints.destroy');
     Route::post('/sprints/{sprint}/join', [SprintController::class, 'join'])->name('sprints.join');
     Route::post('/sprints/{sprint}/leave', [SprintController::class, 'leave'])->name('sprints.leave');
     Route::get('/sprints/{sprint}/leaderboard', [SprintController::class, 'leaderboard'])->name('sprints.leaderboard');
     Route::post('/sprints/{sprint}/generate-summary', [SprintController::class, 'generateSummary'])->name('sprints.generate-summary');
+    Route::get('/sprints/{sprint}/report', [SprintController::class, 'report'])->name('sprints.report');
     
     // Updates
     Route::get('/sprints/{sprint}/updates/create', [UpdateController::class, 'create'])->name('updates.create');
@@ -88,7 +98,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
@@ -101,6 +110,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/settings/account', [SettingsController::class, 'updateAccount'])->name('settings.account');
     Route::post('/settings/delete', [SettingsController::class, 'deleteAccount'])->name('settings.delete');
 });
+
+// Public sprint summary share page (no auth required)
+Route::get('/share/{token}', [SummaryShareController::class, 'show'])->name('summary.share');
 
 // Public profile view
 Route::get('/users/{user}', [ProfileController::class, 'show'])->name('users.show');

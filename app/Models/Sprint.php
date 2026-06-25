@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUlid;
+use App\Services\NotificationService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,9 +13,10 @@ use Illuminate\Support\Str;
 
 class Sprint extends Model
 {
-    use HasFactory;
+    use HasFactory, HasPublicUlid;
 
     protected $fillable = [
+        'ulid',
         'user_id',
         'title',
         'description',
@@ -66,7 +69,8 @@ class Sprint extends Model
     public function participants(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'sprint_participants')
-            ->withPivot(['joined_at', 'updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges'])
+            ->using(SprintParticipant::class)
+            ->withPivot(['joined_at', 'updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges', 'ai_summary', 'share_token'])
             ->withTimestamps();
     }
 
@@ -129,6 +133,18 @@ class Sprint extends Model
         return auth()->check() && $this->isCreator(auth()->id());
     }
 
+    public function hasOnlyCreatorParticipant(): bool
+    {
+        return (int) $this->participants_count <= 1;
+    }
+
+    public function canBeManagedBeforeStartBy($userId): bool
+    {
+        return $this->isCreator($userId)
+            && $this->hasOnlyCreatorParticipant()
+            && now()->isBefore($this->starts_at);
+    }
+
     /**
      * Calculate status based on dates
      */
@@ -160,7 +176,14 @@ class Sprint extends Model
     {
         $newStatus = $this->calculateStatus();
         if ($this->status !== $newStatus) {
-            return $this->update(['status' => $newStatus]);
+            $wasCompleted = $this->status === 'completed';
+            $updated = $this->update(['status' => $newStatus]);
+
+            if ($updated && !$wasCompleted && $newStatus === 'completed') {
+                NotificationService::sprintCompleted($this);
+            }
+
+            return $updated;
         }
         return false;
     }

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -27,5 +28,11 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+        $userId = auth()->id();
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $userId,
+            'type' => 'welcome',
+        ]);
+        $this->assertSame(1, DB::table('notifications')->where('notifiable_id', $userId)->where('type', 'welcome')->count());
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUlid;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasPublicUlid, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -20,9 +21,11 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'ulid',
         'name',
         'email',
         'password',
+        'google_id',
         'avatar',
         'cover_image',
         'bio',
@@ -35,6 +38,16 @@ class User extends Authenticatable
         'followers_count',
         'following_count',
         'last_update_at',
+        'email_notifications',
+        'sprint_updates_notifications',
+        'comment_notifications',
+        'reaction_notifications',
+        'sprint_completion_notifications',
+        'profile_public',
+        'show_email',
+        'show_stats',
+        'theme',
+        'language',
     ];
 
     /**
@@ -58,7 +71,40 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'last_update_at' => 'datetime',
+            'email_notifications' => 'boolean',
+            'sprint_updates_notifications' => 'boolean',
+            'comment_notifications' => 'boolean',
+            'reaction_notifications' => 'boolean',
+            'sprint_completion_notifications' => 'boolean',
+            'profile_public' => 'boolean',
+            'show_email' => 'boolean',
+            'show_stats' => 'boolean',
         ];
+    }
+
+    public function wantsEmailNotifications(): bool
+    {
+        return (bool) $this->email_notifications;
+    }
+
+    public function wantsSprintUpdateNotifications(): bool
+    {
+        return $this->wantsEmailNotifications() && (bool) $this->sprint_updates_notifications;
+    }
+
+    public function wantsCommentNotifications(): bool
+    {
+        return $this->wantsEmailNotifications() && (bool) $this->comment_notifications;
+    }
+
+    public function wantsReactionNotifications(): bool
+    {
+        return $this->wantsEmailNotifications() && (bool) $this->reaction_notifications;
+    }
+
+    public function wantsSprintCompletionNotifications(): bool
+    {
+        return $this->wantsEmailNotifications() && (bool) $this->sprint_completion_notifications;
     }
 
     public function createdSprints(): HasMany
@@ -69,6 +115,7 @@ class User extends Authenticatable
     public function sprints(): BelongsToMany
     {
         return $this->belongsToMany(Sprint::class, 'sprint_participants')
+            ->using(SprintParticipant::class)
             ->withPivot(['joined_at', 'updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges'])
             ->withTimestamps();
     }

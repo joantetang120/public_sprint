@@ -1,16 +1,32 @@
 import { Head, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { 
-    Settings as SettingsIcon, Bell, Lock, User, Palette, Globe, 
-    Mail, MessageSquare, Heart, Trophy, Eye, EyeOff, Save, Trash2,
-    Sun, Moon, Monitor, Check, AlertTriangle
-} from 'lucide-react';
+import {
+    BellAlertIcon as Bell,
+    BookmarkSquareIcon as Save,
+    CheckIcon as Check,
+    ChatBubbleOvalLeftEllipsisIcon as MessageSquare,
+    Cog6ToothIcon as SettingsIcon,
+    ComputerDesktopIcon as Monitor,
+    EnvelopeIcon as Mail,
+    ExclamationTriangleIcon as AlertTriangle,
+    EyeIcon as Eye,
+    EyeSlashIcon as EyeOff,
+    GlobeAltIcon as Globe,
+    HeartIcon as Heart,
+    LockClosedIcon as Lock,
+    MoonIcon as Moon,
+    PaintBrushIcon as Palette,
+    SunIcon as Sun,
+    TrashIcon as Trash2,
+    TrophyIcon as Trophy,
+    UserCircleIcon as User,
+} from '@heroicons/react/24/outline';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function Settings({ auth, user }) {
-    const { t } = useLanguage();
+    const { t, tl } = useLanguage();
     const [activeTab, setActiveTab] = useState('notifications');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     
@@ -104,7 +120,7 @@ export default function Settings({ auth, user }) {
 
     const handleDeleteAccount = (e) => {
         e.preventDefault();
-        if (confirm('Are you absolutely sure? This action cannot be undone.')) {
+        if (confirm(t('settings.account.deleteConfirm'))) {
             deleteForm.post(route('settings.delete'), {
                 onSuccess: () => setShowDeleteModal(false),
             });
@@ -120,7 +136,7 @@ export default function Settings({ auth, user }) {
 
     return (
         <PublicSprintLayout>
-            <Head title="Settings - PublicSprint" />
+            <Head title={t('settings.title')} />
 
             <div className="min-h-screen bg-gray-50 py-8">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -177,7 +193,7 @@ export default function Settings({ auth, user }) {
                                 >
                                     <div className="flex items-center space-x-3 mb-6">
                                         <Bell className="w-6 h-6 text-green-600" />
-                                        <h2 className="text-2xl font-bold text-gray-900">Email Notifications</h2>
+                                        <h2 className="text-2xl font-bold text-gray-900">{t('settings.notifications.title')}</h2>
                                     </div>
 
                                     <form onSubmit={handleNotificationSubmit} className="space-y-6">
@@ -186,8 +202,8 @@ export default function Settings({ auth, user }) {
                                             <div className="flex items-center space-x-3">
                                                 <Mail className="w-5 h-5 text-green-600" />
                                                 <div>
-                                                    <p className="font-bold text-gray-900">Email Notifications</p>
-                                                    <p className="text-sm text-gray-600">Receive email updates about your activity</p>
+                                                    <p className="font-bold text-gray-900">{t('settings.notifications.master')}</p>
+                                                    <p className="text-sm text-gray-600">{t('settings.notifications.masterDesc')}</p>
                                                 </div>
                                             </div>
                                             <label className="relative inline-flex items-center cursor-pointer">
@@ -204,10 +220,10 @@ export default function Settings({ auth, user }) {
                                         {/* Individual Toggles */}
                                         <div className="space-y-4">
                                             {[
-                                                { key: 'sprint_updates_notifications', icon: MessageSquare, label: 'Sprint Updates', desc: 'New updates in sprints you\'re participating in' },
-                                                { key: 'comment_notifications', icon: MessageSquare, label: 'Comments', desc: 'Someone comments on your update' },
-                                                { key: 'reaction_notifications', icon: Heart, label: 'Reactions', desc: 'Someone reacts to your update' },
-                                                { key: 'sprint_completion_notifications', icon: Trophy, label: 'Sprint Completion', desc: 'When a sprint you\'re in completes' },
+                                                { key: 'sprint_updates_notifications', icon: MessageSquare, label: t('settings.notifications.sprintUpdates'), desc: t('settings.notifications.sprintUpdatesDesc') },
+                                                { key: 'comment_notifications', icon: MessageSquare, label: t('settings.notifications.comments'), desc: t('settings.notifications.commentsDesc') },
+                                                { key: 'reaction_notifications', icon: Heart, label: t('settings.notifications.reactions'), desc: t('settings.notifications.reactionsDesc') },
+                                                { key: 'sprint_completion_notifications', icon: Trophy, label: t('settings.notifications.sprintCompletion'), desc: t('settings.notifications.sprintCompletionDesc') },
                                             ].map((item) => (
                                                 <div key={item.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-green-300 transition-colors">
                                                     <div className="flex items-center space-x-3">
@@ -237,7 +253,7 @@ export default function Settings({ auth, user }) {
                                             className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-bold hover:from-green-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                                         >
                                             <Save className="w-5 h-5" />
-                                            <span>{notificationForm.processing ? 'Saving...' : 'Save Notification Settings'}</span>
+                                            <span>{notificationForm.processing ? t('settings.notifications.saving') : t('settings.notifications.save')}</span>
                                         </button>
                                     </form>
                                 </motion.div>
@@ -252,14 +268,14 @@ export default function Settings({ auth, user }) {
                                 >
                                     <div className="flex items-center space-x-3 mb-6">
                                         <Lock className="w-6 h-6 text-green-600" />
-                                        <h2 className="text-2xl font-bold text-gray-900">Privacy Settings</h2>
+                                        <h2 className="text-2xl font-bold text-gray-900">{t('settings.privacy.title')}</h2>
                                     </div>
 
                                     <form onSubmit={handlePrivacySubmit} className="space-y-6">
                                         {[
-                                            { key: 'profile_public', icon: Eye, label: 'Public Profile', desc: 'Allow others to view your profile' },
-                                            { key: 'show_email', icon: Mail, label: 'Show Email', desc: 'Display your email on your profile' },
-                                            { key: 'show_stats', icon: Trophy, label: 'Show Stats', desc: 'Display your statistics publicly' },
+                                            { key: 'profile_public', icon: Eye, label: t('settings.privacy.publicProfile'), desc: t('settings.privacy.publicProfileDesc') },
+                                            { key: 'show_email', icon: Mail, label: t('settings.privacy.showEmail'), desc: t('settings.privacy.showEmailDesc') },
+                                            { key: 'show_stats', icon: Trophy, label: t('settings.privacy.showStats'), desc: t('settings.privacy.showStatsDesc') },
                                         ].map((item) => (
                                             <div key={item.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-green-300 transition-colors">
                                                 <div className="flex items-center space-x-3">
@@ -287,7 +303,7 @@ export default function Settings({ auth, user }) {
                                             className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-bold hover:from-green-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                                         >
                                             <Save className="w-5 h-5" />
-                                            <span>{privacyForm.processing ? 'Saving...' : 'Save Privacy Settings'}</span>
+                                            <span>{privacyForm.processing ? t('settings.privacy.saving') : t('settings.privacy.save')}</span>
                                         </button>
                                     </form>
                                 </motion.div>
@@ -304,12 +320,12 @@ export default function Settings({ auth, user }) {
                                     <div className="bg-white rounded-xl border border-gray-200 p-6">
                                         <div className="flex items-center space-x-3 mb-6">
                                             <User className="w-6 h-6 text-green-600" />
-                                            <h2 className="text-2xl font-bold text-gray-900">Account Information</h2>
+                                            <h2 className="text-2xl font-bold text-gray-900">{t('settings.account.title')}</h2>
                                         </div>
 
                                         <form onSubmit={handleAccountSubmit} className="space-y-4">
                                             <div>
-                                                <label className="block text-sm font-bold text-gray-700 mb-2">Name</label>
+                                                <label className="block text-sm font-bold text-gray-700 mb-2">{t('settings.account.name')}</label>
                                                 <input
                                                     type="text"
                                                     value={accountForm.data.name}
@@ -320,7 +336,7 @@ export default function Settings({ auth, user }) {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
+                                                <label className="block text-sm font-bold text-gray-700 mb-2">{t('settings.account.email')}</label>
                                                 <input
                                                     type="email"
                                                     value={accountForm.data.email}
@@ -331,23 +347,28 @@ export default function Settings({ auth, user }) {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-bold text-gray-700 mb-2">Bio</label>
+                                                <label className="block text-sm font-bold text-gray-700 mb-2">{t('settings.account.bio')}</label>
                                                 <textarea
                                                     value={accountForm.data.bio}
                                                     onChange={(e) => accountForm.setData('bio', e.target.value)}
                                                     rows={3}
                                                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                                    placeholder="Tell us about yourself..."
+                                                    placeholder={t('settings.account.bioPlaceholder')}
                                                 />
                                                 {accountForm.errors.bio && <p className="mt-1 text-sm text-red-600">{accountForm.errors.bio}</p>}
                                             </div>
 
                                             <div className="pt-4 border-t border-gray-200">
-                                                <h3 className="text-lg font-bold text-gray-900 mb-4">Change Password</h3>
+                                                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('settings.account.changePassword')}</h3>
+                                                {user.google_id && (
+                                                    <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                                                        {t('settings.account.googlePasswordHint')}
+                                                    </div>
+                                                )}
                                                 
                                                 <div className="space-y-4">
                                                     <div>
-                                                        <label className="block text-sm font-bold text-gray-700 mb-2">Current Password</label>
+                                                        <label className="block text-sm font-bold text-gray-700 mb-2">{t('settings.account.currentPassword')}</label>
                                                         <input
                                                             type="password"
                                                             value={accountForm.data.current_password}
@@ -358,7 +379,7 @@ export default function Settings({ auth, user }) {
                                                     </div>
 
                                                     <div>
-                                                        <label className="block text-sm font-bold text-gray-700 mb-2">New Password</label>
+                                                        <label className="block text-sm font-bold text-gray-700 mb-2">{t('settings.account.newPassword')}</label>
                                                         <input
                                                             type="password"
                                                             value={accountForm.data.new_password}
@@ -369,7 +390,7 @@ export default function Settings({ auth, user }) {
                                                     </div>
 
                                                     <div>
-                                                        <label className="block text-sm font-bold text-gray-700 mb-2">Confirm New Password</label>
+                                                        <label className="block text-sm font-bold text-gray-700 mb-2">{t('settings.account.confirmPassword')}</label>
                                                         <input
                                                             type="password"
                                                             value={accountForm.data.new_password_confirmation}
@@ -386,7 +407,7 @@ export default function Settings({ auth, user }) {
                                                 className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-bold hover:from-green-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                                             >
                                                 <Save className="w-5 h-5" />
-                                                <span>{accountForm.processing ? 'Saving...' : 'Save Account Settings'}</span>
+                                                <span>{accountForm.processing ? t('settings.account.saving') : t('settings.account.save')}</span>
                                             </button>
                                         </form>
                                     </div>
@@ -395,17 +416,17 @@ export default function Settings({ auth, user }) {
                                     <div className="bg-red-50 rounded-xl border-2 border-red-200 p-6">
                                         <div className="flex items-center space-x-3 mb-4">
                                             <AlertTriangle className="w-6 h-6 text-red-600" />
-                                            <h3 className="text-xl font-bold text-red-900">Danger Zone</h3>
+                                            <h3 className="text-xl font-bold text-red-900">{t('settings.account.dangerZone')}</h3>
                                         </div>
                                         <p className="text-sm text-red-700 mb-4">
-                                            Once you delete your account, there is no going back. Please be certain.
+                                            {t('settings.account.dangerZoneDesc')}
                                         </p>
                                         <button
                                             onClick={() => setShowDeleteModal(true)}
                                             className="flex items-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all"
                                         >
                                             <Trash2 className="w-5 h-5" />
-                                            <span>Delete Account</span>
+                                            <span>{t('settings.account.deleteAccount')}</span>
                                         </button>
                                     </div>
                                 </motion.div>
@@ -429,24 +450,24 @@ export default function Settings({ auth, user }) {
                             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                                 <AlertTriangle className="w-6 h-6 text-red-600" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900">Delete Account</h3>
+                            <h3 className="text-xl font-bold text-gray-900">{t('settings.account.deleteModal.title')}</h3>
                         </div>
 
                         <p className="text-gray-600 mb-6">
-                            This action cannot be undone. All your data, sprints, updates, and progress will be permanently deleted.
+                            {t('settings.account.deleteModal.description')}
                         </p>
 
                         <form onSubmit={handleDeleteAccount} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                                    Enter your password to confirm
+                                    {t('settings.account.deleteModal.passwordLabel')}
                                 </label>
                                 <input
                                     type="password"
                                     value={deleteForm.data.password}
                                     onChange={(e) => deleteForm.setData('password', e.target.value)}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                    placeholder="Your password"
+                                    placeholder={t('settings.account.deleteModal.passwordPlaceholder')}
                                 />
                                 {deleteForm.errors.password && <p className="mt-1 text-sm text-red-600">{deleteForm.errors.password}</p>}
                             </div>
@@ -457,14 +478,14 @@ export default function Settings({ auth, user }) {
                                     onClick={() => setShowDeleteModal(false)}
                                     className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all"
                                 >
-                                    Cancel
+                                    {t('settings.account.deleteModal.cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={deleteForm.processing}
                                     className="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all disabled:opacity-50"
                                 >
-                                    {deleteForm.processing ? 'Deleting...' : 'Delete Account'}
+                                    {deleteForm.processing ? t('settings.account.deleteModal.deleting') : t('settings.account.deleteModal.confirm')}
                                 </button>
                             </div>
                         </form>
