@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SprintController;
+use App\Http\Controllers\SummaryShareController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\LanguageController;
 use Illuminate\Foundation\Application;
@@ -70,6 +71,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/sprints/{sprint}/leave', [SprintController::class, 'leave'])->name('sprints.leave');
     Route::get('/sprints/{sprint}/leaderboard', [SprintController::class, 'leaderboard'])->name('sprints.leaderboard');
     Route::post('/sprints/{sprint}/generate-summary', [SprintController::class, 'generateSummary'])->name('sprints.generate-summary');
+    Route::get('/sprints/{sprint}/report', [SprintController::class, 'report'])->name('sprints.report');
     
     // Updates
     Route::get('/sprints/{sprint}/updates/create', [UpdateController::class, 'create'])->name('updates.create');
@@ -108,6 +110,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/settings/account', [SettingsController::class, 'updateAccount'])->name('settings.account');
     Route::post('/settings/delete', [SettingsController::class, 'deleteAccount'])->name('settings.delete');
 });
+
+// Public sprint summary share page (no auth required)
+Route::get('/share/{token}', [SummaryShareController::class, 'show'])->name('summary.share');
 
 // Public profile view
 Route::get('/users/{user}', [ProfileController::class, 'show'])->name('users.show');

@@ -642,6 +642,7 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                             <AISprintSummary
                                 sprint={selectedSprint.sprint}
                                 aiSummary={selectedSprint.ai_summary}
+                                shareToken={selectedSprint.share_token}
                                 viewOnly={Boolean(selectedSprint.ai_summary)}
                             />
 
