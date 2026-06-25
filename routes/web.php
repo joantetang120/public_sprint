@@ -6,10 +6,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SprintController;
+use App\Http\Controllers\SprintInvitationController;
 use App\Http\Controllers\SummaryShareController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\LanguageController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -72,6 +72,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/sprints/{sprint}/leaderboard', [SprintController::class, 'leaderboard'])->name('sprints.leaderboard');
     Route::post('/sprints/{sprint}/generate-summary', [SprintController::class, 'generateSummary'])->name('sprints.generate-summary');
     Route::get('/sprints/{sprint}/report', [SprintController::class, 'report'])->name('sprints.report');
+    Route::get('/invite/{code}', [SprintController::class, 'joinViaInvite'])->name('sprints.invite');
+    Route::post('/sprints/{sprint}/invitations', [SprintInvitationController::class, 'store'])->name('sprints.invitations.store');
+    Route::post('/invitations/{invitation}/accept', [SprintInvitationController::class, 'accept'])->name('invitations.accept');
+    Route::post('/invitations/{invitation}/decline', [SprintInvitationController::class, 'decline'])->name('invitations.decline');
     
     // Updates
     Route::get('/sprints/{sprint}/updates/create', [UpdateController::class, 'create'])->name('updates.create');
