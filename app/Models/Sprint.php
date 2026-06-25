@@ -53,6 +53,12 @@ class Sprint extends Model
             $sprint->status = $sprint->calculateStatus();
         });
 
+        static::updating(function ($sprint) {
+            if ($sprint->isDirty('is_private') && $sprint->is_private && !$sprint->invite_code) {
+                $sprint->invite_code = Str::random(12);
+            }
+        });
+
         static::saving(function ($sprint) {
             // Auto-update status when dates change
             if ($sprint->isDirty(['starts_at', 'ends_at'])) {

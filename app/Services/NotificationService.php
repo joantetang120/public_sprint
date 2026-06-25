@@ -192,6 +192,21 @@ class NotificationService
         }
     }
 
+    public static function sprintInvitation(User $invitee, $sprint, User $inviter, int $invitationId): void
+    {
+        self::create(
+            $invitee,
+            'sprint_invitation',
+            "{$inviter->name} invited you to join \"{$sprint->title}\"",
+            $inviter,
+            [
+                'invitation_id' => $invitationId,
+                'sprint_ulid'   => $sprint->ulid,
+                'sprint_title'  => $sprint->title,
+            ]
+        );
+    }
+
     private static function notificationExists(User $user, string $type): bool
     {
         return \DB::table('notifications')

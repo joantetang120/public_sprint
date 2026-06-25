@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sprint;
+use App\Models\SprintInvitation;
 use App\Models\SprintTag;
 use App\Models\Update;
+use App\Models\User;
 use App\Services\BadgeService;
 use App\Services\AIService;
 use Illuminate\Http\Request;
@@ -41,7 +43,8 @@ class SprintController extends Controller
         // Update all sprint statuses first
         Sprint::whereIn('status', ['upcoming', 'active'])->get()->each->updateStatus();
         
-        $query = Sprint::with(['creator', 'tags'])->public();
+        // All sprints (public + private) are discoverable; private ones show a lock badge
+        $query = Sprint::with(['creator', 'tags']);
 
         // Search
         if ($request->filled('search')) {
@@ -56,7 +59,6 @@ class SprintController extends Controller
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
-
 
         // Sorting
         $sort = $request->get('sort', 'trending');
@@ -78,35 +80,21 @@ class SprintController extends Controller
 
         $sprints = $query->paginate(12)->withQueryString();
 
-        // Get counts for each status
+        // Get counts for each status (all sprints)
         $statusCounts = [
-            'all' => Sprint::public()->count(),
-            'active' => Sprint::public()->where('status', 'active')->count(),
-            'upcoming' => Sprint::public()->where('status', 'upcoming')->count(),
-            'completed' => Sprint::public()->where('status', 'completed')->count(),
+            'all'       => Sprint::count(),
+            'active'    => Sprint::where('status', 'active')->count(),
+            'upcoming'  => Sprint::where('status', 'upcoming')->count(),
+            'completed' => Sprint::where('status', 'completed')->count(),
         ];
 
         // For initial load without filters, also get featured sections
         $featured = null;
         if (!$request->hasAny(['search', 'status', 'category', 'sort'])) {
             $featured = [
-                'trending' => Sprint::with(['creator', 'tags'])
-                    ->public()
-                    ->trending()
-                    ->take(6)
-                    ->get(),
-                'active' => Sprint::with(['creator', 'tags'])
-                    ->public()
-                    ->active()
-                    ->orderBy('ends_at', 'asc')
-                    ->take(6)
-                    ->get(),
-                'upcoming' => Sprint::with(['creator', 'tags'])
-                    ->public()
-                    ->where('status', 'upcoming')
-                    ->orderBy('starts_at', 'asc')
-                    ->take(6)
-                    ->get(),
+                'trending' => Sprint::with(['creator', 'tags'])->trending()->take(6)->get(),
+                'active'   => Sprint::with(['creator', 'tags'])->active()->orderBy('ends_at', 'asc')->take(6)->get(),
+                'upcoming' => Sprint::with(['creator', 'tags'])->where('status', 'upcoming')->orderBy('starts_at', 'asc')->take(6)->get(),
             ];
         }
 
@@ -175,12 +163,34 @@ class SprintController extends Controller
             $completionStats = $sprint->getCompletionStats();
         }
 
+        // Friends list for private sprint creator (following + followers, not yet in sprint)
+        $invitableFriends = null;
+        if ($isCreator && $sprint->is_private) {
+            $creator      = auth()->user();
+            $participantIds  = $sprint->participants()->pluck('users.id');
+            $alreadyInvited  = SprintInvitation::where('sprint_id', $sprint->id)
+                ->whereIn('status', ['pending', 'accepted'])
+                ->pluck('user_id');
+            $excludeIds = $participantIds->merge($alreadyInvited)->unique()->push($creator->id);
+
+            $friendIds = $creator->following()->pluck('users.id')
+                ->merge($creator->followers()->pluck('users.id'))
+                ->unique()
+                ->diff($excludeIds);
+
+            $invitableFriends = User::whereIn('id', $friendIds)
+                ->select(['id', 'name', 'avatar'])
+                ->get();
+        }
+
         return Inertia::render('Sprint/Show', [
-            'sprint' => $sprint,
-            'isParticipant' => $isParticipant,
-            'isCreator' => $isCreator,
-            'leaderboard' => $leaderboard,
+            'sprint'          => $sprint,
+            'isParticipant'   => $isParticipant,
+            'isCreator'       => $isCreator,
+            'leaderboard'     => $leaderboard,
             'completionStats' => $completionStats,
+            'inviteCode'      => ($isCreator && $sprint->is_private) ? $sprint->invite_code : null,
+            'invitableFriends' => $invitableFriends,
         ]);
     }
 
@@ -310,8 +320,8 @@ class SprintController extends Controller
 
     public function join(Sprint $sprint)
     {
-        if ($sprint->is_private && !$sprint->invite_code) {
-            return back()->withErrors(['error' => 'This sprint is private.']);
+        if ($sprint->is_private) {
+            return back()->withErrors(['error' => 'This sprint is private. Use the invite link to join.']);
         }
 
         if ($sprint->participants()->where('user_id', auth()->id())->exists()) {
@@ -325,6 +335,24 @@ class SprintController extends Controller
         $sprint->increment('participants_count');
 
         return back()->with('success', 'You joined the sprint!');
+    }
+
+    public function joinViaInvite(string $code)
+    {
+        $sprint = Sprint::where('invite_code', $code)->firstOrFail();
+
+        $userId = auth()->id();
+
+        if ($sprint->isCreator($userId) || $sprint->participants()->where('user_id', $userId)->exists()) {
+            return redirect()->route('sprints.show', $sprint)
+                ->with('info', 'You already have access to this sprint.');
+        }
+
+        $sprint->participants()->attach($userId, ['joined_at' => now()]);
+        $sprint->increment('participants_count');
+
+        return redirect()->route('sprints.show', $sprint)
+            ->with('success', 'You joined the sprint!');
     }
 
     public function leave(Sprint $sprint)

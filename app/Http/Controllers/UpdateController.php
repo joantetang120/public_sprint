@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\SprintReactionToggled;
+use App\Events\SprintUpdatePosted;
 use App\Models\Sprint;
 use App\Models\Update;
 use App\Models\Reaction;
@@ -71,10 +73,27 @@ class UpdateController extends Controller
                 ];
             });
 
+        // Active sprints where the user has NOT posted today
+        $activeSprints = $user->sprints()->where('status', 'active')->get();
+        $sprintsNeedingUpdate = $activeSprints
+            ->filter(function ($sprint) use ($user) {
+                return !Update::where('sprint_id', $sprint->id)
+                    ->where('user_id', $user->id)
+                    ->where('is_draft', false)
+                    ->whereDate('created_at', today())
+                    ->exists();
+            })
+            ->map(fn($sprint) => [
+                'ulid'  => $sprint->ulid,
+                'title' => $sprint->title,
+            ])
+            ->values();
+
         return Inertia::render('PublicSprint/Dashboard', [
-            'updates' => $updates,
-            'stats' => $stats,
-            'completedSprints' => $completedSprints,
+            'updates'              => $updates,
+            'stats'                => $stats,
+            'completedSprints'     => $completedSprints,
+            'sprintsNeedingUpdate' => $sprintsNeedingUpdate,
         ]);
     }
 
@@ -238,6 +257,7 @@ class UpdateController extends Controller
                 $this->updateUserStreak();
 
                 NotificationService::sprintUpdate($sprint, auth()->user(), $update);
+                broadcast(new SprintUpdatePosted($update->load('user')))->toOthers();
             }
 
             return redirect()->route('sprints.show', $sprint)
@@ -320,29 +340,28 @@ class UpdateController extends Controller
     public function toggleReaction(Update $update)
     {
         $user = auth()->user();
-        
-        // Check if user already reacted
+
         $existingReaction = Reaction::where('update_id', $update->id)
             ->where('user_id', $user->id)
             ->where('type', 'heart')
             ->first();
+
+        $added = !$existingReaction;
 
         if ($existingReaction) {
             EngagementService::deleteReaction($existingReaction);
         } else {
             Reaction::create([
                 'update_id' => $update->id,
-                'user_id' => $user->id,
-                'type' => 'heart',
+                'user_id'   => $user->id,
+                'type'      => 'heart',
             ]);
-
             EngagementService::recordReactionCreated($update);
-
-            // Create notification
-            NotificationService::newReaction($update->user, auth()->user(), $update);
+            NotificationService::newReaction($update->user, $user, $update);
         }
 
-        // Return back to reload the page with updated data
+        broadcast(new SprintReactionToggled($update, $user->id, $added))->toOthers();
+
         return back();
     }
 }

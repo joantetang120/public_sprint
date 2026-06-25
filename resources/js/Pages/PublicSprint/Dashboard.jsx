@@ -4,6 +4,8 @@ import { useState } from 'react';
 import {
     ArrowRightIcon as ArrowRight,
     ArrowTrendingUpIcon as TrendingUp,
+    BoltIcon as Zap,
+    BellAlertIcon as BellAlert,
     CalendarDaysIcon as Calendar,
     ChatBubbleOvalLeftEllipsisIcon as MessageSquare,
     CheckBadgeIcon as CheckCircle2,
@@ -15,7 +17,7 @@ import {
     StarIcon as Star,
     TrophyIcon as Trophy,
     UserGroupIcon as Users,
-    BoltIcon as Zap,
+    XMarkIcon as XMark,
 } from '@heroicons/react/24/outline';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
@@ -26,10 +28,11 @@ import { getSprintReportPreview, hasSprintReport } from '@/lib/sprintReport';
 import { routeKey } from '@/lib/routeKey';
 import { useLanguage } from '@/Contexts/LanguageContext';
 
-export default function Dashboard({ auth, updates = [], stats = {}, completedSprints = [] }) {
+export default function Dashboard({ auth, updates = [], stats = {}, completedSprints = [], sprintsNeedingUpdate = [] }) {
     const { t, tl, formatDate } = useLanguage();
     const [selectedSprint, setSelectedSprint] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
+    const [nudgeDismissed, setNudgeDismissed] = useState(false);
 
     const sprintsWithSummaries = completedSprints.filter((item) => hasSprintReport(item.ai_summary));
 
@@ -112,6 +115,51 @@ export default function Dashboard({ auth, updates = [], stats = {}, completedSpr
                             </div>
                         </div>
                     </motion.div>
+
+                    {/* "Post today" nudge — shown when the user has active sprints without a today update */}
+                    {!nudgeDismissed && sprintsNeedingUpdate.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -12 }}
+                            className="relative overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-5 py-4"
+                        >
+                            <button
+                                onClick={() => setNudgeDismissed(true)}
+                                className="absolute right-3 top-3 rounded-full p-1 text-amber-500 transition hover:bg-amber-100"
+                                aria-label="Dismiss"
+                            >
+                                <XMark className="h-4 w-4" />
+                            </button>
+                            <div className="flex items-start gap-4">
+                                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-100">
+                                    <BellAlert className="h-5 w-5 text-amber-600" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-bold text-amber-900">
+                                        {sprintsNeedingUpdate.length === 1
+                                            ? tl("You haven't posted today!")
+                                            : tl("You haven't posted today in {count} sprints!", { count: sprintsNeedingUpdate.length })}
+                                    </p>
+                                    <p className="mt-0.5 text-xs text-amber-700">
+                                        {tl('Keep your streak alive — share your progress.')}
+                                    </p>
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {sprintsNeedingUpdate.map((sprint) => (
+                                            <Link
+                                                key={sprint.ulid}
+                                                href={route('updates.create', sprint.ulid)}
+                                                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-amber-700"
+                                            >
+                                                <Plus className="h-3.5 w-3.5" />
+                                                {sprint.title}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
 
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                         {statCards.map((card, index) => {
