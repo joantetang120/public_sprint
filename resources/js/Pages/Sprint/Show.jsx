@@ -17,6 +17,7 @@ import {
     FlagIcon as Flag,
     HeartIcon as Heart,
     LinkIcon as Link2,
+    MagnifyingGlassIcon as SearchIcon,
     PlusIcon as Plus,
     PencilSquareIcon as PencilSquare,
     RocketLaunchIcon as Rocket,
@@ -29,9 +30,10 @@ import {
     TrophyIcon as Medal,
     TrophyIcon as Trophy,
     UserGroupIcon as Users,
+    UserPlusIcon,
     XMarkIcon as X,
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import UserAvatar from '@/Components/UserAvatar';
 import JoinWithMeLink from '@/Components/JoinWithMeLink';
@@ -39,7 +41,7 @@ import AISprintSummary from '@/Components/AISprintSummary';
 import { useLanguage } from '@/Contexts/LanguageContext';
 import { routeKey } from '@/lib/routeKey';
 
-export default function Show({ auth, sprint, isParticipant, leaderboard, completionStats }) {
+export default function Show({ auth, sprint, isParticipant, isCreator = false, leaderboard, completionStats, inviteCode = null, invitableFriends = null }) {
     const { tl, formatDate: formatLocaleDate } = useLanguage();
     const [activeTab, setActiveTab] = useState('updates');
     const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -56,6 +58,48 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
     const [selectedImage, setSelectedImage] = useState(null);
     const [showShareModal, setShowShareModal] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
+    const [inviteLinkCopied, setInviteLinkCopied] = useState(false);
+    const [showInviteModal, setShowInviteModal] = useState(false);
+    const [selectedFriends, setSelectedFriends] = useState(new Set());
+    const [inviteSearchQuery, setInviteSearchQuery] = useState('');
+    const [sendingInvites, setSendingInvites] = useState(false);
+    // Live updates — starts from server-rendered list, appended by Pusher
+    const [liveUpdates, setLiveUpdates] = useState(sprint.updates || []);
+    const [newUpdateCount, setNewUpdateCount] = useState(0);
+
+    // Sync when Inertia replaces the sprint prop (e.g. after a partial reload)
+    useEffect(() => {
+        setLiveUpdates(sprint.updates || []);
+        setNewUpdateCount(0);
+    }, [sprint.id]);
+
+    // Pusher — listen for new updates and reaction toggles from other users
+    useEffect(() => {
+        if (!window.Echo) return;
+
+        const channel = window.Echo.channel(`sprint.${sprint.id}`);
+
+        channel.listen('.update.posted', ({ update }) => {
+            setLiveUpdates(prev => {
+                if (prev.some(u => u.id === update.id)) return prev;
+                return [update, ...prev];
+            });
+            setNewUpdateCount(c => c + 1);
+        });
+
+        channel.listen('.reaction.toggled', ({ update_id, user_id, added, count }) => {
+            if (user_id === auth.user?.id) return;
+            setLocalReactions(prev => ({
+                ...prev,
+                [update_id]: {
+                    hasReacted: prev[update_id]?.hasReacted ?? false,
+                    count,
+                },
+            }));
+        });
+
+        return () => window.Echo.leaveChannel(`sprint.${sprint.id}`);
+    }, [sprint.id]);
 
     const getUserRouteKey = (user) => routeKey(user);
     const getSprintRouteKey = (value = sprint) => routeKey(value) ?? value;
@@ -346,6 +390,37 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
         }
     };
 
+    const toggleFriendSelection = (id) => {
+        setSelectedFriends(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
+
+    const handleSendInvites = () => {
+        if (selectedFriends.size === 0) return;
+        setSendingInvites(true);
+        router.post(
+            route('sprints.invitations.store', getSprintRouteKey()),
+            { user_ids: Array.from(selectedFriends) },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setShowInviteModal(false);
+                    setSelectedFriends(new Set());
+                    setInviteSearchQuery('');
+                    triggerActionToast('Invitations sent!');
+                },
+                onFinish: () => setSendingInvites(false),
+            }
+        );
+    };
+
+    const filteredFriends = (invitableFriends || []).filter(f =>
+        f.name.toLowerCase().includes(inviteSearchQuery.toLowerCase())
+    );
+
     // Safe route generation functions
     const getUpdateCreateRoute = () => {
         return route('updates.create', getSprintRouteKey());
@@ -437,7 +512,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                 <div className="text-sm text-gray-600 dark:text-gray-400">{tl('Builders')}</div>
                                             </div>
                                             <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                                <div className="text-xl font-bold text-gray-900 dark:text-white">{sprint.updates?.length || 0}</div>
+                                                <div className="text-xl font-bold text-gray-900 dark:text-white">{liveUpdates.length}</div>
                                                 <div className="text-sm text-gray-600 dark:text-gray-400">{tl('Publications')}</div>
                                             </div>
                                             <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -509,6 +584,10 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                     <CheckCircle2 className="w-4 h-4" />
                                                     <span>{tl('Sprint Completed')}</span>
                                                 </div>
+                                            ) : sprint.is_private ? (
+                                                <div className="w-full text-center px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg text-sm">
+                                                    🔒 {tl('Private — invite only')}
+                                                </div>
                                             ) : (
                                                 <button
                                                     onClick={handleJoin}
@@ -519,14 +598,57 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                                 </button>
                                             )
                                         ) : (
-                                            <Link
-                                                href={getRegisterRoute()}
-                                                className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm text-sm"
-                                            >
-                                                <span>{tl('Sign up to Join')}</span>
-                                            </Link>
+                                            sprint.is_private ? (
+                                                <div className="w-full text-center px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg text-sm">
+                                                    🔒 {tl('Private — invite only')}
+                                                </div>
+                                            ) : (
+                                                <Link
+                                                    href={getRegisterRoute()}
+                                                    className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-sm text-sm"
+                                                >
+                                                    <span>{tl('Sign up to Join')}</span>
+                                                </Link>
+                                            )
                                         )}
                                     </div>
+
+                                    {/* Invite tools — visible only to creator of private sprint */}
+                                    {inviteCode && (
+                                        <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-2">
+                                            <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
+                                                🔒 {tl('Invite link')}
+                                            </p>
+                                            <p className="text-xs leading-5 text-stone-500">
+                                                {tl('Share this link to let people join your private sprint.')}
+                                            </p>
+                                            <button
+                                                onClick={() => {
+                                                    const url = window.location.origin + '/invite/' + inviteCode;
+                                                    navigator.clipboard?.writeText(url);
+                                                    setInviteLinkCopied(true);
+                                                    setTimeout(() => setInviteLinkCopied(false), 2000);
+                                                }}
+                                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-950 px-3 py-2.5 text-xs font-bold text-white transition hover:bg-emerald-900"
+                                            >
+                                                {inviteLinkCopied ? '✓ Copied!' : '🔗 Copy invite link'}
+                                            </button>
+                                            {invitableFriends !== null && (
+                                                <button
+                                                    onClick={() => setShowInviteModal(true)}
+                                                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-800 px-3 py-2.5 text-xs font-bold text-emerald-900 transition hover:bg-emerald-50"
+                                                >
+                                                    <UserPlusIcon className="h-3.5 w-3.5" />
+                                                    {tl('Invite friends')}
+                                                    {invitableFriends.length > 0 && (
+                                                        <span className="ml-auto rounded-full bg-emerald-100 px-1.5 py-0.5 text-emerald-800">
+                                                            {invitableFriends.length}
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
 
                                     {/* Quick Info */}
                                     <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 space-y-2">
@@ -669,8 +791,19 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                             <div className="lg:col-span-2 space-y-4 order-2 lg:order-1">
                                 {activeTab === 'updates' && (
                                     <>
-                                        {sprint.updates && sprint.updates.length > 0 ? (
-                                            sprint.updates.map((update, i) => (
+                                        {newUpdateCount > 0 && (
+                                            <button
+                                                onClick={() => setNewUpdateCount(0)}
+                                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 py-2.5 text-sm font-bold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-100"
+                                            >
+                                                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-black text-white">
+                                                    {newUpdateCount}
+                                                </span>
+                                                {newUpdateCount === 1 ? tl('New update — scroll to top') : `${newUpdateCount} ${tl('new updates')}`}
+                                            </button>
+                                        )}
+                                        {liveUpdates && liveUpdates.length > 0 ? (
+                                            liveUpdates.map((update, i) => (
                                                 <motion.div
                                                     key={update.id}
                                                     initial={{ opacity: 0, y: 20 }}
@@ -1428,7 +1561,7 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-xs">
                                             <span className="text-gray-600 dark:text-gray-400">{tl('Total Publications')}</span>
-                                            <span className="font-semibold text-gray-900 dark:text-white">{sprint.updates?.length || 0}</span>
+                                            <span className="font-semibold text-gray-900 dark:text-white">{liveUpdates.length}</span>
                                         </div>
                                         <div className="flex justify-between text-xs">
                                             <span className="text-gray-600 dark:text-gray-400">{tl('Active Builders')}</span>
@@ -1615,6 +1748,134 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                         className="fixed bottom-5 right-5 z-50 rounded-full bg-[#17211d] px-4 py-2 text-sm font-semibold text-white shadow-2xl"
                     >
                         {actionToast}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Invite Friends Modal */}
+            <AnimatePresence>
+                {showInviteModal && (
+                    <motion.div
+                        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowInviteModal(false)}
+                    >
+                        <motion.div
+                            className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden"
+                            initial={{ scale: 0.92, opacity: 0, y: 24 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.92, opacity: 0, y: 24 }}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-900/30">
+                                        <UserPlusIcon className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                                            {tl('Invite friends')}
+                                        </h3>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {tl('They\'ll get a notification with Accept / Decline')}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowInviteModal(false)}
+                                    className="rounded-full p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </div>
+
+                            {/* Search */}
+                            <div className="px-5 pt-4 pb-2">
+                                <div className="relative">
+                                    <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={inviteSearchQuery}
+                                        onChange={e => setInviteSearchQuery(e.target.value)}
+                                        placeholder={tl('Search your connections...')}
+                                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 pl-9 pr-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                        autoFocus
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Friends list */}
+                            <div className="max-h-64 overflow-y-auto px-5 py-2">
+                                {filteredFriends.length === 0 ? (
+                                    <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                                        {inviteSearchQuery
+                                            ? tl('No connections match your search.')
+                                            : tl('All your connections are already in this sprint or invited.')}
+                                    </div>
+                                ) : (
+                                    <ul className="space-y-1">
+                                        {filteredFriends.map(friend => {
+                                            const selected = selectedFriends.has(friend.id);
+                                            return (
+                                                <li key={friend.id}>
+                                                    <button
+                                                        onClick={() => toggleFriendSelection(friend.id)}
+                                                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${
+                                                            selected
+                                                                ? 'bg-emerald-50 dark:bg-emerald-900/25'
+                                                                : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                                                        }`}
+                                                    >
+                                                        <div className="relative">
+                                                            <UserAvatar user={friend} size="sm" />
+                                                            {selected && (
+                                                                <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 ring-2 ring-white dark:ring-gray-900">
+                                                                    <Check className="h-2.5 w-2.5 text-white" />
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span className={`flex-1 text-sm font-medium ${
+                                                            selected
+                                                                ? 'text-emerald-800 dark:text-emerald-300'
+                                                                : 'text-gray-900 dark:text-white'
+                                                        }`}>
+                                                            {friend.name}
+                                                        </span>
+                                                        <span className={`text-xs rounded-full px-2 py-0.5 ${
+                                                            selected
+                                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
+                                                                : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                                                        }`}>
+                                                            {selected ? tl('Selected') : tl('Invite')}
+                                                        </span>
+                                                    </button>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                )}
+                            </div>
+
+                            {/* Footer */}
+                            <div className="flex items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800 px-5 py-4">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    {selectedFriends.size > 0
+                                        ? `${selectedFriends.size} ${selectedFriends.size === 1 ? tl('person') : tl('people')} ${tl('selected')}`
+                                        : tl('Select people to invite')}
+                                </span>
+                                <button
+                                    onClick={handleSendInvites}
+                                    disabled={selectedFriends.size === 0 || sendingInvites}
+                                    className="inline-flex items-center gap-2 rounded-xl bg-emerald-950 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                    <UserPlusIcon className="h-4 w-4" />
+                                    {sendingInvites ? tl('Sending…') : tl('Send invitations')}
+                                </button>
+                            </div>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>

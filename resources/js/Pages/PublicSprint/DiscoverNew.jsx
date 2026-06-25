@@ -11,9 +11,10 @@ import {
     UserGroupIcon as Users,
     XMarkIcon as X,
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
 import SprintCard from '@/Components/SprintCard';
+import { SprintCardSkeletonGrid } from '@/Components/Skeletons';
 import ActivityPulseStrip from '@/Components/ActivityPulseStrip';
 import { useLanguage } from '@/Contexts/LanguageContext';
 
@@ -23,6 +24,13 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
     const [showFilters, setShowFilters] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState(filters.status || 'all');
     const [selectedSort, setSelectedSort] = useState(filters.sort || 'trending');
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        const removeStart  = router.on('start',  () => setIsLoading(true));
+        const removeFinish = router.on('finish', () => setIsLoading(false));
+        return () => { removeStart(); removeFinish(); };
+    }, []);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -209,7 +217,14 @@ export default function DiscoverNew({ sprints, statusCounts, featured, popularTa
                         </motion.div>
 
                         {/* Results */}
-                        {sprints && sprints.data && sprints.data.length > 0 ? (
+                        {isLoading ? (
+                            <div>
+                                <div className="mb-6 h-7 w-48 animate-pulse rounded bg-gray-200" />
+                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <SprintCardSkeletonGrid count={6} />
+                                </div>
+                            </div>
+                        ) : sprints && sprints.data && sprints.data.length > 0 ? (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}

@@ -8,9 +8,11 @@ import {
     CheckCircleIcon as CheckCheck,
     HeartIcon as Heart,
     LockClosedIcon as Lock,
+    RocketLaunchIcon as RocketIcon,
     SparklesIcon as Sparkles,
     TrashIcon as Trash2,
     UserPlusIcon as UserPlus,
+    XMarkIcon as XIcon,
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import PublicSprintLayout from '@/Layouts/PublicSprintLayout';
@@ -20,6 +22,21 @@ import { useLanguage } from '@/Contexts/LanguageContext';
 export default function Index({ auth, notifications }) {
     const { tl, formatDateTime } = useLanguage();
     const [localNotifications, setLocalNotifications] = useState(notifications.data || []);
+    // Track responded invitations locally: { [invitationId]: 'accepted' | 'declined' }
+    const [invitationResponses, setInvitationResponses] = useState({});
+
+    const respondToInvitation = (invitationId, action, notificationId) => {
+        const routeName = action === 'accept' ? 'invitations.accept' : 'invitations.decline';
+        router.post(route(routeName, invitationId), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setInvitationResponses(prev => ({ ...prev, [invitationId]: action + 'd' }));
+                setLocalNotifications(prev =>
+                    prev.map(n => n.id === notificationId ? { ...n, read_at: new Date() } : n)
+                );
+            },
+        });
+    };
 
     const getNotificationIcon = (type) => {
         switch (type) {
@@ -31,6 +48,8 @@ export default function Index({ auth, notifications }) {
                 return <Heart className="w-5 h-5 text-red-600" />;
             case 'sprint_milestone':
                 return <Zap className="w-5 h-5 text-yellow-600" />;
+            case 'sprint_invitation':
+                return <RocketIcon className="w-5 h-5 text-emerald-600" />;
             case 'welcome':
                 return <Sparkles className="w-5 h-5 text-green-600" />;
             case 'google_password_setup':
@@ -172,16 +191,61 @@ export default function Index({ auth, notifications }) {
                                         </div>
 
                                         {/* Content */}
-                                        <div 
-                                            className="flex-1 min-w-0 cursor-pointer"
-                                            onClick={() => handleNotificationClick(notification)}
-                                        >
-                                            <p className={`text-sm ${isUnread ? 'font-semibold' : ''} text-gray-900 dark:text-white`}>
+                                        <div className="flex-1 min-w-0">
+                                            <p
+                                                className={`text-sm ${isUnread ? 'font-semibold' : ''} text-gray-900 dark:text-white cursor-pointer`}
+                                                onClick={() => handleNotificationClick(notification)}
+                                            >
                                                 {getNotificationMessage(notification)}
                                             </p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                 {formatDateTime(notification.created_at)}
                                             </p>
+
+                                            {/* Inline Accept/Decline for sprint invitations */}
+                                            {notification.type === 'sprint_invitation' && notification.data?.invitation_id && (() => {
+                                                const invId = notification.data.invitation_id;
+                                                const response = invitationResponses[invId];
+                                                if (response === 'accepted') {
+                                                    return (
+                                                        <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                                            <Check className="h-3.5 w-3.5" /> {tl('Joined!')}
+                                                        </span>
+                                                    );
+                                                }
+                                                if (response === 'declined') {
+                                                    return (
+                                                        <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                                                            {tl('Declined')}
+                                                        </span>
+                                                    );
+                                                }
+                                                return (
+                                                    <div className="mt-2 flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => respondToInvitation(invId, 'accept', notification.id)}
+                                                            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-emerald-700"
+                                                        >
+                                                            <Check className="h-3.5 w-3.5" /> {tl('Accept')}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => respondToInvitation(invId, 'decline', notification.id)}
+                                                            className="inline-flex items-center gap-1.5 rounded-xl border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 transition hover:bg-gray-50 dark:hover:bg-gray-800"
+                                                        >
+                                                            <XIcon className="h-3.5 w-3.5" /> {tl('Decline')}
+                                                        </button>
+                                                        {notification.data.sprint_ulid && (
+                                                            <a
+                                                                href={route('sprints.show', notification.data.sprint_ulid)}
+                                                                className="text-xs text-emerald-600 hover:underline dark:text-emerald-400"
+                                                                onClick={e => e.stopPropagation()}
+                                                            >
+                                                                {tl('View sprint')} →
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
 
                                         {/* Actions */}
