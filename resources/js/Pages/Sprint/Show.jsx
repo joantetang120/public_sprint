@@ -461,9 +461,10 @@ export default function Show({ auth, sprint, isParticipant, leaderboard, complet
                                     {/* Sprint report for completed sprints */}
                                     {auth.user && isParticipant && sprint.computed_status === 'completed' && (
                                         <div className="mt-6">
-                                            <AISprintSummary 
-                                                sprint={sprint} 
+                                            <AISprintSummary
+                                                sprint={sprint}
                                                 aiSummary={leaderboard.find(p => p.id === auth.user.id)?.pivot?.ai_summary}
+                                                shareToken={leaderboard.find(p => p.id === auth.user.id)?.pivot?.share_token}
                                             />
                                         </div>
                                     )}

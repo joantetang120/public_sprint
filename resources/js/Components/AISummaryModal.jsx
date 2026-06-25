@@ -12,24 +12,67 @@ import {
     PhotoIcon as GalleryVerticalEnd,
     PhotoIcon as ImageIcon,
     PrinterIcon as Printer,
+    ShareIcon as ShareIcon,
     SparklesIcon as Sparkles,
     XMarkIcon as X,
 } from '@heroicons/react/24/outline';
 import { buildPrintableReportHtml, parseSprintReport } from '@/lib/sprintReport';
 import { useLanguage } from '@/Contexts/LanguageContext';
 
-export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
+function XIcon({ className }) {
+    return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
+        </svg>
+    );
+}
+
+function LinkedInIcon({ className }) {
+    return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+        </svg>
+    );
+}
+
+export default function AISummaryModal({ isOpen, onClose, summary, sprint, shareToken = null }) {
     const { tl } = useLanguage();
     const [activeTab, setActiveTab] = useState('overview');
     const [copiedState, setCopiedState] = useState('');
+
+    const shareUrl = shareToken
+        ? (typeof window !== 'undefined' ? window.location.origin : '') + '/share/' + shareToken
+        : null;
+
     const tabs = [
-        { id: 'overview', label: tl('Overview'), icon: Sparkles },
-        { id: 'linkedin', label: tl('LinkedIn'), icon: Briefcase },
+        { id: 'overview',  label: tl('Overview'),  icon: Sparkles },
+        { id: 'linkedin',  label: tl('LinkedIn'),  icon: Briefcase },
         { id: 'portfolio', label: tl('Portfolio'), icon: FileText },
-        { id: 'gallery', label: tl('Gallery'), icon: GalleryVerticalEnd },
+        { id: 'gallery',   label: tl('Gallery'),   icon: GalleryVerticalEnd },
+        { id: 'share',     label: tl('Share'),     icon: ShareIcon },
     ];
 
     const report = useMemo(() => parseSprintReport(summary, sprint), [summary, sprint]);
+
+    const openTwitter = () => {
+        const text = report?.formats?.twitter || report?.formats?.caption || report?.headline || '';
+        const full = shareUrl ? text + '\n\n' + shareUrl : text;
+        window.open(
+            'https://twitter.com/intent/tweet?text=' + encodeURIComponent(full),
+            '_blank', 'noopener,noreferrer',
+        );
+    };
+
+    const openLinkedIn = () => {
+        if (shareUrl) {
+            window.open(
+                'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(shareUrl),
+                '_blank', 'noopener,noreferrer',
+            );
+        } else {
+            copyText(report?.formats?.linkedin || '', 'linkedin');
+        }
+    };
 
     const copyText = async (value, key) => {
         if (!value) {
@@ -91,10 +134,10 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 16, scale: 0.98 }}
                     transition={{ duration: 0.18 }}
-                    className="max-h-[92vh] w-full max-w-6xl overflow-hidden rounded-[28px] bg-stone-50 shadow-2xl"
+                    className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] bg-stone-50 shadow-2xl"
                     onClick={(event) => event.stopPropagation()}
                 >
-                    <div className="bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.18),_transparent_38%),linear-gradient(135deg,#173327,#2f6b4f)] px-6 py-7 sm:px-8">
+                    <div className="flex-shrink-0 bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.18),_transparent_38%),linear-gradient(135deg,#173327,#2f6b4f)] px-6 py-7 sm:px-8">
                         <div className="flex items-start justify-between gap-6">
                             <div className="max-w-3xl">
                                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-50">
@@ -116,8 +159,8 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                         </div>
                     </div>
 
-                    <div className="grid max-h-[calc(92vh-148px)] grid-cols-1 overflow-hidden lg:grid-cols-[220px,1fr]">
-                        <aside className="border-b border-stone-200 bg-white lg:border-b-0 lg:border-r">
+                    <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[220px,1fr]">
+                        <aside className="flex flex-col overflow-y-auto border-b border-stone-200 bg-white lg:border-b-0 lg:border-r">
                             <div className="flex gap-2 overflow-x-auto p-4 lg:block lg:space-y-2">
                                 {tabs.map((tab) => (
                                     <button
@@ -366,6 +409,79 @@ export default function AISummaryModal({ isOpen, onClose, summary, sprint }) {
                                             </div>
                                         )}
                                     </section>
+                                </div>
+                            )}
+
+                            {activeTab === 'share' && (
+                                <div className="space-y-6">
+                                    {shareUrl ? (
+                                        <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
+                                            <h3 className="text-xl font-black text-stone-900">{tl('Public share link')}</h3>
+                                            <p className="mt-2 text-sm text-stone-600">
+                                                {tl('Anyone with this link can view your sprint report — no account needed.')}
+                                            </p>
+                                            <div className="mt-5 flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+                                                <span className="flex-1 truncate font-mono text-sm text-stone-700">{shareUrl}</span>
+                                                <button
+                                                    onClick={() => copyText(shareUrl, 'shareurl')}
+                                                    className="inline-flex items-center gap-2 rounded-xl bg-emerald-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-900"
+                                                >
+                                                    {copiedState === 'shareurl' ? <Check className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}
+                                                    {copiedState === 'shareurl' ? tl('Copied!') : tl('Copy')}
+                                                </button>
+                                            </div>
+                                        </section>
+                                    ) : (
+                                        <section className="rounded-[26px] border border-dashed border-stone-300 bg-stone-50 p-6">
+                                            <p className="text-sm text-stone-500">
+                                                {tl('Generate your report first to get a public share link.')}
+                                            </p>
+                                        </section>
+                                    )}
+
+                                    <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
+                                        <h3 className="text-xl font-black text-stone-900">{tl('Share directly')}</h3>
+                                        <p className="mt-2 text-sm text-stone-600">
+                                            {tl('Open your platform of choice with the content pre-filled.')}
+                                        </p>
+                                        <div className="mt-6 flex flex-wrap gap-4">
+                                            <button
+                                                onClick={openTwitter}
+                                                className="inline-flex items-center gap-2.5 rounded-2xl bg-black px-5 py-4 text-sm font-semibold text-white transition hover:bg-stone-800"
+                                            >
+                                                <XIcon className="h-4 w-4" />
+                                                {tl('Post on X / Twitter')}
+                                            </button>
+                                            <button
+                                                onClick={openLinkedIn}
+                                                className="inline-flex items-center gap-2.5 rounded-2xl bg-[#0077B5] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#006097]"
+                                            >
+                                                <LinkedInIcon className="h-4 w-4" />
+                                                {tl('Share on LinkedIn')}
+                                            </button>
+                                        </div>
+                                    </section>
+
+                                    {report?.formats?.twitter && (
+                                        <section className="rounded-[26px] border border-stone-200 bg-white p-6 shadow-sm">
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div>
+                                                    <h3 className="text-xl font-black text-stone-900">{tl('X / Twitter copy')}</h3>
+                                                    <p className="mt-1 text-sm text-stone-500">{tl('Short format, ready to post.')}</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => copyText(report.formats.twitter, 'twitter')}
+                                                    className="inline-flex items-center gap-2 rounded-2xl bg-emerald-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
+                                                >
+                                                    {copiedState === 'twitter' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+                                                    {tl('Copy')}
+                                                </button>
+                                            </div>
+                                            <div className="mt-5 rounded-2xl bg-stone-100 p-5">
+                                                <pre className="whitespace-pre-wrap font-sans text-sm leading-7 text-stone-700">{report.formats.twitter}</pre>
+                                            </div>
+                                        </section>
+                                    )}
                                 </div>
                             )}
                         </div>

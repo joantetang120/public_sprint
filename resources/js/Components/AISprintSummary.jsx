@@ -4,26 +4,25 @@ import {
     ArrowRightIcon as ArrowRight,
     ArrowPathIcon as RefreshCcw,
     BookmarkSquareIcon as FileDown,
+    ArrowTopRightOnSquareIcon as OpenIcon,
     BriefcaseIcon as Briefcase,
     CheckIcon as Check,
     ClipboardDocumentIcon as Clipboard,
     DocumentTextIcon as BookText,
-    EyeIcon as Eye,
+    LinkIcon as LinkIcon,
     PhotoIcon as GalleryVerticalEnd,
     RectangleGroupIcon as LayoutTemplate,
     SparklesIcon as Sparkles,
 } from '@heroicons/react/24/outline';
-import AISummaryModal from './AISummaryModal';
 import { getSprintReportPreview, parseSprintReport } from '@/lib/sprintReport';
 import { useLanguage } from '@/Contexts/LanguageContext';
 
-export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = false }) {
+export default function AISprintSummary({ sprint, aiSummary = null, shareToken = null, viewOnly = false }) {
     const { tl } = useLanguage();
     const [summary, setSummary] = useState(aiSummary);
     const [isGenerating, setIsGenerating] = useState(false);
     const [copied, setCopied] = useState(false);
     const [selectedStyle, setSelectedStyle] = useState('professional');
-    const [showModal, setShowModal] = useState(false);
     const styles = [
         { value: 'professional', label: tl('Professional'), description: tl('Clean for LinkedIn and public sharing'), icon: Briefcase },
         { value: 'casual', label: tl('Builder Story'), description: tl('Warmer and more personal'), icon: Sparkles },
@@ -86,8 +85,7 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
     };
 
     return (
-        <>
-            <div className="overflow-hidden rounded-[28px] border border-stone-200 bg-[linear-gradient(180deg,#fffdf8_0%,#f2ede1_100%)] shadow-lg">
+        <div className="overflow-hidden rounded-[28px] border border-stone-200 bg-[linear-gradient(180deg,#fffdf8_0%,#f2ede1_100%)] shadow-lg">
                 <div className="border-b border-stone-200 bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.16),_transparent_32%),linear-gradient(135deg,#173327,#2f6b4f)] px-6 py-7 sm:px-8">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                         <div className="max-w-2xl">
@@ -118,6 +116,16 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                                     <FileDown className="h-4 w-4" />
                                     {tl('Download')}
                                 </button>
+                                {shareToken && (
+                                    <button
+                                        onClick={() => navigator.clipboard?.writeText(window.location.origin + '/share/' + shareToken)}
+                                        className="inline-flex items-center gap-2 rounded-2xl bg-white/12 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/18"
+                                        title={tl('Copy public link')}
+                                    >
+                                        <LinkIcon className="h-4 w-4" />
+                                        {tl('Share link')}
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>
@@ -134,10 +142,10 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                                             <h4 className="mt-2 text-2xl font-black text-stone-900">{report.headline}</h4>
                                         </div>
                                         <button
-                                            onClick={() => setShowModal(true)}
+                                            onClick={() => router.visit(route('sprints.report', sprint.ulid ?? sprint.id))}
                                             className="inline-flex items-center gap-2 rounded-2xl bg-emerald-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
                                         >
-                                            <Eye className="h-4 w-4" />
+                                            <OpenIcon className="h-4 w-4" />
                                             {tl('Open full report')}
                                         </button>
                                     </div>
@@ -302,14 +310,6 @@ export default function AISprintSummary({ sprint, aiSummary = null, viewOnly = f
                         </div>
                     )}
                 </div>
-            </div>
-
-            <AISummaryModal
-                isOpen={showModal}
-                onClose={() => setShowModal(false)}
-                summary={summary}
-                sprint={sprint}
-            />
-        </>
+        </div>
     );
 }

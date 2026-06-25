@@ -16,5 +16,6 @@ class SprintParticipant extends Pivot
         'score' => 'float',
         'rank' => 'integer',
         'badges' => 'array',
+        'ai_summary' => 'string',
     ];
 }

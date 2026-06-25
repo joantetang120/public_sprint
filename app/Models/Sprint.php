@@ -70,7 +70,7 @@ class Sprint extends Model
     {
         return $this->belongsToMany(User::class, 'sprint_participants')
             ->using(SprintParticipant::class)
-            ->withPivot(['joined_at', 'updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges'])
+            ->withPivot(['joined_at', 'updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges', 'ai_summary', 'share_token'])
             ->withTimestamps();
     }
 

@@ -95,6 +95,7 @@ export function parseSprintReport(rawSummary, sprint = null) {
                 linkedin: parsed.formats?.linkedin || parsed.summary || '',
                 portfolio: parsed.formats?.portfolio || parsed.summary || '',
                 caption: parsed.formats?.caption || parsed.summary || '',
+                twitter: parsed.formats?.twitter || '',
             },
         };
     } catch (error) {

@@ -364,6 +364,38 @@ class SprintController extends Controller
         return response()->json($leaderboard);
     }
 
+    public function report(Sprint $sprint)
+    {
+        if (!auth()->check() || !$sprint->participants()->where('user_id', auth()->id())->exists()) {
+            abort(403);
+        }
+
+        if (!$sprint->isCompleted()) {
+            return redirect()->route('sprints.show', $sprint)->with('error', 'Report is only available for completed sprints.');
+        }
+
+        $userParticipation = $sprint->participants()
+            ->withPivot(['updates_posted', 'reactions_received', 'comments_made', 'score', 'rank', 'badges', 'ai_summary', 'share_token'])
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (!$userParticipation || !$userParticipation->pivot->ai_summary) {
+            return redirect()->route('sprints.show', $sprint)->with('info', 'Generate your report first from the sprint page.');
+        }
+
+        return Inertia::render('Sprint/ReportPage', [
+            'sprint' => [
+                'ulid'          => $sprint->ulid,
+                'id'            => $sprint->id,
+                'title'         => $sprint->title,
+                'duration_days' => $sprint->duration_days,
+                'description'   => $sprint->description,
+            ],
+            'aiSummary'  => $userParticipation->pivot->ai_summary,
+            'shareToken' => $userParticipation->pivot->share_token,
+        ]);
+    }
+
     public function generateSummary(Request $request, Sprint $sprint, AIService $aiService)
     {
         // Check if user is participant
@@ -411,13 +443,22 @@ class SprintController extends Controller
 
         \Log::info('Participation found', ['participation' => $participation]);
 
-        // Save summary to user's sprint participation - force update with timestamp
+        // Generate a share token if this participant doesn't have one yet
+        $existingToken = DB::table('sprint_participants')
+            ->where('sprint_id', $sprint->id)
+            ->where('user_id', auth()->id())
+            ->value('share_token');
+
+        $shareToken = $existingToken ?? \Illuminate\Support\Str::random(20);
+
+        // Save summary + share token
         $updated = DB::table('sprint_participants')
             ->where('sprint_id', $sprint->id)
             ->where('user_id', auth()->id())
             ->update([
-                'ai_summary' => $summary,
-                'updated_at' => now()
+                'ai_summary'  => $summary,
+                'share_token' => $shareToken,
+                'updated_at'  => now(),
             ]);
 
         \Log::info('Summary saved', [
