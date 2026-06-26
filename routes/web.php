@@ -10,6 +10,7 @@ use App\Http\Controllers\SprintInvitationController;
 use App\Http\Controllers\SummaryShareController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -128,3 +129,16 @@ Route::get('/users/{user}', [ProfileController::class, 'show'])->name('users.sho
 Route::get('/sprints/{sprint}', [SprintController::class, 'show'])->name('sprints.show');
 
 require __DIR__.'/auth.php';
+
+// ─── Admin portal (URL hidden via ADMIN_PORTAL_PATH env variable) ───────────
+Route::prefix(env('ADMIN_PORTAL_PATH', 'xk9-control-panel'))
+    ->middleware(['auth', 'admin'])
+    ->group(function () {
+        Route::get('/',          [AdminController::class, 'dashboard'])->name('admin.dashboard');
+        Route::get('/users',     [AdminController::class, 'users'])->name('admin.users');
+        Route::get('/sprints',   [AdminController::class, 'sprints'])->name('admin.sprints');
+        Route::get('/activity',  [AdminController::class, 'activity'])->name('admin.activity');
+        Route::post('/users/{user}/suspend', [AdminController::class, 'suspendUser'])->name('admin.users.suspend');
+        Route::delete('/users/{user}',       [AdminController::class, 'deleteUser'])->name('admin.users.delete');
+        Route::delete('/sprints/{id}',       [AdminController::class, 'deleteSprint'])->name('admin.sprints.delete');
+    });
