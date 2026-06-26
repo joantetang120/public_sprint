@@ -171,9 +171,9 @@ export default function Register() {
                                 {/* Terms */}
                                 <p className="text-center text-xs text-stone-500">
                                     {tl('By creating an account, you agree to our')}{' '}
-                                    <a href="#" className="font-semibold text-emerald-700 hover:underline">{tl('Terms of Service')}</a>
+                                    <Link href="/terms" className="font-semibold text-emerald-700 hover:underline">{tl('Terms of Service')}</Link>
                                     {' '}{tl('and')}{' '}
-                                    <a href="#" className="font-semibold text-emerald-700 hover:underline">{tl('Privacy Policy')}</a>
+                                    <Link href="/privacy" className="font-semibold text-emerald-700 hover:underline">{tl('Privacy Policy')}</Link>
                                 </p>
 
                                 {/* Submit */}

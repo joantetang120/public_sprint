@@ -27,6 +27,9 @@ Route::get('/health', function () {
 
 
 Route::get('/discover', [SprintController::class, 'discover'])->name('discover');
+
+Route::get('/terms',   fn () => Inertia::render('Legal/TermsOfService'))->name('terms');
+Route::get('/privacy', fn () => Inertia::render('Legal/PrivacyPolicy'))->name('privacy');
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread');
 Route::post('/language', [LanguageController::class, 'update'])->name('language.update');
