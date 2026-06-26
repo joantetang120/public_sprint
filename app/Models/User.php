@@ -79,6 +79,8 @@ class User extends Authenticatable
             'profile_public' => 'boolean',
             'show_email' => 'boolean',
             'show_stats' => 'boolean',
+            'is_admin' => 'boolean',
+            'is_suspended' => 'boolean',
         ];
     }
 
