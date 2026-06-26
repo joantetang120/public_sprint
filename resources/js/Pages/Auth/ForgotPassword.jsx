@@ -1,20 +1,19 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
-    ArrowLeftIcon as ArrowLeft,
-    ArrowRightIcon as ArrowRight,
-    BoltIcon as Zap,
-    CheckCircleIcon as CheckCircle2,
-    EnvelopeIcon as Mail,
-    RocketLaunchIcon as Rocket,
-    StarIcon as Star,
-    UserGroupIcon as Users,
+    ArrowLeftIcon,
+    ArrowRightIcon,
+    CheckCircleIcon,
+    EnvelopeIcon,
 } from '@heroicons/react/24/outline';
+import AuthSidePanel from '@/Components/AuthSidePanel';
+import { useLanguage } from '@/Contexts/LanguageContext';
+
+const inputClass = "w-full rounded-xl border border-stone-200 bg-stone-50 py-3.5 pl-11 pr-4 text-sm font-medium text-stone-900 placeholder:text-stone-400 transition focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 hover:border-stone-300";
 
 export default function ForgotPassword({ status }) {
-    const { data, setData, post, processing, errors } = useForm({
-        email: '',
-    });
+    const { tl } = useLanguage();
+    const { data, setData, post, processing, errors } = useForm({ email: '' });
 
     const submit = (e) => {
         e.preventDefault();
@@ -23,185 +22,80 @@ export default function ForgotPassword({ status }) {
 
     return (
         <>
-            <Head title="Reset your password - PublicSprint" />
-            
-            <div className="min-h-screen flex bg-white">
-                {/* Left Side - Community Branding */}
-                <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-500 to-green-600 p-12 flex-col justify-between relative overflow-hidden">
-                    {/* Background pattern */}
-                    <div className="absolute inset-0 opacity-10">
-                        <div className="absolute inset-0" style={{ 
-                            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', 
-                            backgroundSize: '50px 50px' 
-                        }} />
-                    </div>
+            <Head title="Reset your password — PublicSprint" />
 
-                    {/* Animated background elements */}
-                    <div className="absolute top-20 -left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-                    <div className="absolute bottom-20 -right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
+            <div className="flex min-h-screen bg-[#f5f1e8]">
+                <AuthSidePanel
+                    headline={tl('No worries.')}
+                    sub={tl('We\'ll send you a code. You\'ll be back in seconds.')}
+                />
 
-                    {/* Logo */}
-                    <Link href="/" className="relative flex items-center space-x-3 group">
-                        <img 
-                            src="/logo/logoWhite-removebg-preview.png" 
-                            alt="PublicSprint Logo" 
-                            className="h-16 w-auto"
-                        />
-                    </Link>
-
-                    {/* Content */}
-                    <div className="relative">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
-                                Need a reset?
-                                <br />
-                                We've got you! 🔑
-                            </h1>
-                            <p className="text-lg text-white/90 leading-relaxed mb-8">
-                                We'll send you a 6-digit verification code to get you back into your account.
-                            </p>
-                            
-                            {/* Community Stats */}
-                            <div className="grid grid-cols-3 gap-4">
-                                {[
-                                    { value: '2,847', label: 'Active Builders', icon: Users },
-                                    { value: '890+', label: 'Projects Shipped', icon: Rocket },
-                                    { value: '4.9★', label: 'Community Rating', icon: Star },
-                                ].map((stat, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.3 + (i * 0.1) }}
-                                        className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20"
-                                    >
-                                        <stat.icon className="w-5 h-5 text-white mb-2" />
-                                        <div className="text-lg font-bold text-white mb-1">{stat.value}</div>
-                                        <div className="text-xs text-white/80">{stat.label}</div>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    </div>
-
-                    {/* Footer */}
-                    <div className="relative text-white/80 text-sm">
-                        © 2024 PublicSprint. Built for makers, by makers.
-                    </div>
-                </div>
-
-                {/* Right Side - Form */}
-                <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-gray-50">
+                <div className="flex flex-1 items-center justify-center px-5 py-12">
                     <div className="w-full max-w-md">
-                        {/* Mobile Logo */}
-                        <Link href="/" className="lg:hidden flex items-center space-x-3 mb-8 justify-center">
-                            <img 
-                                src="/logo/logoWhite-removebg-preview.png" 
-                                alt="PublicSprint Logo" 
-                                className="h-16 w-auto"
-                            />
+                        <Link href="/" className="mb-8 block lg:hidden">
+                            <img src="/logo/log2.png" alt="PublicSprint" className="h-14 w-auto" />
                         </Link>
 
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="bg-white rounded-xl p-8 shadow-sm border border-gray-200"
+                            transition={{ duration: 0.3 }}
+                            className="rounded-[28px] border border-stone-200 bg-white p-8 shadow-sm"
                         >
-                            <div className="text-center mb-8">
-                                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                                    Reset your password
-                                </h2>
-                                <p className="text-gray-600">
-                                    Enter your email and we'll send you a 6-digit verification code.
+                            <div className="mb-8 text-center">
+                                <h2 className="text-2xl font-black text-stone-900">{tl('Reset your password')}</h2>
+                                <p className="mt-2 text-sm text-stone-500">
+                                    {tl('Enter your email and we\'ll send you a verification code.')}
                                 </p>
                             </div>
 
                             {status && (
                                 <motion.div
-                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    initial={{ opacity: 0, scale: 0.96 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start space-x-3"
+                                    className="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"
                                 >
-                                    <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                                    <p className="text-green-700 text-sm font-medium">{status}</p>
+                                    <CheckCircleIcon className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                                    {status}
                                 </motion.div>
                             )}
 
-                            <form onSubmit={submit} className="space-y-6">
+                            <form onSubmit={submit} className="space-y-5">
                                 <div>
-                                    <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-3">
-                                        Email address
+                                    <label htmlFor="email" className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-stone-500">
+                                        {tl('Email address')}
                                     </label>
                                     <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                        <input
-                                            id="email"
-                                            type="email"
-                                            value={data.email}
-                                            onChange={(e) => setData('email', e.target.value)}
-                                            autoComplete="username"
-                                            autoFocus
-                                            required
-                                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none text-gray-900 placeholder-gray-500 font-medium transition-all hover:border-gray-300"
-                                            placeholder="you@example.com"
-                                        />
+                                        <EnvelopeIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                                        <input id="email" type="email" value={data.email}
+                                            onChange={e => setData('email', e.target.value)}
+                                            autoComplete="username" autoFocus required
+                                            className={inputClass} placeholder="you@example.com" />
                                     </div>
-                                    {errors.email && (
-                                        <p className="mt-2 text-sm text-red-600">{errors.email}</p>
-                                    )}
+                                    {errors.email && <p className="mt-1.5 text-xs text-red-600">{errors.email}</p>}
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="group w-full px-6 py-4 bg-green-500 text-white rounded-lg font-semibold text-base hover:bg-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-sm hover:shadow-md"
-                                >
-                                    <span>{processing ? 'Sending verification code...' : 'Send verification code'}</span>
-                                    {!processing && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                                <button type="submit" disabled={processing}
+                                    className="group flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-950 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-emerald-800 disabled:opacity-50">
+                                    {processing ? tl('Sending…') : tl('Send verification code')}
+                                    {!processing && <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />}
                                 </button>
 
-                                <Link
-                                    href={route('login')}
-                                    className="flex items-center justify-center space-x-2 text-gray-600 hover:text-green-600 font-semibold transition-colors group"
-                                >
-                                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                                    <span>Back to sign in</span>
+                                <Link href={route('login')}
+                                    className="group flex items-center justify-center gap-2 text-sm font-semibold text-stone-500 transition hover:text-emerald-800">
+                                    <ArrowLeftIcon className="h-4 w-4 transition group-hover:-translate-x-0.5" />
+                                    {tl('Back to sign in')}
                                 </Link>
                             </form>
 
-                            {/* Community Trust Indicators */}
-                            <div className="mt-8 pt-6 border-t border-gray-200">
-                                <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
-                                    <div className="flex items-center space-x-1">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        <span>Secure & private</span>
-                                    </div>
-                                    <div className="flex items-center space-x-1">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        <span>6-digit code</span>
-                                    </div>
-                                </div>
+                            <div className="mt-6 flex items-center justify-center gap-5 border-t border-stone-100 pt-6">
+                                {[tl('Secure & private'), tl('6-digit code')].map(l => (
+                                    <span key={l} className="flex items-center gap-1.5 text-xs text-stone-400">
+                                        <CheckCircleIcon className="h-3.5 w-3.5 text-emerald-600" />{l}
+                                    </span>
+                                ))}
                             </div>
                         </motion.div>
-
-                        {/* Mobile Community Stats */}
-                        <div className="lg:hidden mt-8 grid grid-cols-3 gap-4">
-                            {[
-                                { value: '2.8k', label: 'Builders' },
-                                { value: '890+', label: 'Shipped' },
-                                { value: '4.9★', label: 'Rating' },
-                            ].map((stat, i) => (
-                                <div key={i} className="bg-white rounded-lg p-4 text-center border border-gray-200">
-                                    <div className="text-lg font-bold text-gray-900 mb-1">{stat.value}</div>
-                                    <div className="text-xs text-gray-600">{stat.label}</div>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </div>
             </div>

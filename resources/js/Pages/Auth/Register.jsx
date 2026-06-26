@@ -1,368 +1,197 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
-    ArrowRightIcon as ArrowRight,
-    BoltIcon as Zap,
-    CheckCircleIcon as CheckCircle2,
-    EnvelopeIcon as Mail,
-    EyeIcon as Eye,
-    EyeSlashIcon as EyeOff,
-    LockClosedIcon as Lock,
-    RocketLaunchIcon as Rocket,
-    StarIcon as Star,
-    UserGroupIcon as Users,
-    UserIcon as User,
+    ArrowRightIcon,
+    CheckCircleIcon,
+    EnvelopeIcon,
+    EyeIcon,
+    EyeSlashIcon,
+    LockClosedIcon,
+    UserIcon,
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import LanguageSwitcher from '@/Components/LanguageSwitcher';
+import AuthSidePanel from '@/Components/AuthSidePanel';
 import { useLanguage } from '@/Contexts/LanguageContext';
 
-export default function Register({ stats }) {
+const GoogleIcon = () => (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.6 3.9-5.4 3.9-3.2 0-5.9-2.7-5.9-6s2.7-6 5.9-6c1.8 0 3.1.8 3.8 1.4l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5 6.8 2.5 2.5 6.8 2.5 12S6.8 21.5 12 21.5c6.9 0 9.2-4.8 9.2-7.3 0-.5 0-.8-.1-1.2H12Z" />
+        <path fill="#34A853" d="M3.6 7.4l3.2 2.3C7.7 7.8 9.7 6.4 12 6.4c1.8 0 3.1.8 3.8 1.4l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5c-3.6 0-6.7 2-8.4 4.9Z" />
+        <path fill="#FBBC05" d="M2.5 12c0 1.6.4 3.2 1.1 4.6l3.7-2.8c-.2-.5-.3-1.1-.3-1.8s.1-1.2.3-1.8L3.6 7.4C2.9 8.8 2.5 10.4 2.5 12Z" />
+        <path fill="#4285F4" d="M12 21.5c2.5 0 4.7-.8 6.2-2.3l-3-2.4c-.8.6-1.9 1.1-3.2 1.1-3.7 0-5.2-2.5-5.4-3.8l-3.7 2.8c1.7 3 4.8 4.6 8.1 4.6Z" />
+    </svg>
+);
+
+const inputClass = "w-full rounded-xl border border-stone-200 bg-stone-50 py-3.5 pl-11 pr-4 text-sm font-medium text-stone-900 placeholder:text-stone-400 transition focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 hover:border-stone-300";
+
+export default function Register() {
     const { props } = usePage();
     const { tl } = useLanguage();
     const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
+        name: '', email: '', password: '', password_confirmation: '',
     });
-
     const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showConfirm, setShowConfirm]   = useState(false);
     const googleError = props.errors?.google;
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('register'), {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
-    };
-
-    const formatNumber = (num) => {
-        if (num >= 1000) {
-            return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-        }
-        return num.toString();
+        post(route('register'), { onFinish: () => reset('password', 'password_confirmation') });
     };
 
     return (
         <>
-            <Head title={tl('Join PublicSprint Community')} />
-            
-            <div className="min-h-screen flex bg-white">
-                {/* Left Side - Community Branding */}
-                <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-500 to-green-600 p-12 flex-col justify-between relative overflow-hidden">
-                    {/* Background pattern */}
-                    <div className="absolute inset-0 opacity-10">
-                        <div className="absolute inset-0" style={{ 
-                            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', 
-                            backgroundSize: '50px 50px' 
-                        }} />
-                    </div>
+            <Head title={tl('Join PublicSprint')} />
 
-                    {/* Animated background elements */}
-                    <div className="absolute top-20 -left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-                    <div className="absolute bottom-20 -right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
+            <div className="flex min-h-screen bg-[#f5f1e8]">
+                <AuthSidePanel
+                    headline={tl('Document the process.')}
+                    sub={tl('Join builders writing their story in public — before they become famous.')}
+                />
 
-                    {/* Logo */}
-                    <Link href="/" className="relative flex items-center space-x-3 group">
-                        <img 
-                            src="/logo/logoWhite-removebg-preview.png" 
-                            alt="PublicSprint Logo" 
-                            className="h-16 w-auto"
-                        />
-                    </Link>
-
-                    {/* Content */}
-                    <div className="relative">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
-                                Join our builder
-                                <br />
-                                community! 🚀
-                            </h1>
-                            <p className="text-lg text-white/90 leading-relaxed mb-8">
-                                Start shipping projects with daily support from fellow makers.
-                            </p>
-                            
-                            {/* Community Stats */}
-                            <div className="grid grid-cols-3 gap-4 mb-8">
-                                {[
-                                    { value: formatNumber(stats?.activeBuilders || 0), label: 'Active Builders', icon: Users },
-                                    { value: formatNumber(stats?.projectsShipped || 0), label: 'Projects Shipped', icon: Rocket },
-                                    { value: '4.9★', label: 'Community Rating', icon: Star },
-                                ].map((stat, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.3 + (i * 0.1) }}
-                                        className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20"
-                                    >
-                                        <stat.icon className="w-5 h-5 text-white mb-2" />
-                                        <div className="text-lg font-bold text-white mb-1">{stat.value}</div>
-                                        <div className="text-xs text-white/80">{stat.label}</div>
-                                    </motion.div>
-                                ))}
-                            </div>
-
-                            {/* Benefits */}
-                            <div className="space-y-4">
-                                {[
-                                    'Join time-boxed sprints with the community',
-                                    'Get daily accountability and support',
-                                    'Build your portfolio as you ship projects',
-                                    'Celebrate launches with fellow builders'
-                                ].map((benefit, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.4 + (i * 0.1) }}
-                                        className="flex items-center space-x-3"
-                                    >
-                                        <div className="w-5 h-5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                            <CheckCircle2 className="w-3 h-3 text-white" />
-                                        </div>
-                                        <span className="text-white/90 font-medium text-sm">{benefit}</span>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    </div>
-
-                    {/* Footer */}
-                    <div className="relative text-white/80 text-sm">
-                        © 2024 PublicSprint. Built for makers, by makers.
-                    </div>
-                </div>
-
-                {/* Right Side - Form */}
-                <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-gray-50">
+                {/* Right — form */}
+                <div className="flex flex-1 items-center justify-center px-5 py-12">
                     <div className="w-full max-w-md">
-                        <div className="mb-4 flex justify-end">
-                            <LanguageSwitcher compact />
+                        <div className="mb-6 flex items-center justify-between">
+                            <Link href="/" className="lg:hidden">
+                                <img src="/logo/log2.png" alt="PublicSprint" className="h-14 w-auto" />
+                            </Link>
+                            <div className="ml-auto">
+                                <LanguageSwitcher compact />
+                            </div>
                         </div>
 
-                        {/* Mobile Logo */}
-                        <Link href="/" className="lg:hidden flex items-center space-x-3 mb-8 justify-center">
-                            <img 
-                                src="/logo/logoWhite-removebg-preview.png" 
-                                alt="PublicSprint Logo" 
-                                className="h-16 w-auto"
-                            />
-                        </Link>
-
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="bg-white rounded-xl p-8 shadow-sm border border-gray-200"
+                            transition={{ duration: 0.3 }}
+                            className="rounded-[28px] border border-stone-200 bg-white p-8 shadow-sm"
                         >
-                            <div className="text-center mb-8">
-                                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                                    Join the community
-                                </h2>
-                                <p className="text-gray-600">
-                                    Already building with us?{' '}
-                                    <Link 
-                                        href={route('login')} 
-                                        className="text-green-600 font-semibold hover:underline transition-colors"
-                                    >
-                                        Sign in
+                            <div className="mb-8 text-center">
+                                <h2 className="text-2xl font-black text-stone-900">{tl('Join the community')}</h2>
+                                <p className="mt-2 text-sm text-stone-500">
+                                    {tl('Already have an account?')}{' '}
+                                    <Link href={route('login')} className="font-semibold text-emerald-700 transition hover:text-emerald-900">
+                                        {tl('Sign in')}
                                     </Link>
                                 </p>
                             </div>
 
                             {googleError && (
-                                <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                                     {googleError}
                                 </div>
                             )}
 
+                            {/* Google */}
                             <a
                                 href={route('auth.google.redirect')}
-                                className="mb-6 flex w-full items-center justify-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                                className="mb-6 flex w-full items-center justify-center gap-3 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-700 transition hover:border-stone-300 hover:bg-stone-50"
                             >
-                                <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.6 3.9-5.4 3.9-3.2 0-5.9-2.7-5.9-6s2.7-6 5.9-6c1.8 0 3.1.8 3.8 1.4l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5 6.8 2.5 2.5 6.8 2.5 12S6.8 21.5 12 21.5c6.9 0 9.2-4.8 9.2-7.3 0-.5 0-.8-.1-1.2H12Z" />
-                                    <path fill="#34A853" d="M3.6 7.4l3.2 2.3C7.7 7.8 9.7 6.4 12 6.4c1.8 0 3.1.8 3.8 1.4l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5c-3.6 0-6.7 2-8.4 4.9Z" />
-                                    <path fill="#FBBC05" d="M2.5 12c0 1.6.4 3.2 1.1 4.6l3.7-2.8c-.2-.5-.3-1.1-.3-1.8s.1-1.2.3-1.8L3.6 7.4C2.9 8.8 2.5 10.4 2.5 12Z" />
-                                    <path fill="#4285F4" d="M12 21.5c2.5 0 4.7-.8 6.2-2.3l-3-2.4c-.8.6-1.9 1.1-3.2 1.1-3.7 0-5.2-2.5-5.4-3.8l-3.7 2.8c1.7 3 4.8 4.6 8.1 4.6Z" />
-                                </svg>
-                                <span>Continue with Google</span>
+                                <GoogleIcon />
+                                {tl('Continue with Google')}
                             </a>
 
-                            <div className="mb-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
-                                <div className="h-px flex-1 bg-gray-200" />
-                                <span>or create an account with email</span>
-                                <div className="h-px flex-1 bg-gray-200" />
+                            <div className="mb-6 flex items-center gap-3">
+                                <div className="h-px flex-1 bg-stone-200" />
+                                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">{tl('or create an account with email')}</span>
+                                <div className="h-px flex-1 bg-stone-200" />
                             </div>
 
-                            <form onSubmit={submit} className="space-y-5">
+                            <form onSubmit={submit} className="space-y-4">
                                 {/* Name */}
                                 <div>
-                                    <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
-                                        Full name
+                                    <label htmlFor="name" className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-stone-500">
+                                        {tl('Full name')}
                                     </label>
                                     <div className="relative">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                        <input
-                                            id="name"
-                                            type="text"
-                                            value={data.name}
-                                            onChange={(e) => setData('name', e.target.value)}
-                                            autoComplete="name"
-                                            autoFocus
-                                            required
-                                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none text-gray-900 placeholder-gray-500 font-medium transition-all hover:border-gray-300"
-                                            placeholder="John Doe"
-                                        />
+                                        <UserIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                                        <input id="name" type="text" value={data.name}
+                                            onChange={e => setData('name', e.target.value)}
+                                            autoComplete="name" autoFocus required
+                                            className={inputClass} placeholder="John Doe" />
                                     </div>
-                                    {errors.name && (
-                                        <p className="mt-2 text-sm text-red-600">{errors.name}</p>
-                                    )}
+                                    {errors.name && <p className="mt-1.5 text-xs text-red-600">{errors.name}</p>}
                                 </div>
 
                                 {/* Email */}
                                 <div>
-                                    <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
-                                        Email address
+                                    <label htmlFor="email" className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-stone-500">
+                                        {tl('Email address')}
                                     </label>
                                     <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                        <input
-                                            id="email"
-                                            type="email"
-                                            value={data.email}
-                                            onChange={(e) => setData('email', e.target.value)}
-                                            autoComplete="username"
-                                            required
-                                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none text-gray-900 placeholder-gray-500 font-medium transition-all hover:border-gray-300"
-                                            placeholder="you@example.com"
-                                        />
+                                        <EnvelopeIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                                        <input id="email" type="email" value={data.email}
+                                            onChange={e => setData('email', e.target.value)}
+                                            autoComplete="username" required
+                                            className={inputClass} placeholder="you@example.com" />
                                     </div>
-                                    {errors.email && (
-                                        <p className="mt-2 text-sm text-red-600">{errors.email}</p>
-                                    )}
+                                    {errors.email && <p className="mt-1.5 text-xs text-red-600">{errors.email}</p>}
                                 </div>
 
                                 {/* Password */}
                                 <div>
-                                    <label htmlFor="password" className="block text-sm font-semibold text-gray-900 mb-2">
-                                        Password
+                                    <label htmlFor="password" className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-stone-500">
+                                        {tl('Password')}
                                     </label>
                                     <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                        <input
-                                            id="password"
-                                            type={showPassword ? 'text' : 'password'}
-                                            value={data.password}
-                                            onChange={(e) => setData('password', e.target.value)}
-                                            autoComplete="new-password"
-                                            required
-                                            className="w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none text-gray-900 placeholder-gray-500 font-medium transition-all hover:border-gray-300"
-                                            placeholder="••••••••"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                                        >
-                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        <LockClosedIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                                        <input id="password" type={showPassword ? 'text' : 'password'} value={data.password}
+                                            onChange={e => setData('password', e.target.value)}
+                                            autoComplete="new-password" required
+                                            className={inputClass + ' pr-11'} placeholder="••••••••" />
+                                        <button type="button" onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 transition hover:text-stone-600">
+                                            {showPassword ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                                         </button>
                                     </div>
-                                    {errors.password && (
-                                        <p className="mt-2 text-sm text-red-600">{errors.password}</p>
-                                    )}
+                                    {errors.password && <p className="mt-1.5 text-xs text-red-600">{errors.password}</p>}
                                 </div>
 
-                                {/* Confirm Password */}
+                                {/* Confirm */}
                                 <div>
-                                    <label htmlFor="password_confirmation" className="block text-sm font-semibold text-gray-900 mb-2">
-                                        Confirm password
+                                    <label htmlFor="password_confirmation" className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-stone-500">
+                                        {tl('Confirm password')}
                                     </label>
                                     <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                        <input
-                                            id="password_confirmation"
-                                            type={showConfirmPassword ? 'text' : 'password'}
-                                            value={data.password_confirmation}
-                                            onChange={(e) => setData('password_confirmation', e.target.value)}
-                                            autoComplete="new-password"
-                                            required
-                                            className="w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none text-gray-900 placeholder-gray-500 font-medium transition-all hover:border-gray-300"
-                                            placeholder="••••••••"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                                        >
-                                            {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        <LockClosedIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                                        <input id="password_confirmation" type={showConfirm ? 'text' : 'password'} value={data.password_confirmation}
+                                            onChange={e => setData('password_confirmation', e.target.value)}
+                                            autoComplete="new-password" required
+                                            className={inputClass + ' pr-11'} placeholder="••••••••" />
+                                        <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 transition hover:text-stone-600">
+                                            {showConfirm ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                                         </button>
                                     </div>
-                                    {errors.password_confirmation && (
-                                        <p className="mt-2 text-sm text-red-600">{errors.password_confirmation}</p>
-                                    )}
+                                    {errors.password_confirmation && <p className="mt-1.5 text-xs text-red-600">{errors.password_confirmation}</p>}
                                 </div>
 
                                 {/* Terms */}
-                                <p className="text-xs text-gray-600 text-center">
-                                    By creating an account, you agree to our{' '}
-                                    <a href="#" className="text-green-600 hover:underline font-medium">Terms of Service</a>
-                                    {' '}and{' '}
-                                    <a href="#" className="text-green-600 hover:underline font-medium">Privacy Policy</a>
+                                <p className="text-center text-xs text-stone-500">
+                                    {tl('By creating an account, you agree to our')}{' '}
+                                    <a href="#" className="font-semibold text-emerald-700 hover:underline">{tl('Terms of Service')}</a>
+                                    {' '}{tl('and')}{' '}
+                                    <a href="#" className="font-semibold text-emerald-700 hover:underline">{tl('Privacy Policy')}</a>
                                 </p>
 
-                                {/* Submit Button */}
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="group w-full px-6 py-4 bg-green-500 text-white rounded-lg font-semibold text-base hover:bg-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-sm hover:shadow-md"
-                                >
-                                    <span>{processing ? 'Creating account...' : 'Join the community'}</span>
-                                    {!processing && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                                {/* Submit */}
+                                <button type="submit" disabled={processing}
+                                    className="group flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-950 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-emerald-800 disabled:opacity-50">
+                                    {processing ? tl('Creating account…') : tl('Join PublicSprint')}
+                                    {!processing && <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />}
                                 </button>
                             </form>
 
-                            {/* Community Trust Indicators */}
-                            <div className="mt-8 pt-6 border-t border-gray-200">
-                                <div className="text-center mb-4">
-                                    <p className="text-sm text-gray-600 font-medium">
-                                        Join 2,000+ builders shipping projects together
-                                    </p>
-                                </div>
-                                <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
-                                    <div className="flex items-center space-x-1">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        <span>Free forever</span>
-                                    </div>
-                                    <div className="flex items-center space-x-1">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        <span>No credit card</span>
-                                    </div>
-                                </div>
+                            <div className="mt-6 flex items-center justify-center gap-5 border-t border-stone-100 pt-6">
+                                {[tl('Free forever'), tl('No credit card')].map(l => (
+                                    <span key={l} className="flex items-center gap-1.5 text-xs text-stone-400">
+                                        <CheckCircleIcon className="h-3.5 w-3.5 text-emerald-600" />{l}
+                                    </span>
+                                ))}
                             </div>
                         </motion.div>
-
-                        {/* Mobile Community Stats */}
-                        <div className="lg:hidden mt-8 grid grid-cols-3 gap-4">
-                            {[
-                                { value: '2.8k', label: 'Builders' },
-                                { value: '890+', label: 'Shipped' },
-                                { value: '4.9★', label: 'Rating' },
-                            ].map((stat, i) => (
-                                <div key={i} className="bg-white rounded-lg p-4 text-center border border-gray-200">
-                                    <div className="text-lg font-bold text-gray-900 mb-1">{stat.value}</div>
-                                    <div className="text-xs text-gray-600">{stat.label}</div>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </div>
             </div>
