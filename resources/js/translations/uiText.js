@@ -611,5 +611,84 @@ export const uiText = {
         'Streak': 'Série',
         'Helpful': 'Entraidant',
         'Early': 'Tôt',
+
+        // Landing page — hero
+        'The building process. Finally documented.': 'Le processus de construction. Enfin documenté.',
+        'Watch the next great founder build —': 'Regardez le prochain grand fondateur construire —',
+        'before the world knows their name.': 'avant que le monde connaisse son nom.',
+        'Start a sprint. Document your journey. Get discovered.': 'Démarrez un sprint. Documentez votre parcours. Faites-vous découvrir.',
+        'Start your sprint': 'Démarrez votre sprint',
+        'Explore sprints': 'Explorer les sprints',
+        'builders active this week': 'créateurs actifs cette semaine',
+        'Free forever': 'Gratuit pour toujours',
+        'No credit card': 'Sans carte de crédit',
+        '2 min setup': 'Configuration en 2 min',
+
+        // Landing page — story section
+        'We know how it ended.': 'Nous savons comment ça s\'est terminé.',
+        'We missed how it started.': 'Nous avons raté comment ça a commencé.',
+        'Everyone knows the Facebook story.': 'Tout le monde connaît l\'histoire de Facebook.',
+        'The billion-dollar valuation. The movie. The IPO.': 'La valorisation à un milliard. Le film. L\'introduction en bourse.',
+        'Nobody was there for the dorm room nights.': 'Personne n\'était là pour les nuits en résidence universitaire.',
+        'Same with Microsoft. With Apple. With every company that changed the world.': 'Pareil pour Microsoft. Pour Apple. Pour chaque entreprise qui a changé le monde.',
+        'We only discover founders after the fact — never while they\'re building.': 'On ne découvre les fondateurs qu\'après coup — jamais pendant qu\'ils construisent.',
+        'PublicSprint changes that.': 'PublicSprint change ça.',
+        'Here, the journey is the product.': 'Ici, le parcours est le produit.',
+
+        // Landing page — features
+        'What you can do': 'Ce que vous pouvez faire',
+        'Create a sprint': 'Créer un sprint',
+        'Set a goal, define a timeline, build in public. Every update becomes a permanent record of your process.': 'Définissez un objectif, fixez un calendrier, construisez en public. Chaque mise à jour devient une trace permanente de votre processus.',
+        'Follow the builders': 'Suivez les créateurs',
+        'Find builders worth watching. React, comment, and be part of their story before they become famous.': 'Trouvez des créateurs qui méritent d\'être suivis. Réagissez, commentez, et faites partie de leur histoire avant qu\'ils deviennent célèbres.',
+        'Get your proof of work': 'Obtenez votre preuve de travail',
+        'When your sprint ends, get an AI-powered shareable report — ready for LinkedIn, Twitter, and your portfolio.': 'Quand votre sprint se termine, obtenez un rapport partageable propulsé par IA — prêt pour LinkedIn, Twitter et votre portfolio.',
+
+        // Landing page — how it works
+        'How it works': 'Comment ça marche',
+        'Three steps to document your building journey': 'Trois étapes pour documenter votre parcours de construction',
+        'Pick a goal': 'Choisissez un objectif',
+        'Set your target and your timeline. 7, 14, or 30 days. Make it public or keep it private.': 'Définissez votre objectif et votre calendrier. 7, 14 ou 30 jours. Rendez-le public ou gardez-le privé.',
+        'Post daily updates': 'Publiez des mises à jour quotidiennes',
+        'Share your progress, your wins, and your blockers. The community follows along and supports you.': 'Partagez vos progrès, vos victoires et vos blocages. La communauté suit et vous soutient.',
+        'Get discovered': 'Faites-vous découvrir',
+        'Your sprint becomes your verified proof of work. Recruiters, investors, and followers find you.': 'Votre sprint devient votre preuve de travail vérifiée. Les recruteurs, investisseurs et abonnés vous trouvent.',
+
+        // Landing page — stats
+        'Builders worldwide': 'Créateurs dans le monde',
+        'Sprints launched': 'Sprints lancés',
+        'Countries represented': 'Pays représentés',
+
+        // Landing page — testimonials
+        'Loved by builders worldwide': 'Aimé par les créateurs du monde entier',
+        'Real stories from people who built in public': 'Vraies histoires de personnes qui ont construit en public',
+
+        // Landing page — CTA section
+        'The next big story is starting today.': 'La prochaine grande histoire commence aujourd\'hui.',
+        'Be part of it.': 'Faites-en partie.',
+        'Join thousands of builders already documenting their journey on PublicSprint.': 'Rejoignez des milliers de créateurs qui documentent déjà leur parcours sur PublicSprint.',
+        'Start building for free': 'Commencer à construire gratuitement',
+        'No credit card required': 'Sans carte de crédit requise',
+        'Start in 2 minutes': 'Démarrez en 2 minutes',
+
+        // Landing page — nav & footer
+        'How it works': 'Comment ça marche',
+        'Reviews': 'Avis',
+        'Discover': 'Découvrir',
+        'Community': 'Communauté',
+        'Get Started': 'Commencer',
+        'Product': 'Produit',
+        'Company': 'Entreprise',
+        'Discover Sprints': 'Découvrir les sprints',
+        'Roadmap': 'Feuille de route',
+        'About': 'À propos',
+        'Blog': 'Blog',
+        'Careers': 'Carrières',
+        'Contact': 'Contact',
+        'Privacy': 'Confidentialité',
+        'Terms': 'Conditions',
+        'Cookies': 'Cookies',
+        'Day {n}': 'Jour {n}',
+        'Sprint image': 'Image du sprint',
     },
 };
