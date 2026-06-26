@@ -1,677 +1,644 @@
 import { Link, Head } from '@inertiajs/react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-    ArrowRightIcon as ArrowRight,
-    ArrowTrendingUpIcon as TrendingUp,
-    BoltIcon as Zap,
-    CalendarDaysIcon as Calendar,
-    ChatBubbleOvalLeftEllipsisIcon as MessageCircle,
-    CheckCircleIcon as CheckCircle2,
-    CheckIcon as Check,
-    ChevronLeftIcon as ChevronLeft,
-    ChevronRightIcon as ChevronRight,
-    ClockIcon as Timer,
-    CursorArrowRaysIcon as Target,
-    PlayCircleIcon as Play,
-    RocketLaunchIcon as Rocket,
-    SparklesIcon as Sparkles,
-    StarIcon as Star,
-    TrophyIcon as Trophy,
-    UserGroupIcon as Users,
-    ChatBubbleLeftRightIcon as Quote,
+    ArrowRightIcon,
+    BoltIcon,
+    CalendarDaysIcon,
+    ChartBarIcon,
+    CheckCircleIcon,
+    DocumentChartBarIcon,
+    EyeIcon,
+    FlagIcon,
+    GlobeAltIcon,
+    RocketLaunchIcon,
+    SparklesIcon,
+    StarIcon,
+    TrophyIcon,
+    UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 import LanguageSwitcher from '@/Components/LanguageSwitcher';
 import { useLanguage } from '@/Contexts/LanguageContext';
 
+const fadeUp = {
+    hidden:  { opacity: 0, y: 24 },
+    visible: (i = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.12, duration: 0.4 } }),
+};
+
 export default function Welcome({ canLogin, canRegister }) {
     const { tl } = useLanguage();
-    const { scrollYProgress } = useScroll();
-    const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
-    const [currentTestimonial, setCurrentTestimonial] = useState(0);
-    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const [activeTestimonial, setActiveTestimonial] = useState(0);
 
     const testimonials = [
         {
             quote: "PublicSprint helped me ship the first version of my fintech app in Douala. The daily check-ins kept me accountable.",
             author: "Jerry Tetang",
-            role: "Builder @ PublicSprint (Cameroon)",
-            image: "https://images.unsplash.com/photo-1544006659-f0b21884ce1d?w=150&h=150&fit=crop&crop=faces",
-            rating: 5
+            role: "Builder · Cameroon",
+            image: "https://images.unsplash.com/photo-1544006659-f0b21884ce1d?w=96&h=96&fit=crop&crop=faces&q=80",
         },
         {
-            quote: "I used one 7-day sprint to launch my design studio portfolio and get my first international client.",
+            quote: "I used one 7-day sprint to launch my design portfolio and land my first international client.",
             author: "Amina Nguemeni",
-            role: "Product Designer, Yaoundé",
-            image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop&crop=faces",
-            rating: 5
+            role: "Product Designer · Yaoundé",
+            image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=96&h=96&fit=crop&crop=faces&q=80",
         },
         {
             quote: "Seeing other African builders share raw progress every day gave me the courage to launch my edtech MVP.",
             author: "Lionel Fokou",
-            role: "Indie Hacker, Buea",
-            image: "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=150&h=150&fit=crop&crop=faces",
-            rating: 5
+            role: "Indie Hacker · Buea",
+            image: "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=96&h=96&fit=crop&crop=faces&q=80",
         },
         {
             quote: "We ran a 3-day sprint with our dev community in Bamenda and shipped three projects in one weekend.",
             author: "Brenda Mbarga",
-            role: "Community Lead, Cameroon",
-            image: "https://images.unsplash.com/photo-1559599101-7466fe601f5a?w=150&h=150&fit=crop&crop=faces",
-            rating: 5
-        }
+            role: "Community Lead · Cameroon",
+            image: "https://images.unsplash.com/photo-1559599101-7466fe601f5a?w=96&h=96&fit=crop&crop=faces&q=80",
+        },
     ];
 
     useEffect(() => {
-        if (!isAutoPlaying) return;
-        const timer = setInterval(() => {
-            setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, [isAutoPlaying, testimonials.length]);
-
-    const nextTestimonial = () => {
-        setIsAutoPlaying(false);
-        setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    };
-
-    const prevTestimonial = () => {
-        setIsAutoPlaying(false);
-        setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-    };
+        const t = setInterval(() => setActiveTestimonial(p => (p + 1) % testimonials.length), 5000);
+        return () => clearInterval(t);
+    }, [testimonials.length]);
 
     return (
         <>
-            <Head title={tl('Ship your side project in 7 days')} />
-            
-            <div className="min-h-screen bg-white overflow-hidden">
-                {/* Clean background */}
-                <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-blue-50 to-green-50 opacity-60" />
-                </div>
+            <Head title="PublicSprint — The building process. Finally documented." />
 
-                {/* Clean Navigation - Fiverr Style */}
-                <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between items-center h-16">
-                            <Link href="/" className="flex items-center space-x-3 group">
-                                <img 
-                                    src="/logo/log2.png" 
-                                    alt="PublicSprint Logo" 
-                                    className="h-20 w-auto"
-                                />
-                            </Link>
-                            
-                            <div className="hidden md:flex items-center space-x-8">
-                                <a href="#how-it-works" className="text-sm font-medium text-gray-600 hover:text-green-600 transition-colors duration-200">
-                                    How it works
-                                </a>
-                                <a href="#testimonials" className="text-sm font-medium text-gray-600 hover:text-green-600 transition-colors duration-200">
-                                    Reviews
-                                </a>
-                                <a href="/discover" className="text-sm font-medium text-gray-600 hover:text-green-600 transition-colors duration-200">
-                                    Discover
-                                </a>
-                                <a href="#" className="text-sm font-medium text-gray-600 hover:text-green-600 transition-colors duration-200">
-                                    Community
-                                </a>
-                            </div>
+            <div className="min-h-screen bg-[#f5f1e8] font-sans antialiased">
 
+                {/* ── Navigation ── */}
+                <nav className="fixed inset-x-0 top-0 z-50 border-b border-stone-200/60 bg-[#f5f1e8]/90 backdrop-blur-md">
+                    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
+                        <Link href="/" className="flex items-center gap-2.5">
+                            <img src="/logo/log2.png" alt="PublicSprint" className="h-14 w-auto" />
+                        </Link>
+
+                        <div className="hidden items-center gap-8 md:flex">
+                            <a href="#story"       className="text-sm font-medium text-stone-600 transition hover:text-emerald-800">{tl('How it works')}</a>
+                            <a href="#features"    className="text-sm font-medium text-stone-600 transition hover:text-emerald-800">{tl('Community')}</a>
+                            <Link href={route('discover')} className="text-sm font-medium text-stone-600 transition hover:text-emerald-800">{tl('Discover')}</Link>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <LanguageSwitcher compact />
                             {canLogin && (
-                                <div className="flex items-center space-x-3">
-                                    <LanguageSwitcher compact />
-                                    <Link
-                                        href={route('login')}
-                                        className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-green-600 transition-colors duration-200"
-                                    >
-                                        Sign in
-                                    </Link>
-                                    {canRegister && (
-                                        <Link
-                                            href={route('register')}
-                                            className="px-5 py-2.5 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-all duration-200 shadow-sm hover:shadow-md"
-                                        >
-                                            Get Started
-                                        </Link>
-                                    )}
-                                </div>
+                                <Link href={route('login')} className="text-sm font-medium text-stone-600 transition hover:text-emerald-800">
+                                    {tl('Sign in')}
+                                </Link>
+                            )}
+                            {canRegister && (
+                                <Link
+                                    href={route('register')}
+                                    className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                                >
+                                    {tl('Get Started')}
+                                    <ArrowRightIcon className="h-3.5 w-3.5" />
+                                </Link>
                             )}
                         </div>
                     </div>
                 </nav>
 
-                {/* Clean Hero Section */}
-                <section className="relative pt-32 pb-24 px-4 sm:px-6 lg:px-8">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="grid lg:grid-cols-2 gap-16 items-center">
-                            {/* Content */}
-                            <div className="text-center lg:text-left">
-                                {/* Community badge */}
-                                <div className="inline-flex items-center space-x-2 px-4 py-2 bg-green-50 rounded-full border border-green-200 mb-8">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                    <span className="text-sm font-medium text-green-700">
-                                        <Users className="w-3 h-3 inline mr-1" />
-                                        2,847 builders shipping this week
-                                    </span>
-                                </div>
+                {/* ── Hero ── */}
+                <section className="relative overflow-hidden bg-[linear-gradient(135deg,#0c1f12,#173327,#1e4d35)] pt-16">
+                    {/* subtle grid texture */}
+                    <div className="pointer-events-none absolute inset-0 opacity-[0.04]"
+                        style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '36px 36px' }} />
 
-                                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                                    Build in public,
-                                    <span className="block text-green-600">
-                                        ship together
-                                    </span>
-                                </h1>
-
-                                <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-lg lg:max-w-none">
-                                    Join time-boxed sprints, share daily progress, and build alongside a community of makers. 
-                                    <span className="font-semibold text-gray-900"> No more abandoned projects.</span>
-                                </p>
-
-                                <div className="flex flex-col sm:flex-row gap-3 mb-12">
-                                    {canRegister && (
-                                        <Link
-                                            href={route('register')}
-                                            className="group px-8 py-4 bg-green-500 text-white rounded-lg font-semibold text-base hover:bg-green-600 transition-all duration-200 flex items-center justify-center space-x-2 shadow-sm hover:shadow-md"
-                                        >
-                                            <Rocket className="w-4 h-4" />
-                                            <span>Start building free</span>
-                                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                        </Link>
-                                    )}
-                                    
-                                    <Link
-                                        href={route('discover')}
-                                        className="group px-8 py-4 border border-gray-300 text-gray-700 rounded-lg font-semibold text-base hover:border-green-500 hover:text-green-600 transition-all duration-200 flex items-center justify-center space-x-2"
-                                    >
-                                        <Play className="w-4 h-4" />
-                                        <span>See live sprints</span>
-                                    </Link>
-                                </div>
-
-                                {/* Trust indicators */}
-                                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-sm text-gray-500">
-                                    <div className="flex items-center space-x-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        <span>Free forever</span>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        <span>No credit card</span>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        <span>2 min setup</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Community Mockup */}
-                            <div className="relative hidden lg:block">
-                                <div className="relative bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-                                    {/* Community Header */}
-                                    <div className="flex items-center justify-between mb-6">
-                                        <div className="flex items-center space-x-3">
-                                            <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
-                                                <MessageCircle className="w-6 h-6 text-green-600" />
-                                            </div>
-                                            <div>
-                                                <div className="font-bold text-gray-900">7-Day Build Sprint</div>
-                                                <div className="text-sm text-gray-500">124 builders participating</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center space-x-2 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200">
-                                            <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">5</div>
-                                            <span className="text-sm font-medium text-orange-700">day streak</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Progress */}
-                                    <div className="mb-6">
-                                        <div className="flex justify-between text-sm mb-2">
-                                            <span className="text-gray-600">Community Progress</span>
-                                            <span className="font-semibold text-gray-900">71%</span>
-                                        </div>
-                                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                            <div className="h-full bg-green-500 rounded-full" style={{ width: '71%' }} />
-                                        </div>
-                                    </div>
-
-                                    {/* Active Members */}
-                                    <div className="mb-4">
-                                        <div className="text-sm text-gray-600 mb-3">Active builders</div>
-                                        <div className="flex -space-x-2">
-                                            {[
-                                                "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=150&h=150&fit=crop&crop=faces",
-                                                "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=faces",
-                                                "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop&crop=faces",
-                                                "https://images.unsplash.com/photo-1559599101-7466fe601f5a?w=150&h=150&fit=crop&crop=faces",
-                                                "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=150&h=150&fit=crop&crop=faces",
-                                            ].map((src, i) => (
-                                                <img 
-                                                    key={i}
-                                                    src={src}
-                                                    className="w-8 h-8 rounded-full border-2 border-white object-cover"
-                                                    alt="PublicSprint builder"
-                                                />
-                                            ))}
-                                            <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center">
-                                                <span className="text-xs font-semibold text-gray-600">+28</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Recent Updates */}
-                                    <div className="space-y-3">
-                                        <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                                            <img 
-                                                src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=150&h=150&fit=crop&crop=faces"
-                                                className="w-8 h-8 rounded-full object-cover"
-                                                alt="Builder avatar"
-                                            />
-                                            <div className="flex-1">
-                                                <div className="text-sm font-medium text-gray-900">Clarisse N.</div>
-                                                <div className="text-sm text-gray-600">Just shipped the authentication system for my SaaS from Douala! 🎉</div>
-                                            </div>
-                                            <div className="text-xs text-gray-400">2h ago</div>
-                                        </div>
-                                        <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                                            <img 
-                                                src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=faces"
-                                                className="w-8 h-8 rounded-full object-cover"
-                                                alt="Builder avatar"
-                                            />
-                                            <div className="flex-1">
-                                                <div className="text-sm font-medium text-gray-900">Samuel Etoundi</div>
-                                                <div className="text-sm text-gray-600">Iterating on my sprint dashboard UI today 📊</div>
-                                            </div>
-                                            <div className="text-xs text-gray-400">1h ago</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Floating achievement card */}
-                                <div className="absolute -bottom-4 -right-4 bg-white rounded-lg p-4 shadow-lg border border-gray-200">
-                                    <div className="flex items-center space-x-3">
-                                        <Trophy className="w-8 h-8 text-yellow-500" />
-                                        <div>
-                                            <div className="text-sm font-semibold text-gray-900">Weekly Leader</div>
-                                            <div className="text-xs text-gray-500">Jerry Tetang</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Stats Bar */}
-                <section className="py-16 px-4 sm:px-6 lg:px-8 border-y border-gray-100 bg-gray-50">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                            {[
-                                { value: '2,847', label: 'Active Builders', icon: Users, color: 'text-green-600' },
-                                { value: '890+', label: 'Projects Shipped', icon: Rocket, color: 'text-blue-600' },
-                                { value: '12.3k', label: 'Daily Updates', icon: MessageCircle, color: 'text-purple-600' },
-                                { value: '4.9★', label: 'Community Rating', icon: Star, color: 'text-yellow-500' },
-                            ].map((stat, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className="text-center group"
-                                >
-                                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg bg-white mb-4 group-hover:bg-green-50 transition-colors shadow-sm`}>
-                                        <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                                    </div>
-                                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{stat.value}</div>
-                                    <div className="text-sm text-gray-600 font-medium">{stat.label}</div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                {/* How it works */}
-                <section id="how-it-works" className="relative py-32 px-4 sm:px-6 lg:px-8 bg-white">
-                    <div className="max-w-6xl mx-auto">
-                        <div className="text-center mb-20">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                className="inline-flex items-center space-x-2 px-4 py-2 bg-green-50 rounded-full mb-6 border border-green-200"
-                            >
-                                <Target className="w-4 h-4 text-green-600" />
-                                <span className="text-sm font-semibold text-green-700">Simple Process</span>
-                            </motion.div>
-                            <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900">
-                                Build together in <span className="text-green-600">3 steps</span>
-                            </h2>
-                            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                                Join the community, start building, and ship your project with daily support.
-                            </p>
-                        </div>
-
-                        <div className="grid md:grid-cols-3 gap-8">
-                            {[
-                                {
-                                    num: '1',
-                                    title: 'Join a sprint',
-                                    desc: 'Pick 3, 7, or 30 days. Set your goal. Join builders worldwide.',
-                                    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop',
-                                    icon: Users,
-                                    color: 'green'
-                                },
-                                {
-                                    num: '2',
-                                    title: 'Share daily progress',
-                                    desc: 'Post updates, get feedback, and build momentum with the community.',
-                                    image: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=400&h=300&fit=crop',
-                                    icon: MessageCircle,
-                                    color: 'blue'
-                                },
-                                {
-                                    num: '3',
-                                    title: 'Ship & celebrate',
-                                    desc: 'Launch to the world. Get recognized. Start your next project.',
-                                    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
-                                    icon: Trophy,
-                                    color: 'purple'
-                                }
-                            ].map((step, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, y: 30 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: i * 0.15 }}
-                                    className="group text-center"
-                                >
-                                    <div className="relative bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-green-300 transition-all hover:shadow-lg p-8">
-                                        {/* Number */}
-                                        <div className={`w-16 h-16 rounded-full bg-${step.color}-100 mx-auto mb-6 flex items-center justify-center group-hover:bg-${step.color}-50 transition-colors`}>
-                                            <span className={`text-2xl font-bold text-${step.color}-600`}>{step.num}</span>
-                                        </div>
-                                        
-                                        {/* Icon */}
-                                        <div className={`w-12 h-12 rounded-lg bg-${step.color}-100 mx-auto mb-4 flex items-center justify-center`}>
-                                            <step.icon className={`w-6 h-6 text-${step.color}-600`} />
-                                        </div>
-
-                                        {/* Content */}
-                                        <h3 className="text-xl font-bold mb-3 text-gray-900">
-                                            {step.title}
-                                        </h3>
-                                        <p className="text-gray-600 leading-relaxed">
-                                            {step.desc}
-                                        </p>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                {/* Community Features */}
-                <section className="py-32 px-4 sm:px-6 lg:px-8 bg-gray-50">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900">
-                                Why builders love our community
-                            </h2>
-                            <p className="text-lg text-gray-600">
-                                Real support from real people building real projects
-                            </p>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {[
-                                { 
-                                    title: 'Daily Accountability', 
-                                    desc: 'Post updates every day and keep your streak alive with community support.',
-                                    icon: Calendar,
-                                    color: 'green'
-                                },
-                                { 
-                                    title: 'Real-time Feedback', 
-                                    desc: 'Get instant feedback on your work from experienced builders.',
-                                    icon: MessageCircle,
-                                    color: 'blue'
-                                },
-                                { 
-                                    title: 'Progress Tracking', 
-                                    desc: 'Visual dashboards show your momentum and keep you motivated.',
-                                    icon: TrendingUp,
-                                    color: 'purple'
-                                },
-                                { 
-                                    title: 'Leaderboards', 
-                                    desc: 'Friendly competition to keep everyone motivated and shipping.',
-                                    icon: Trophy,
-                                    color: 'yellow'
-                                },
-                                { 
-                                    title: 'Community Events', 
-                                    desc: 'Weekly check-ins, AMAs, and build-alongs with the community.',
-                                    icon: Users,
-                                    color: 'orange'
-                                },
-                                { 
-                                    title: 'Project Showcase', 
-                                    desc: 'Celebrate your launches and get featured in our community spotlight.',
-                                    icon: Zap,
-                                    color: 'green'
-                                },
-                            ].map((feature, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className="bg-white rounded-xl p-6 border border-gray-200 hover:border-green-300 transition-all hover:shadow-lg group"
-                                >
-                                    <div className={`w-12 h-12 rounded-lg bg-${feature.color}-100 flex items-center justify-center mb-4 group-hover:bg-${feature.color}-50 transition-colors`}>
-                                        <feature.icon className={`w-6 h-6 text-${feature.color}-600`} />
-                                    </div>
-                                    <h3 className="text-lg font-semibold mb-3 text-gray-900 group-hover:text-green-600 transition-colors">
-                                        {feature.title}
-                                    </h3>
-                                    <p className="text-gray-600 text-sm leading-relaxed">
-                                        {feature.desc}
-                                    </p>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                {/* Testimonials */}
-                <section id="testimonials" className="relative py-32 px-4 sm:px-6 lg:px-8 bg-white">
-                    <div className="max-w-6xl mx-auto">
-                        <div className="text-center mb-16">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                className="inline-flex items-center space-x-1 mb-6"
-                            >
-                                {[...Array(5)].map((_, i) => (
-                                    <Star key={i} className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                                ))}
-                                <span className="ml-3 text-sm font-semibold text-gray-900">4.9 out of 5 from 2,000+ builders</span>
-                            </motion.div>
-                            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900">
-                                Loved by the builder community
-                            </h2>
-                            <p className="text-lg text-gray-600">
-                                Real stories from real people shipping real projects
-                            </p>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {testimonials.map((testimonial, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className="bg-white rounded-xl p-6 border border-gray-200 hover:border-green-300 transition-all hover:shadow-lg"
-                                >
-                                    <div className="flex items-center space-x-1 mb-4">
-                                        {[...Array(testimonial.rating)].map((_, i) => (
-                                            <Star key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                                        ))}
-                                    </div>
-                                    <p className="text-gray-700 mb-6 leading-relaxed">
-                                        "{testimonial.quote}"
-                                    </p>
-                                    <div className="flex items-center space-x-3">
-                                        <img 
-                                            src={testimonial.image}
-                                            alt={testimonial.author}
-                                            className="w-12 h-12 rounded-full object-cover"
-                                        />
-                                        <div>
-                                            <div className="font-semibold text-gray-900">
-                                                {testimonial.author}
-                                            </div>
-                                            <div className="text-sm text-gray-600">
-                                                {testimonial.role}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                {/* Final CTA */}
-                <section className="relative py-32 px-4 sm:px-6 lg:px-8 bg-green-600 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-green-600 to-green-700" />
-                    
-                    <div className="relative max-w-5xl mx-auto">
+                    <div className="relative mx-auto max-w-7xl px-5 pb-0 pt-28">
                         <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="text-center"
+                            variants={fadeUp} initial="hidden" animate="visible"
+                            className="mx-auto max-w-4xl text-center"
                         >
                             {/* Badge */}
-                            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full mb-8">
-                                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                                <span className="text-sm font-semibold text-white">Join 2,847 builders shipping this week</span>
+                            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-4 py-2">
+                                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                                <span className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-200">
+                                    {tl('The building process. Finally documented.')}
+                                </span>
                             </div>
 
-                            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-white leading-tight">
-                                Ready to build with
+                            {/* Headline */}
+                            <h1 className="text-5xl font-black leading-[1.04] tracking-tight text-white sm:text-6xl lg:text-7xl">
+                                {tl('Watch the next great founder build —')}
                                 <br />
-                                our community?
-                            </h2>
-                            <p className="text-lg text-white/90 mb-12 max-w-2xl mx-auto leading-relaxed">
-                                Stop working alone. Join thousands of builders who ship projects together.
+                                <span className="text-emerald-300">{tl('before the world knows their name.')}</span>
+                            </h1>
+
+                            <p className="mx-auto mt-7 max-w-2xl text-lg leading-8 text-emerald-100/70">
+                                {tl('Start a sprint. Document your journey. Get discovered.')}
                             </p>
-                            
-                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+
+                            {/* CTAs */}
+                            <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                                 {canRegister && (
                                     <Link
                                         href={route('register')}
-                                        className="group px-8 py-4 bg-white text-green-600 rounded-lg font-semibold text-base hover:scale-105 transition-all shadow-lg flex items-center space-x-2"
+                                        className="group inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-4 text-sm font-bold text-emerald-950 shadow-lg transition hover:bg-emerald-50"
                                     >
-                                        <Rocket className="w-4 h-4" />
-                                        <span>Start building free</span>
-                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                        <RocketLaunchIcon className="h-4 w-4" />
+                                        {tl('Start your sprint')}
+                                        <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
                                     </Link>
                                 )}
                                 <Link
-                                    href="/discover"
-                                    className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-lg font-semibold text-base hover:bg-white/20 transition-all border border-white/30"
+                                    href={route('discover')}
+                                    className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/8 px-7 py-4 text-sm font-bold text-white transition hover:bg-white/15"
                                 >
-                                    Browse community sprints
+                                    <EyeIcon className="h-4 w-4" />
+                                    {tl('Explore sprints')}
                                 </Link>
                             </div>
 
-                            <div className="flex flex-wrap items-center justify-center gap-6 text-white/80 text-sm">
-                                <div className="flex items-center space-x-2">
-                                    <CheckCircle2 className="w-4 h-4" />
-                                    <span>Free forever</span>
+                            {/* Trust pills */}
+                            <div className="mt-8 flex flex-wrap items-center justify-center gap-5 text-xs font-medium text-emerald-200/60">
+                                {[
+                                    { icon: CheckCircleIcon, label: tl('Free forever') },
+                                    { icon: CheckCircleIcon, label: tl('No credit card') },
+                                    { icon: CheckCircleIcon, label: tl('2 min setup') },
+                                ].map(({ icon: Icon, label }) => (
+                                    <span key={label} className="flex items-center gap-1.5">
+                                        <Icon className="h-3.5 w-3.5 text-emerald-400" />
+                                        {label}
+                                    </span>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                        {/* App mockup strip */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 40 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3, duration: 0.5 }}
+                            className="relative mx-auto mt-16 max-w-5xl"
+                        >
+                            <div className="overflow-hidden rounded-t-[28px] border border-white/10 bg-white/5 backdrop-blur-sm">
+                                {/* Fake browser chrome */}
+                                <div className="flex items-center gap-2 border-b border-white/10 px-5 py-3.5">
+                                    <span className="h-3 w-3 rounded-full bg-red-400/70" />
+                                    <span className="h-3 w-3 rounded-full bg-yellow-400/70" />
+                                    <span className="h-3 w-3 rounded-full bg-green-400/70" />
+                                    <div className="ml-4 flex-1 rounded-full bg-white/10 px-4 py-1 text-xs text-white/40">
+                                        publicsprint.com/discover
+                                    </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                    <CheckCircle2 className="w-4 h-4" />
-                                    <span>No credit card required</span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <CheckCircle2 className="w-4 h-4" />
-                                    <span>Start in 2 minutes</span>
+                                {/* Sprint cards preview */}
+                                <div className="grid grid-cols-3 gap-4 p-5">
+                                    {[
+                                        {
+                                            name: "Amara K.",
+                                            img: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=80&h=80&fit=crop&crop=faces&q=80",
+                                            title: "Building my SaaS from $0",
+                                            day: "Day 12 / 30",
+                                            tag: "Founder",
+                                            likes: 47,
+                                        },
+                                        {
+                                            name: "Lucas M.",
+                                            img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=faces&q=80",
+                                            title: "AWS certification in 30 days",
+                                            day: "Day 8 / 30",
+                                            tag: "Developer",
+                                            likes: 31,
+                                        },
+                                        {
+                                            name: "Priya S.",
+                                            img: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=80&h=80&fit=crop&crop=faces&q=80",
+                                            title: "Redesigning my entire portfolio",
+                                            day: "Day 5 / 14",
+                                            tag: "Designer",
+                                            likes: 22,
+                                        },
+                                    ].map((card) => (
+                                        <div key={card.title} className="rounded-2xl bg-white/8 border border-white/8 p-4">
+                                            <div className="flex items-center gap-2.5 mb-3">
+                                                <img src={card.img} alt={card.name} className="h-8 w-8 rounded-full object-cover" />
+                                                <div>
+                                                    <div className="text-xs font-bold text-white">{card.name}</div>
+                                                    <div className="text-[10px] text-emerald-300/60">{card.tag}</div>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs font-semibold text-white/90 leading-5 mb-3">{card.title}</p>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[10px] text-emerald-400/80 font-medium">{card.day}</span>
+                                                <span className="flex items-center gap-1 text-[10px] text-white/40">
+                                                    <StarIcon className="h-3 w-3" /> {card.likes}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </motion.div>
                     </div>
                 </section>
 
-                {/* Footer */}
-                <footer className="relative py-16 px-4 sm:px-6 lg:px-8 bg-gray-900 text-white">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="grid md:grid-cols-4 gap-12 mb-12">
-                            {/* Brand */}
-                            <div className="md:col-span-2">
-                                <div className="flex items-center space-x-3 mb-4">
-                                    <img 
-                                        src="/logo/logogreen-removebg-preview.png" 
-                                        alt="PublicSprint Logo" 
-                                        className="h-28 w-auto"
-                                    />
+                {/* ── Stats bar ── */}
+                <section className="border-b border-stone-200 bg-white">
+                    <div className="mx-auto max-w-7xl px-5 py-10">
+                        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+                            {[
+                                { value: '2,800+', label: tl('Builders worldwide'),     icon: UserGroupIcon },
+                                { value: '890+',   label: tl('Sprints launched'),        icon: RocketLaunchIcon },
+                                { value: '38',     label: tl('Countries represented'),   icon: GlobeAltIcon },
+                                { value: '4.9',    label: 'Community rating',             icon: StarIcon },
+                            ].map(({ value, label, icon: Icon }, i) => (
+                                <motion.div
+                                    key={label}
+                                    variants={fadeUp} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                                    className="flex flex-col items-center text-center"
+                                >
+                                    <Icon className="mb-3 h-6 w-6 text-emerald-700" />
+                                    <div className="text-3xl font-black text-stone-900">{value}</div>
+                                    <div className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">{label}</div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── The Story Nobody Tells ── */}
+                <section id="story" className="py-28 px-5">
+                    <div className="mx-auto max-w-7xl">
+                        <div className="grid items-center gap-16 lg:grid-cols-2">
+                            {/* Copy */}
+                            <motion.div
+                                variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                            >
+                                <p className="mb-4 text-xs font-bold uppercase tracking-[0.26em] text-emerald-700">The story nobody tells</p>
+                                <h2 className="text-4xl font-black leading-[1.08] tracking-tight text-stone-900 sm:text-5xl">
+                                    {tl('We know how it ended.')}
+                                    <br />
+                                    <span className="text-emerald-700">{tl('We missed how it started.')}</span>
+                                </h2>
+
+                                <div className="mt-8 space-y-4 text-base leading-8 text-stone-600">
+                                    <p>
+                                        {tl('Everyone knows the Facebook story.')}{' '}
+                                        {tl('The billion-dollar valuation. The movie. The IPO.')}
+                                    </p>
+                                    <p>
+                                        {tl('Nobody was there for the dorm room nights.')}{' '}
+                                        {tl('Same with Microsoft. With Apple. With every company that changed the world.')}
+                                    </p>
+                                    <p>
+                                        {tl('We only discover founders after the fact — never while they\'re building.')}
+                                    </p>
                                 </div>
-                                <p className="text-gray-400 leading-relaxed max-w-sm text-sm">
-                                    The community platform for builders who are tired of abandoned projects. Join time-boxed sprints and ship your ideas together.
+
+                                <div className="mt-10 rounded-2xl border-l-4 border-emerald-700 bg-emerald-50 py-5 pl-6 pr-5">
+                                    <p className="text-base font-bold text-emerald-900">
+                                        {tl('PublicSprint changes that.')}
+                                    </p>
+                                    <p className="mt-1 text-sm text-emerald-700">
+                                        {tl('Here, the journey is the product.')}
+                                    </p>
+                                </div>
+
+                                {canRegister && (
+                                    <Link
+                                        href={route('register')}
+                                        className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-emerald-950 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-emerald-800"
+                                    >
+                                        {tl('Start your sprint')}
+                                        <ArrowRightIcon className="h-4 w-4" />
+                                    </Link>
+                                )}
+                            </motion.div>
+
+                            {/* Image grid */}
+                            <div className="relative hidden lg:block">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <motion.div
+                                        initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
+                                        viewport={{ once: true }} transition={{ duration: 0.5 }}
+                                        className="space-y-4"
+                                    >
+                                        <div className="overflow-hidden rounded-2xl shadow-md">
+                                            <img
+                                                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80&fit=crop"
+                                                alt="Developer working"
+                                                className="h-48 w-full object-cover"
+                                            />
+                                        </div>
+                                        <div className="overflow-hidden rounded-2xl shadow-md">
+                                            <img
+                                                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80&fit=crop"
+                                                alt="Team building"
+                                                className="h-36 w-full object-cover"
+                                            />
+                                        </div>
+                                    </motion.div>
+                                    <motion.div
+                                        initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }}
+                                        viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }}
+                                        className="mt-8 space-y-4"
+                                    >
+                                        <div className="overflow-hidden rounded-2xl shadow-md">
+                                            <img
+                                                src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=600&q=80&fit=crop"
+                                                alt="Founder presenting"
+                                                className="h-36 w-full object-cover"
+                                            />
+                                        </div>
+                                        <div className="overflow-hidden rounded-2xl shadow-md">
+                                            <img
+                                                src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&q=80&fit=crop"
+                                                alt="Coding at night"
+                                                className="h-48 w-full object-cover"
+                                            />
+                                        </div>
+                                    </motion.div>
+                                </div>
+
+                                {/* Floating card */}
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }}
+                                    viewport={{ once: true }} transition={{ delay: 0.3 }}
+                                    className="absolute -bottom-6 -left-6 rounded-2xl bg-white p-4 shadow-xl border border-stone-100"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100">
+                                            <TrophyIcon className="h-5 w-5 text-emerald-700" />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-bold text-stone-900">Amara just completed Day 30</div>
+                                            <div className="text-xs text-stone-500">Received 142 reactions</div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── Features ── */}
+                <section id="features" className="bg-white py-28 px-5">
+                    <div className="mx-auto max-w-7xl">
+                        <motion.div
+                            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                            className="mb-16 text-center"
+                        >
+                            <p className="mb-3 text-xs font-bold uppercase tracking-[0.26em] text-emerald-700">{tl('What you can do')}</p>
+                            <h2 className="text-4xl font-black tracking-tight text-stone-900 sm:text-5xl">
+                                Create. Follow. Get discovered.
+                            </h2>
+                        </motion.div>
+
+                        <div className="grid gap-6 md:grid-cols-3">
+                            {[
+                                {
+                                    icon: FlagIcon,
+                                    img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=700&q=80&fit=crop",
+                                    title: tl('Create a sprint'),
+                                    desc: tl('Set a goal, define a timeline, build in public. Every update becomes a permanent record of your process.'),
+                                },
+                                {
+                                    icon: EyeIcon,
+                                    img: "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=700&q=80&fit=crop",
+                                    title: tl('Follow the builders'),
+                                    desc: tl('Find builders worth watching. React, comment, and be part of their story before they become famous.'),
+                                },
+                                {
+                                    icon: DocumentChartBarIcon,
+                                    img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=700&q=80&fit=crop",
+                                    title: tl('Get your proof of work'),
+                                    desc: tl('When your sprint ends, get an AI-powered shareable report — ready for LinkedIn, Twitter, and your portfolio.'),
+                                },
+                            ].map(({ icon: Icon, img, title, desc }, i) => (
+                                <motion.div
+                                    key={title}
+                                    variants={fadeUp} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                                    className="group overflow-hidden rounded-[26px] border border-stone-200 bg-[#f5f1e8] transition hover:border-emerald-300 hover:shadow-lg"
+                                >
+                                    <div className="overflow-hidden">
+                                        <img
+                                            src={img}
+                                            alt={title}
+                                            className="h-52 w-full object-cover transition duration-500 group-hover:scale-105"
+                                        />
+                                    </div>
+                                    <div className="p-7">
+                                        <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-950">
+                                            <Icon className="h-5 w-5 text-white" />
+                                        </div>
+                                        <h3 className="mb-2 text-lg font-black text-stone-900">{title}</h3>
+                                        <p className="text-sm leading-7 text-stone-600">{desc}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── How it works ── */}
+                <section className="py-28 px-5">
+                    <div className="mx-auto max-w-7xl">
+                        <motion.div
+                            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                            className="mb-16 text-center"
+                        >
+                            <p className="mb-3 text-xs font-bold uppercase tracking-[0.26em] text-emerald-700">{tl('How it works')}</p>
+                            <h2 className="text-4xl font-black tracking-tight text-stone-900 sm:text-5xl">
+                                {tl('Three steps to document your building journey')}
+                            </h2>
+                        </motion.div>
+
+                        <div className="grid gap-8 md:grid-cols-3">
+                            {[
+                                {
+                                    num: '01',
+                                    icon: FlagIcon,
+                                    title: tl('Pick a goal'),
+                                    desc: tl('Set your target and your timeline. 7, 14, or 30 days. Make it public or keep it private.'),
+                                },
+                                {
+                                    num: '02',
+                                    icon: ChartBarIcon,
+                                    title: tl('Post daily updates'),
+                                    desc: tl('Share your progress, your wins, and your blockers. The community follows along and supports you.'),
+                                },
+                                {
+                                    num: '03',
+                                    icon: BoltIcon,
+                                    title: tl('Get discovered'),
+                                    desc: tl('Your sprint becomes your verified proof of work. Recruiters, investors, and followers find you.'),
+                                },
+                            ].map(({ num, icon: Icon, title, desc }, i) => (
+                                <motion.div
+                                    key={num}
+                                    variants={fadeUp} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                                    className="relative rounded-[26px] border border-stone-200 bg-white p-8"
+                                >
+                                    <div className="mb-6 flex items-center gap-4">
+                                        <span className="text-5xl font-black text-stone-100">{num}</span>
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-950">
+                                            <Icon className="h-5 w-5 text-white" />
+                                        </div>
+                                    </div>
+                                    <h3 className="mb-3 text-xl font-black text-stone-900">{title}</h3>
+                                    <p className="text-sm leading-7 text-stone-600">{desc}</p>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── Testimonials ── */}
+                <section className="bg-white py-28 px-5">
+                    <div className="mx-auto max-w-7xl">
+                        <motion.div
+                            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                            className="mb-16 text-center"
+                        >
+                            <div className="mb-4 flex items-center justify-center gap-1">
+                                {[...Array(5)].map((_, i) => (
+                                    <StarIcon key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
+                                ))}
+                            </div>
+                            <h2 className="text-4xl font-black tracking-tight text-stone-900 sm:text-5xl">
+                                {tl('Loved by builders worldwide')}
+                            </h2>
+                            <p className="mt-4 text-base text-stone-500">{tl('Real stories from people who built in public')}</p>
+                        </motion.div>
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                            {testimonials.map((t, i) => (
+                                <motion.div
+                                    key={i}
+                                    variants={fadeUp} custom={i % 2} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                                    className="rounded-[26px] border border-stone-200 bg-[#f5f1e8] p-8"
+                                >
+                                    <div className="mb-5 flex gap-1">
+                                        {[...Array(5)].map((_, j) => (
+                                            <StarIcon key={j} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                                        ))}
+                                    </div>
+                                    <p className="mb-6 text-base leading-8 text-stone-700">"{t.quote}"</p>
+                                    <div className="flex items-center gap-3">
+                                        <img src={t.image} alt={t.author} className="h-11 w-11 rounded-full object-cover" />
+                                        <div>
+                                            <div className="text-sm font-bold text-stone-900">{t.author}</div>
+                                            <div className="text-xs text-stone-500">{t.role}</div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── Final CTA ── */}
+                <section className="relative overflow-hidden bg-[linear-gradient(135deg,#0c1f12,#173327,#1e4d35)] py-32 px-5">
+                    <div className="pointer-events-none absolute inset-0 opacity-[0.04]"
+                        style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '36px 36px' }} />
+
+                    <motion.div
+                        variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                        className="relative mx-auto max-w-4xl text-center"
+                    >
+                        <SparklesIcon className="mx-auto mb-6 h-10 w-10 text-emerald-400" />
+                        <h2 className="text-5xl font-black leading-[1.06] tracking-tight text-white sm:text-6xl">
+                            {tl('The next big story is starting today.')}
+                            <br />
+                            <span className="text-emerald-300">{tl('Be part of it.')}</span>
+                        </h2>
+                        <p className="mx-auto mt-7 max-w-xl text-lg text-emerald-100/70">
+                            {tl('Join thousands of builders already documenting their journey on PublicSprint.')}
+                        </p>
+
+                        <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                            {canRegister && (
+                                <Link
+                                    href={route('register')}
+                                    className="group inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-emerald-950 shadow-xl transition hover:bg-emerald-50"
+                                >
+                                    <RocketLaunchIcon className="h-4 w-4" />
+                                    {tl('Start building for free')}
+                                    <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                                </Link>
+                            )}
+                            <Link
+                                href={route('discover')}
+                                className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/8 px-8 py-4 text-sm font-bold text-white transition hover:bg-white/15"
+                            >
+                                <EyeIcon className="h-4 w-4" />
+                                {tl('Explore sprints')}
+                            </Link>
+                        </div>
+
+                        <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs font-medium text-emerald-200/50">
+                            {[tl('No credit card required'), tl('Free forever'), tl('Start in 2 minutes')].map(l => (
+                                <span key={l} className="flex items-center gap-1.5">
+                                    <CheckCircleIcon className="h-3.5 w-3.5 text-emerald-400" />
+                                    {l}
+                                </span>
+                            ))}
+                        </div>
+                    </motion.div>
+                </section>
+
+                {/* ── Footer ── */}
+                <footer className="bg-stone-950 px-5 py-16 text-white">
+                    <div className="mx-auto max-w-7xl">
+                        <div className="mb-12 grid gap-10 md:grid-cols-4">
+                            <div className="md:col-span-2">
+                                <img src="/logo/logogreen-removebg-preview.png" alt="PublicSprint" className="mb-5 h-24 w-auto" />
+                                <p className="max-w-sm text-sm leading-7 text-stone-400">
+                                    The platform where builders document their journey in public — and where the next great story starts.
                                 </p>
-                                <div className="flex items-center space-x-3 mt-6">
-                                    <a href="https://x.com/jerrytetan67?s=21" className="w-8 h-8 rounded-full bg-gray-800 hover:bg-green-500 flex items-center justify-center transition-colors">
-                                        <span className="text-sm text-white">𝕏</span>
+                                <div className="mt-6 flex items-center gap-3">
+                                    <a
+                                        href="https://x.com/jerrytetan67"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-800 text-xs font-bold text-white transition hover:bg-emerald-600"
+                                    >
+                                        X
                                     </a>
-                                    
                                 </div>
                             </div>
 
-                            {/* Product */}
                             <div>
-                                <h3 className="font-semibold text-lg mb-4 text-white">Product</h3>
+                                <h4 className="mb-5 text-sm font-bold uppercase tracking-[0.18em] text-stone-300">{tl('Product')}</h4>
                                 <ul className="space-y-3">
-                                    <li><a href="/discover" className="text-gray-400 hover:text-green-400 transition-colors text-sm">Discover Sprints</a></li>
-                                    <li><a href="#how-it-works" className="text-gray-400 hover:text-green-400 transition-colors text-sm">How it works</a></li>
-                                    <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors text-sm">Community</a></li>
-                                    <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors text-sm">Roadmap</a></li>
+                                    {[
+                                        { label: tl('Discover Sprints'), href: route('discover') },
+                                        { label: tl('How it works'),     href: '#story' },
+                                        { label: tl('Community'),        href: '#features' },
+                                        { label: tl('Roadmap'),          href: '#' },
+                                    ].map(({ label, href }) => (
+                                        <li key={label}>
+                                            <a href={href} className="text-sm text-stone-400 transition hover:text-emerald-400">{label}</a>
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
 
-                            {/* Company */}
                             <div>
-                                <h3 className="font-semibold text-lg mb-4 text-white">Company</h3>
+                                <h4 className="mb-5 text-sm font-bold uppercase tracking-[0.18em] text-stone-300">{tl('Company')}</h4>
                                 <ul className="space-y-3">
-                                    <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors text-sm">About</a></li>
-                                    <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors text-sm">Blog</a></li>
-                                    <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors text-sm">Careers</a></li>
-                                    <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors text-sm">Contact</a></li>
+                                    {[tl('About'), tl('Blog'), tl('Careers'), tl('Contact')].map(label => (
+                                        <li key={label}>
+                                            <a href="#" className="text-sm text-stone-400 transition hover:text-emerald-400">{label}</a>
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                         </div>
 
-                        <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                            <p className="text-gray-400 text-sm">
-                                © 2024 PublicSprint.
-                            </p>
-                            <div className="flex items-center space-x-6 text-sm">
-                                <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">Privacy</a>
-                                <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">Terms</a>
-                                <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">Cookies</a>
+                        <div className="flex flex-col items-center justify-between gap-4 border-t border-stone-800 pt-8 md:flex-row">
+                            <p className="text-xs text-stone-500">© 2025 PublicSprint. All rights reserved.</p>
+                            <div className="flex gap-6">
+                                {[tl('Privacy'), tl('Terms'), tl('Cookies')].map(label => (
+                                    <a key={label} href="#" className="text-xs text-stone-500 transition hover:text-emerald-400">{label}</a>
+                                ))}
                             </div>
                         </div>
                     </div>
                 </footer>
+
             </div>
         </>
     );
