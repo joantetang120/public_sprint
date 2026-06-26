@@ -1,203 +1,91 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
-    ArrowRightIcon as ArrowRight,
-    BoltIcon as Zap,
-    EyeIcon as Eye,
-    EyeSlashIcon as EyeOff,
-    LockClosedIcon as Lock,
-    RocketLaunchIcon as Rocket,
-    ShieldCheckIcon as Shield,
-    StarIcon as Star,
-    UserGroupIcon as Users,
+    ArrowRightIcon,
+    EyeIcon,
+    EyeSlashIcon,
+    LockClosedIcon,
+    ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
+import AuthSidePanel from '@/Components/AuthSidePanel';
+import { useLanguage } from '@/Contexts/LanguageContext';
+
+const inputClass = "w-full rounded-xl border border-stone-200 bg-stone-50 py-3.5 pl-11 pr-11 text-sm font-medium text-stone-900 placeholder:text-stone-400 transition focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 hover:border-stone-300";
 
 export default function ConfirmPassword() {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        password: '',
-    });
-
+    const { tl } = useLanguage();
+    const { data, setData, post, processing, errors, reset } = useForm({ password: '' });
     const [showPassword, setShowPassword] = useState(false);
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('password.confirm'), {
-            onFinish: () => reset('password'),
-        });
+        post(route('password.confirm'), { onFinish: () => reset('password') });
     };
 
     return (
         <>
-            <Head title="Confirm your password - PublicSprint" />
-            
-            <div className="min-h-screen flex bg-white">
-                {/* Left Side - Community Branding */}
-                <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-500 to-green-600 p-12 flex-col justify-between relative overflow-hidden">
-                    {/* Background pattern */}
-                    <div className="absolute inset-0 opacity-10">
-                        <div className="absolute inset-0" style={{ 
-                            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', 
-                            backgroundSize: '50px 50px' 
-                        }} />
-                    </div>
+            <Head title="Confirm password — PublicSprint" />
 
-                    {/* Animated background elements */}
-                    <div className="absolute top-20 -left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-                    <div className="absolute bottom-20 -right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
+            <div className="flex min-h-screen bg-[#f5f1e8]">
+                <AuthSidePanel
+                    headline={tl('Security first.')}
+                    sub={tl('We keep your data and your journey safe.')}
+                />
 
-                    {/* Logo */}
-                    <Link href="/" className="relative flex items-center space-x-3 group">
-                        <img 
-                            src="/logo/logoWhite-removebg-preview.png" 
-                            alt="PublicSprint Logo" 
-                            className="h-16 w-auto"
-                        />
-                    </Link>
-
-                    {/* Content */}
-                    <div className="relative">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
-                                Security check
-                                <br />
-                                required 🛡️
-                            </h1>
-                            <p className="text-lg text-white/90 leading-relaxed mb-8">
-                                For your security, please confirm your password to continue.
-                            </p>
-                            
-                            {/* Community Stats */}
-                            <div className="grid grid-cols-3 gap-4">
-                                {[
-                                    { value: '2,847', label: 'Active Builders', icon: Users },
-                                    { value: '890+', label: 'Projects Shipped', icon: Rocket },
-                                    { value: '4.9★', label: 'Community Rating', icon: Star },
-                                ].map((stat, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.3 + (i * 0.1) }}
-                                        className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20"
-                                    >
-                                        <stat.icon className="w-5 h-5 text-white mb-2" />
-                                        <div className="text-lg font-bold text-white mb-1">{stat.value}</div>
-                                        <div className="text-xs text-white/80">{stat.label}</div>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    </div>
-
-                    {/* Footer */}
-                    <div className="relative text-white/80 text-sm">
-                        © 2024 PublicSprint. Built for makers, by makers.
-                    </div>
-                </div>
-
-                {/* Right Side - Form */}
-                <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-gray-50">
+                <div className="flex flex-1 items-center justify-center px-5 py-12">
                     <div className="w-full max-w-md">
-                        {/* Mobile Logo */}
-                        <Link href="/" className="lg:hidden flex items-center space-x-3 mb-8 justify-center">
-                            <img 
-                                src="/logo/logoWhite-removebg-preview.png" 
-                                alt="PublicSprint Logo" 
-                                className="h-16 w-auto"
-                            />
-                        </Link>
-
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 text-center"
+                            transition={{ duration: 0.3 }}
+                            className="rounded-[28px] border border-stone-200 bg-white p-8 shadow-sm text-center"
                         >
-                            {/* Security Icon */}
-                            <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-green-100 flex items-center justify-center">
-                                <Shield className="w-8 h-8 text-green-600" />
+                            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100">
+                                <ShieldCheckIcon className="h-7 w-7 text-emerald-700" />
                             </div>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                                Confirm your password
-                            </h2>
-                            <p className="text-gray-600 mb-8 leading-relaxed">
-                                For security purposes, please confirm your password to continue.
+                            <h2 className="mb-2 text-2xl font-black text-stone-900">{tl('Confirm your password')}</h2>
+                            <p className="mb-8 text-sm text-stone-500">
+                                {tl('For security purposes, please confirm your password to continue.')}
                             </p>
 
-                            <form onSubmit={submit} className="space-y-6 text-left">
+                            <form onSubmit={submit} className="space-y-5 text-left">
                                 <div>
-                                    <label htmlFor="password" className="block text-sm font-semibold text-gray-900 mb-3">
-                                        Password
+                                    <label htmlFor="password" className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-stone-500">
+                                        {tl('Password')}
                                     </label>
                                     <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                        <input
-                                            id="password"
-                                            type={showPassword ? 'text' : 'password'}
-                                            value={data.password}
-                                            onChange={(e) => setData('password', e.target.value)}
-                                            autoComplete="current-password"
-                                            autoFocus
-                                            required
-                                            className="w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none text-gray-900 placeholder-gray-500 font-medium transition-all hover:border-gray-300"
-                                            placeholder="Enter your password"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                                        >
-                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        <LockClosedIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                                        <input id="password" type={showPassword ? 'text' : 'password'} value={data.password}
+                                            onChange={e => setData('password', e.target.value)}
+                                            autoComplete="current-password" autoFocus required
+                                            className={inputClass} placeholder="••••••••" />
+                                        <button type="button" onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 transition hover:text-stone-600">
+                                            {showPassword ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                                         </button>
                                     </div>
-                                    {errors.password && (
-                                        <p className="mt-2 text-sm text-red-600">{errors.password}</p>
-                                    )}
+                                    {errors.password && <p className="mt-1.5 text-xs text-red-600">{errors.password}</p>}
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="group w-full px-6 py-4 bg-green-500 text-white rounded-lg font-semibold text-base hover:bg-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-sm hover:shadow-md"
-                                >
-                                    <span>{processing ? 'Confirming...' : 'Confirm and continue'}</span>
-                                    {!processing && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                                <button type="submit" disabled={processing}
+                                    className="group flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-950 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-emerald-800 disabled:opacity-50">
+                                    {processing ? tl('Confirming…') : tl('Confirm and continue')}
+                                    {!processing && <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />}
                                 </button>
                             </form>
 
-                            {/* Security Notice */}
-                            <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <div className="flex items-start space-x-3">
-                                    <Shield className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                                    <div className="text-left">
-                                        <p className="text-sm font-medium text-gray-900 mb-1">Security notice</p>
-                                        <p className="text-xs text-gray-600">
-                                            This extra step helps protect your account and community data.
-                                        </p>
+                            <div className="mt-6 rounded-2xl border border-stone-100 bg-stone-50 p-4 text-left">
+                                <div className="flex items-start gap-3">
+                                    <ShieldCheckIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" />
+                                    <div>
+                                        <p className="text-xs font-bold text-stone-700">{tl('Security notice')}</p>
+                                        <p className="mt-0.5 text-xs text-stone-500">{tl('This extra step helps protect your account.')}</p>
                                     </div>
                                 </div>
                             </div>
                         </motion.div>
-
-                        {/* Mobile Community Stats */}
-                        <div className="lg:hidden mt-8 grid grid-cols-3 gap-4">
-                            {[
-                                { value: '2.8k', label: 'Builders' },
-                                { value: '890+', label: 'Shipped' },
-                                { value: '4.9★', label: 'Rating' },
-                            ].map((stat, i) => (
-                                <div key={i} className="bg-white rounded-lg p-4 text-center border border-gray-200">
-                                    <div className="text-lg font-bold text-gray-900 mb-1">{stat.value}</div>
-                                    <div className="text-xs text-gray-600">{stat.label}</div>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </div>
             </div>
