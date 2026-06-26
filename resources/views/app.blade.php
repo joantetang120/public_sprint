@@ -16,7 +16,7 @@
         <!-- Scripts -->
         @routes
         @if(auth()->check() && auth()->user()->is_admin)
-        <script>window.__adminPath = '{{ env('ADMIN_PORTAL_PATH', 'xk9-control-panel') }}';</script>
+        <script>window.__adminPath = '{{ config('admin.portal_path', 'xk9-control-panel') }}';</script>
         @endif
         @viteReactRefresh
         @vite(['resources/js/app.jsx', "resources/js/Pages/{$page['component']}.jsx"])

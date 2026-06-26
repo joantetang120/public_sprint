@@ -131,7 +131,7 @@ Route::get('/sprints/{sprint}', [SprintController::class, 'show'])->name('sprint
 require __DIR__.'/auth.php';
 
 // ─── Admin portal (URL hidden via ADMIN_PORTAL_PATH env variable) ───────────
-Route::prefix(env('ADMIN_PORTAL_PATH', 'xk9-control-panel'))
+Route::prefix(config('admin.portal_path', 'xk9-control-panel'))
     ->middleware(['auth', 'admin'])
     ->group(function () {
         Route::get('/',          [AdminController::class, 'dashboard'])->name('admin.dashboard');
