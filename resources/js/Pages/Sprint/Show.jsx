@@ -410,7 +410,7 @@ export default function Show({ auth, sprint, isParticipant, isCreator = false, l
                     setShowInviteModal(false);
                     setSelectedFriends(new Set());
                     setInviteSearchQuery('');
-                    triggerActionToast('Invitations sent!');
+                    triggerActionToast(tl('Invitations sent!'));
                 },
                 onFinish: () => setSendingInvites(false),
             }
@@ -631,7 +631,7 @@ export default function Show({ auth, sprint, isParticipant, isCreator = false, l
                                                 }}
                                                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-950 px-3 py-2.5 text-xs font-bold text-white transition hover:bg-emerald-900"
                                             >
-                                                {inviteLinkCopied ? '✓ Copied!' : '🔗 Copy invite link'}
+                                                {inviteLinkCopied ? `✓ ${tl('Copied!')}` : `🔗 ${tl('Copy invite link')}`}
                                             </button>
                                             {invitableFriends !== null && (
                                                 <button
@@ -705,7 +705,7 @@ export default function Show({ auth, sprint, isParticipant, isCreator = false, l
                                     </div>
                                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
                                         <div className="text-3xl font-black mb-1">{completionStats.total_reactions}</div>
-                                        <div className="text-sm text-green-100">Total Likes</div>
+                                        <div className="text-sm text-green-100">{tl('Total Likes')}</div>
                                     </div>
                                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
                                         <div className="text-3xl font-black mb-1">{completionStats.completion_rate}%</div>
@@ -749,13 +749,13 @@ export default function Show({ auth, sprint, isParticipant, isCreator = false, l
                                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
                                             <div className="flex items-center space-x-2 mb-2">
                                                 <Heart className="w-5 h-5 text-pink-300" />
-                                                <span className="font-semibold text-sm">Most Engaged</span>
+                                                <span className="font-semibold text-sm">{tl('Most Engaged')}</span>
                                             </div>
                                             <div className="flex items-center space-x-2">
                                                 <UserAvatar user={completionStats.most_engaged} size="sm" />
                                                 <div>
                                                     <div className="font-bold text-sm">{completionStats.most_engaged.name}</div>
-                                                    <div className="text-xs text-green-100">{completionStats.most_engaged.pivot?.reactions_received || 0} likes</div>
+                                                    <div className="text-xs text-green-100">{completionStats.most_engaged.pivot?.reactions_received || 0} {tl('likes')}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1152,7 +1152,7 @@ export default function Show({ auth, sprint, isParticipant, isCreator = false, l
                                                                             onClick={() => setReplyingTo(prev => ({ ...prev, [comment.id]: false }))}
                                                                             className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
                                                                         >
-                                                                            Cancel
+                                                                            {tl('Cancel')}
                                                                         </button>
                                                                         <button
                                                                             onClick={() => handleReply(update, comment.id)}
@@ -1501,19 +1501,19 @@ export default function Show({ auth, sprint, isParticipant, isCreator = false, l
                                         <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
                                             <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-3 flex items-center space-x-2">
                                                 <Trophy className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                                <span>Points System</span>
+                                                <span>{tl('Points System')}</span>
                                             </h3>
                                             <div className="space-y-2 text-xs">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-gray-700 dark:text-gray-300">Post an update</span>
+                                                    <span className="text-gray-700 dark:text-gray-300">{tl('Post an update')}</span>
                                                     <span className="font-semibold text-green-600 dark:text-green-400">+2 pts</span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-gray-700 dark:text-gray-300">Receive a like</span>
+                                                    <span className="text-gray-700 dark:text-gray-300">{tl('Receive a like')}</span>
                                                     <span className="font-semibold text-green-600 dark:text-green-400">+1 pt</span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-gray-700 dark:text-gray-300">Make a comment</span>
+                                                    <span className="text-gray-700 dark:text-gray-300">{tl('Make a comment')}</span>
                                                     <span className="font-semibold text-green-600 dark:text-green-400">+0.5 pts</span>
                                                 </div>
                                             </div>
