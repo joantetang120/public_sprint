@@ -12,8 +12,10 @@ import {
 } from '@heroicons/react/24/outline';
 import UserAvatar from './UserAvatar';
 import html2canvas from 'html2canvas';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function SprintProgressCard({ sprint, userStats, completionStats }) {
+    const { tl, formatDate } = useLanguage();
     const cardRef = useRef(null);
 
     const handleDownload = async () => {
@@ -47,7 +49,7 @@ export default function SprintProgressCard({ sprint, userStats, completionStats 
 
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], 'sprint-completion.png', { type: 'image/png' });
-                
+
                 if (navigator.share && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         title: `I completed: ${sprint.title}`,
@@ -55,7 +57,6 @@ export default function SprintProgressCard({ sprint, userStats, completionStats 
                         files: [file],
                     });
                 } else {
-                    // Fallback to download
                     handleDownload();
                 }
             });
@@ -65,39 +66,35 @@ export default function SprintProgressCard({ sprint, userStats, completionStats 
         }
     };
 
-    const formatDate = (date) => {
-        return new Date(date).toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric' 
-        });
+    const formatSprintDate = (date) => {
+        return formatDate(date, { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
     return (
         <div className="space-y-4">
             {/* Action Buttons */}
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900">Progress Card</h3>
+                <h3 className="text-lg font-bold text-gray-900">{tl('Progress Card')}</h3>
                 <div className="flex items-center space-x-2">
                     <button
                         onClick={handleShare}
                         className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm"
                     >
                         <Share2 className="w-4 h-4" />
-                        <span>Share</span>
+                        <span>{tl('Share')}</span>
                     </button>
                     <button
                         onClick={handleDownload}
                         className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm"
                     >
                         <Download className="w-4 h-4" />
-                        <span>Download</span>
+                        <span>{tl('Download')}</span>
                     </button>
                 </div>
             </div>
 
             {/* Progress Card - Optimized for LinkedIn (1200x627px ratio) */}
-            <div 
+            <div
                 ref={cardRef}
                 className="relative bg-gradient-to-br from-green-500 via-green-600 to-blue-600 rounded-2xl p-8 shadow-2xl"
                 style={{ aspectRatio: '1200/627' }}
@@ -120,7 +117,7 @@ export default function SprintProgressCard({ sprint, userStats, completionStats 
                                     <Trophy className="w-6 h-6 text-white" />
                                 </div>
                                 <span className="text-white/90 font-semibold text-sm uppercase tracking-wider">
-                                    Sprint Completed
+                                    {tl('Sprint Completed')}
                                 </span>
                             </div>
                             <h2 className="text-3xl font-black text-white mb-2 leading-tight">
@@ -129,13 +126,13 @@ export default function SprintProgressCard({ sprint, userStats, completionStats 
                             <div className="flex items-center space-x-3 text-white/80 text-sm">
                                 <div className="flex items-center space-x-1">
                                     <Calendar className="w-4 h-4" />
-                                    <span>{formatDate(sprint.starts_at)} - {formatDate(sprint.ends_at)}</span>
+                                    <span>{formatSprintDate(sprint.starts_at)} - {formatSprintDate(sprint.ends_at)}</span>
                                 </div>
                                 <span>•</span>
-                                <span>{sprint.duration_days} days</span>
+                                <span>{sprint.duration_days} {tl('days')}</span>
                             </div>
                         </div>
-                        
+
                         {/* Rank Badge */}
                         {userStats.rank && userStats.rank <= 3 && (
                             <div className={`w-20 h-20 rounded-full flex flex-col items-center justify-center shadow-lg ${
@@ -144,7 +141,7 @@ export default function SprintProgressCard({ sprint, userStats, completionStats 
                                 'bg-orange-400'
                             }`}>
                                 <div className="text-3xl font-black text-gray-900">#{userStats.rank}</div>
-                                <div className="text-xs font-bold text-gray-700">RANK</div>
+                                <div className="text-xs font-bold text-gray-700">{tl('RANK')}</div>
                             </div>
                         )}
                     </div>
@@ -155,43 +152,43 @@ export default function SprintProgressCard({ sprint, userStats, completionStats 
                             <div className="text-3xl font-black text-white mb-1">
                                 {userStats.updates_posted || 0}
                             </div>
-                            <div className="text-sm text-white/80 font-semibold">Updates</div>
+                            <div className="text-sm text-white/80 font-semibold">{tl('Updates')}</div>
                         </div>
                         <div className="bg-white/15 backdrop-blur-md rounded-xl p-4 border border-white/20">
                             <div className="text-3xl font-black text-white mb-1">
                                 {userStats.score || 0}
                             </div>
-                            <div className="text-sm text-white/80 font-semibold">Points</div>
+                            <div className="text-sm text-white/80 font-semibold">{tl('Points')}</div>
                         </div>
                         <div className="bg-white/15 backdrop-blur-md rounded-xl p-4 border border-white/20">
                             <div className="text-3xl font-black text-white mb-1">
                                 {userStats.reactions_received || 0}
                             </div>
-                            <div className="text-sm text-white/80 font-semibold">Likes</div>
+                            <div className="text-sm text-white/80 font-semibold">{tl('Likes')}</div>
                         </div>
                         <div className="bg-white/15 backdrop-blur-md rounded-xl p-4 border border-white/20">
                             <div className="text-3xl font-black text-white mb-1">
                                 {completionStats.active_participants || 0}
                             </div>
-                            <div className="text-sm text-white/80 font-semibold">Builders</div>
+                            <div className="text-sm text-white/80 font-semibold">{tl('Builders')}</div>
                         </div>
                     </div>
 
                     {/* Badges */}
                     {userStats.badges && userStats.badges.length > 0 && (
                         <div className="flex items-center space-x-2">
-                            <span className="text-white/80 text-sm font-semibold">Achievements:</span>
+                            <span className="text-white/80 text-sm font-semibold">{tl('Achievements:')}</span>
                             <div className="flex items-center space-x-2">
                                 {userStats.badges.map((badge, i) => (
-                                    <div 
+                                    <div
                                         key={i}
                                         className="px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full border border-white/30 flex items-center space-x-1.5"
                                     >
-                                        {badge === 'top_contributor' && <><Award className="w-4 h-4 text-yellow-300" /><span className="text-white text-xs font-bold">Top Contributor</span></>}
-                                        {badge === 'daily_streak' && <><Zap className="w-4 h-4 text-orange-300" /><span className="text-white text-xs font-bold">Daily Streak</span></>}
-                                        {badge === 'most_helpful' && <><Users className="w-4 h-4 text-blue-300" /><span className="text-white text-xs font-bold">Most Helpful</span></>}
-                                        {badge === 'early_bird' && <><TrendingUp className="w-4 h-4 text-yellow-300" /><span className="text-white text-xs font-bold">Early Bird</span></>}
-                                        {badge === 'consistent_builder' && <><Target className="w-4 h-4 text-green-300" /><span className="text-white text-xs font-bold">Consistent</span></>}
+                                        {badge === 'top_contributor' && <><Award className="w-4 h-4 text-yellow-300" /><span className="text-white text-xs font-bold">{tl('Top Contributor')}</span></>}
+                                        {badge === 'daily_streak' && <><Zap className="w-4 h-4 text-orange-300" /><span className="text-white text-xs font-bold">{tl('Daily Streak')}</span></>}
+                                        {badge === 'most_helpful' && <><Users className="w-4 h-4 text-blue-300" /><span className="text-white text-xs font-bold">{tl('Most Helpful')}</span></>}
+                                        {badge === 'early_bird' && <><TrendingUp className="w-4 h-4 text-yellow-300" /><span className="text-white text-xs font-bold">{tl('Early Bird')}</span></>}
+                                        {badge === 'consistent_builder' && <><Target className="w-4 h-4 text-green-300" /><span className="text-white text-xs font-bold">{tl('Consistent')}</span></>}
                                     </div>
                                 ))}
                             </div>
@@ -204,7 +201,7 @@ export default function SprintProgressCard({ sprint, userStats, completionStats 
                             <UserAvatar user={userStats.user} className="w-12 h-12 border-2 border-white/30" />
                             <div>
                                 <div className="text-white font-bold text-lg">{userStats.user?.name}</div>
-                                <div className="text-white/70 text-sm">Built in public on PublicSprint</div>
+                                <div className="text-white/70 text-sm">{tl('Built in public on PublicSprint')}</div>
                             </div>
                         </div>
                         <div className="flex items-center space-x-2 text-white/90">
@@ -218,7 +215,7 @@ export default function SprintProgressCard({ sprint, userStats, completionStats 
             </div>
 
             <p className="text-sm text-gray-600 text-center">
-                This card is optimized for LinkedIn (1200x627px). Download and share your achievement! 🎉
+                {tl('This card is optimized for LinkedIn (1200x627px). Download and share your achievement! 🎉')}
             </p>
         </div>
     );
