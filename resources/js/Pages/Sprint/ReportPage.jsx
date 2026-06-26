@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import {
     ArrowLeftIcon,
     ArrowPathIcon,
-    BookOpenIcon,
     BriefcaseIcon,
     CalendarDaysIcon,
     ChartBarIcon,
@@ -13,7 +12,6 @@ import {
     DocumentArrowDownIcon,
     FireIcon,
     LinkIcon,
-    PhotoIcon,
     PrinterIcon,
     RectangleGroupIcon,
     SparklesIcon,
@@ -21,6 +19,7 @@ import {
     TrophyIcon,
 } from '@heroicons/react/24/outline';
 import { buildPrintableReportHtml, parseSprintReport } from '@/lib/sprintReport';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -83,7 +82,7 @@ function SectionCard({ title, accent = false, children }) {
     );
 }
 
-function TimelineItem({ item, index, total }) {
+function TimelineItem({ item, index, total, tl }) {
     const isFirst = index === 0;
     const isLast  = index === total - 1;
     return (
@@ -96,7 +95,7 @@ function TimelineItem({ item, index, total }) {
             </div>
             <div className={`pb-8 ${isLast ? 'pb-0' : ''}`}>
                 <div className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">
-                    {item.title} · Day {item.day_number}
+                    {item.title} · {tl('Day {day}', { day: item.day_number })}
                 </div>
                 <p className="mt-2 text-sm leading-7 text-stone-700">{item.summary}</p>
             </div>
@@ -106,14 +105,14 @@ function TimelineItem({ item, index, total }) {
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
-const STYLES = [
-    { value: 'professional', label: 'Professional',   desc: 'Clean, LinkedIn-ready',     icon: BriefcaseIcon },
-    { value: 'casual',       label: 'Builder Story',  desc: 'Warm and personal',          icon: SparklesIcon  },
-    { value: 'technical',    label: 'Technical',      desc: 'Execution-focused',          icon: RectangleGroupIcon },
-];
-
-function Sidebar({ sprint, report, shareUrl, onRegenerate, isRegenerating, selectedStyle, onStyleChange }) {
+function Sidebar({ sprint, report, shareUrl, onRegenerate, isRegenerating, selectedStyle, onStyleChange, tl }) {
     const [copied, copy] = useCopy();
+
+    const STYLES = [
+        { value: 'professional', label: tl('Professional'),   desc: tl('Clean, LinkedIn-ready'),  icon: BriefcaseIcon },
+        { value: 'casual',       label: tl('Builder Story'),  desc: tl('Warm and personal'),       icon: SparklesIcon  },
+        { value: 'technical',    label: tl('Technical'),      desc: tl('Execution-focused'),       icon: RectangleGroupIcon },
+    ];
 
     const printReport = () => {
         const w = window.open('', '_blank', 'width=1100,height=900');
@@ -138,66 +137,66 @@ function Sidebar({ sprint, report, shareUrl, onRegenerate, isRegenerating, selec
     return (
         <div className="space-y-5">
             {/* Export */}
-            <SectionCard title="Export">
+            <SectionCard title={tl('Export')}>
                 <div className="space-y-2.5">
                     <button
                         onClick={() => copy(report.formats.linkedin, 'linkedin')}
                         className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
                     >
-                        <span className="flex items-center gap-2.5"><ClipboardDocumentIcon className="h-4 w-4" />Copy LinkedIn post</span>
+                        <span className="flex items-center gap-2.5"><ClipboardDocumentIcon className="h-4 w-4" />{tl('Copy LinkedIn post')}</span>
                         {copied === 'linkedin' && <CheckIcon className="h-4 w-4 text-emerald-600" />}
                     </button>
                     <button
                         onClick={() => copy(report.formats.twitter, 'twitter')}
                         className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
                     >
-                        <span className="flex items-center gap-2.5"><XIcon className="h-4 w-4" />Copy X / Twitter</span>
+                        <span className="flex items-center gap-2.5"><XIcon className="h-4 w-4" />{tl('Copy X / Twitter')}</span>
                         {copied === 'twitter' && <CheckIcon className="h-4 w-4 text-emerald-600" />}
                     </button>
                     <button
                         onClick={downloadMd}
                         className="flex w-full items-center gap-2.5 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
                     >
-                        <DocumentArrowDownIcon className="h-4 w-4" />Download Markdown
+                        <DocumentArrowDownIcon className="h-4 w-4" />{tl('Download Markdown')}
                     </button>
                     <button
                         onClick={printReport}
                         className="flex w-full items-center gap-2.5 rounded-xl bg-emerald-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
                     >
-                        <PrinterIcon className="h-4 w-4" />Print / Save PDF
+                        <PrinterIcon className="h-4 w-4" />{tl('Print / Save PDF')}
                     </button>
                 </div>
             </SectionCard>
 
             {/* Share */}
             {shareUrl && (
-                <SectionCard title="Share">
+                <SectionCard title={tl('Share')}>
                     <div className="space-y-2.5">
                         <button
                             onClick={() => copy(shareUrl, 'link')}
                             className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
                         >
-                            <span className="flex items-center gap-2.5"><LinkIcon className="h-4 w-4" />Copy public link</span>
+                            <span className="flex items-center gap-2.5"><LinkIcon className="h-4 w-4" />{tl('Copy public link')}</span>
                             {copied === 'link' ? <CheckIcon className="h-4 w-4 text-emerald-600" /> : null}
                         </button>
                         <button
                             onClick={() => window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent((report.formats.twitter || '') + '\n\n' + shareUrl), '_blank', 'noopener,noreferrer')}
                             className="flex w-full items-center gap-2.5 rounded-xl bg-black px-4 py-3 text-sm font-semibold text-white transition hover:bg-stone-800"
                         >
-                            <XIcon className="h-4 w-4" />Post on X
+                            <XIcon className="h-4 w-4" />{tl('Post on X')}
                         </button>
                         <button
                             onClick={() => window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(shareUrl), '_blank', 'noopener,noreferrer')}
                             className="flex w-full items-center gap-2.5 rounded-xl bg-[#0077B5] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#006097]"
                         >
-                            <LinkedInIcon className="h-4 w-4" />Share on LinkedIn
+                            <LinkedInIcon className="h-4 w-4" />{tl('Share on LinkedIn')}
                         </button>
                     </div>
                 </SectionCard>
             )}
 
             {/* Regenerate */}
-            <SectionCard title="Regenerate tone">
+            <SectionCard title={tl('Regenerate tone')}>
                 <div className="space-y-2.5">
                     {STYLES.map((s) => (
                         <button
@@ -219,7 +218,7 @@ function Sidebar({ sprint, report, shareUrl, onRegenerate, isRegenerating, selec
                     className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-950 px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-900 disabled:opacity-60"
                 >
                     <ArrowPathIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
-                    {isRegenerating ? 'Regenerating…' : 'Regenerate report'}
+                    {isRegenerating ? tl('Regenerating…') : tl('Regenerate report')}
                 </button>
             </SectionCard>
         </div>
@@ -229,6 +228,7 @@ function Sidebar({ sprint, report, shareUrl, onRegenerate, isRegenerating, selec
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function ReportPage({ sprint, aiSummary, shareToken }) {
+    const { tl } = useLanguage();
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [selectedStyle, setSelectedStyle]   = useState('professional');
     const [copied, copy] = useCopy();
@@ -264,22 +264,24 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
     if (!report) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-stone-50">
-                <p className="text-stone-500">Report not available. <Link href={route('sprints.show', sprint.ulid)} className="underline">Back to sprint</Link></p>
+                <p className="text-stone-500">
+                    {tl('Report not available.')} <Link href={route('sprints.show', sprint.ulid)} className="underline">{tl('Back to sprint')}</Link>
+                </p>
             </div>
         );
     }
 
     const metrics = [
-        { label: 'Duration',  value: sprint.duration_days + ' days', icon: CalendarDaysIcon },
-        { label: 'Updates',   value: report.metrics.updates_posted,  icon: ChartBarIcon },
-        { label: 'Score',     value: report.metrics.score,           icon: StarIcon },
-        { label: 'Reactions', value: report.metrics.reactions_received, icon: FireIcon },
-        { label: 'Rank',      value: report.metrics.rank_label,      icon: TrophyIcon },
+        { label: tl('Duration'),  value: sprint.duration_days + ' ' + tl('days'), icon: CalendarDaysIcon },
+        { label: tl('Updates'),   value: report.metrics.updates_posted,            icon: ChartBarIcon },
+        { label: tl('Score'),     value: report.metrics.score,                     icon: StarIcon },
+        { label: tl('Reactions'), value: report.metrics.reactions_received,        icon: FireIcon },
+        { label: tl('Rank'),      value: report.metrics.rank_label,                icon: TrophyIcon },
     ];
 
     return (
         <>
-            <Head title={`${report.headline ?? ''} · Sprint Report`} />
+            <Head title={`${report.headline ?? ''} · ${tl('Sprint Report')}`} />
 
             <div className="min-h-screen bg-[#f5f1e8]">
 
@@ -291,10 +293,10 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                             className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100"
                         >
                             <ArrowLeftIcon className="h-4 w-4" />
-                            Back to sprint
+                            {tl('Back to sprint')}
                         </Link>
 
-                        <span className="text-sm font-black tracking-tight text-emerald-900">Sprint Report</span>
+                        <span className="text-sm font-black tracking-tight text-emerald-900">{tl('Sprint Report')}</span>
 
                         <div className="flex items-center gap-2">
                             {shareUrl && (
@@ -303,7 +305,7 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                                     className="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
                                 >
                                     <LinkIcon className="h-4 w-4" />
-                                    {copied === 'toplink' ? 'Copied!' : 'Share link'}
+                                    {copied === 'toplink' ? tl('Copied!') : tl('Share link')}
                                 </button>
                             )}
                             <button
@@ -327,7 +329,7 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                         >
                             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100">
                                 <SparklesIcon className="h-3.5 w-3.5" />
-                                Sprint Report
+                                {tl('Sprint Report')}
                             </div>
 
                             <h1 className="mt-5 max-w-4xl text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-5xl">
@@ -351,14 +353,14 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                 {/* ── Quick share bar ── */}
                 <div className="border-b border-stone-200 bg-white">
                     <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-5 py-4">
-                        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">Share</span>
+                        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">{tl('Share')}</span>
                         {shareUrl && (
                             <>
                                 <button
                                     onClick={() => window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent((report.formats.twitter || '') + '\n\n' + shareUrl), '_blank', 'noopener,noreferrer')}
                                     className="inline-flex items-center gap-2 rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800"
                                 >
-                                    <XIcon className="h-4 w-4" />Post on X
+                                    <XIcon className="h-4 w-4" />{tl('Post on X')}
                                 </button>
                                 <button
                                     onClick={() => window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(shareUrl), '_blank', 'noopener,noreferrer')}
@@ -371,7 +373,7 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                                     className="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
                                 >
                                     <LinkIcon className="h-4 w-4" />
-                                    {copied === 'bar' ? 'Copied!' : 'Copy public link'}
+                                    {copied === 'bar' ? tl('Copied!') : tl('Copy public link')}
                                 </button>
                             </>
                         )}
@@ -381,7 +383,7 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                                 className="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
                             >
                                 <ClipboardDocumentIcon className="h-4 w-4" />
-                                {copied === 'barli' ? 'Copied!' : 'Copy LinkedIn post'}
+                                {copied === 'barli' ? tl('Copied!') : tl('Copy LinkedIn post')}
                             </button>
                             <button
                                 onClick={printReport}
@@ -400,14 +402,12 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                         {/* Main content */}
                         <div className="space-y-6 min-w-0">
 
-                            {/* Overview */}
-                            <SectionCard title="Overview" accent>
+                            <SectionCard title={tl('Overview')} accent>
                                 <p className="text-base leading-8 text-stone-700">{report.summary}</p>
                             </SectionCard>
 
-                            {/* Accomplishments */}
                             {report.accomplishments?.length > 0 && (
-                                <SectionCard title="Accomplishments" accent>
+                                <SectionCard title={tl('Accomplishments')} accent>
                                     <div className="space-y-4">
                                         {report.accomplishments.map((item, i) => (
                                             <div key={item} className="flex gap-4">
@@ -421,9 +421,8 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                                 </SectionCard>
                             )}
 
-                            {/* Timeline */}
                             {report.timeline?.length > 0 && (
-                                <SectionCard title="Timeline" accent>
+                                <SectionCard title={tl('Timeline')} accent>
                                     <div>
                                         {report.timeline.map((item, i) => (
                                             <TimelineItem
@@ -431,15 +430,15 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                                                 item={item}
                                                 index={i}
                                                 total={report.timeline.length}
+                                                tl={tl}
                                             />
                                         ))}
                                     </div>
                                 </SectionCard>
                             )}
 
-                            {/* Lessons */}
                             {report.lessons?.length > 0 && (
-                                <SectionCard title="Lessons" accent>
+                                <SectionCard title={tl('Lessons')} accent>
                                     <div className="space-y-3">
                                         {report.lessons.map((item) => (
                                             <div key={item} className="flex gap-3 rounded-2xl bg-stone-50 p-4">
@@ -451,15 +450,14 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                                 </SectionCard>
                             )}
 
-                            {/* LinkedIn copy */}
-                            <SectionCard title="LinkedIn-ready post" accent>
+                            <SectionCard title={tl('LinkedIn-ready post')} accent>
                                 <div className="relative">
                                     <button
                                         onClick={() => copy(report.formats.linkedin, 'main-li')}
                                         className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-xl bg-emerald-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-900"
                                     >
                                         {copied === 'main-li' ? <CheckIcon className="h-3.5 w-3.5" /> : <ClipboardDocumentIcon className="h-3.5 w-3.5" />}
-                                        {copied === 'main-li' ? 'Copied!' : 'Copy'}
+                                        {copied === 'main-li' ? tl('Copied!') : tl('Copy')}
                                     </button>
                                     <div className="rounded-2xl bg-stone-50 p-5 pt-12">
                                         <pre className="whitespace-pre-wrap font-sans text-sm leading-7 text-stone-700">{report.formats.linkedin}</pre>
@@ -467,16 +465,15 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                                 </div>
                             </SectionCard>
 
-                            {/* X/Twitter copy */}
                             {report.formats?.twitter && (
-                                <SectionCard title="X / Twitter post" accent>
+                                <SectionCard title={tl('X / Twitter post')} accent>
                                     <div className="relative">
                                         <button
                                             onClick={() => copy(report.formats.twitter, 'main-tw')}
                                             className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-xl bg-black px-3 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
                                         >
                                             {copied === 'main-tw' ? <CheckIcon className="h-3.5 w-3.5" /> : <ClipboardDocumentIcon className="h-3.5 w-3.5" />}
-                                            {copied === 'main-tw' ? 'Copied!' : 'Copy'}
+                                            {copied === 'main-tw' ? tl('Copied!') : tl('Copy')}
                                         </button>
                                         <div className="rounded-2xl bg-stone-50 p-5 pt-12">
                                             <pre className="whitespace-pre-wrap font-sans text-sm leading-7 text-stone-700">{report.formats.twitter}</pre>
@@ -485,17 +482,16 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                                 </SectionCard>
                             )}
 
-                            {/* Gallery */}
                             {report.gallery?.length > 0 && (
-                                <SectionCard title="Gallery" accent>
+                                <SectionCard title={tl('Gallery')} accent>
                                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                                         {report.gallery.map((item) => (
                                             <figure key={`${item.url}-${item.position}`} className="overflow-hidden rounded-2xl border border-stone-200">
                                                 <div className="aspect-[4/3] overflow-hidden bg-stone-100">
-                                                    <img src={item.url} alt={item.caption || 'Sprint image'} className="h-full w-full object-cover transition duration-300 hover:scale-105" />
+                                                    <img src={item.url} alt={item.caption || tl('Sprint image')} className="h-full w-full object-cover transition duration-300 hover:scale-105" />
                                                 </div>
                                                 <figcaption className="p-3">
-                                                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">Day {item.day_number}</div>
+                                                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">{tl('Day {day}', { day: item.day_number })}</div>
                                                     <p className="mt-1 text-xs leading-5 text-stone-600">{item.caption}</p>
                                                 </figcaption>
                                             </figure>
@@ -515,6 +511,7 @@ export default function ReportPage({ sprint, aiSummary, shareToken }) {
                                 isRegenerating={isRegenerating}
                                 selectedStyle={selectedStyle}
                                 onStyleChange={setSelectedStyle}
+                                tl={tl}
                             />
                         </div>
                     </div>
